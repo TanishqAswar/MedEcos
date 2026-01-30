@@ -29,14 +29,23 @@ router.get('/:id', auth, async (req, res) => {
 // Update pharmacist profile
 router.put('/:id', auth, authorize('pharmacist'), async (req, res) => {
   try {
+    const Pharmacist = require('../models/Pharmacist');
+    const pharmacistProfile = await Pharmacist.findById(req.params.id);
+    
+    if (!pharmacistProfile) {
+      return res.status(404).json({ error: 'Pharmacist not found' });
+    }
+    
+    // Ensure pharmacist is updating their own profile
+    if (pharmacistProfile.userId.toString() !== req.userId.toString()) {
+      return res.status(403).json({ error: 'Cannot update other pharmacist profiles' });
+    }
+    
     const pharmacist = await Pharmacist.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     );
-    if (!pharmacist) {
-      return res.status(404).json({ error: 'Pharmacist not found' });
-    }
     res.json(pharmacist);
   } catch (error) {
     res.status(500).json({ error: error.message });

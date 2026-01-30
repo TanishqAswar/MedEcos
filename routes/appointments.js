@@ -6,6 +6,19 @@ const Appointment = require('../models/Appointment');
 // Create appointment
 router.post('/', auth, authorize('patient'), async (req, res) => {
   try {
+    const Patient = require('../models/Patient');
+    const patient = await Patient.findOne({ userId: req.userId });
+    
+    if (!patient) {
+      return res.status(404).json({ error: 'Patient profile not found' });
+    }
+    
+    // Ensure patient is creating appointment for themselves
+    if (req.body.patient && req.body.patient !== patient._id.toString()) {
+      return res.status(403).json({ error: 'Cannot create appointments for other patients' });
+    }
+    
+    req.body.patient = patient._id;
     const appointment = new Appointment(req.body);
     await appointment.save();
     res.status(201).json(appointment);
@@ -21,10 +34,16 @@ router.get('/', auth, async (req, res) => {
     if (req.user.userType === 'patient') {
       const Patient = require('../models/Patient');
       const patient = await Patient.findOne({ userId: req.userId });
+      if (!patient) {
+        return res.status(404).json({ error: 'Patient profile not found' });
+      }
       query.patient = patient._id;
     } else if (req.user.userType === 'doctor') {
       const Doctor = require('../models/Doctor');
       const doctor = await Doctor.findOne({ userId: req.userId });
+      if (!doctor) {
+        return res.status(404).json({ error: 'Doctor profile not found' });
+      }
       query.doctor = doctor._id;
     }
 
@@ -63,10 +82,24 @@ router.put('/:id', auth, async (req, res) => {
 // Delete appointment
 router.delete('/:id', auth, authorize('patient'), async (req, res) => {
   try {
-    const appointment = await Appointment.findByIdAndDelete(req.params.id);
+    const Patient = require('../models/Patient');
+    const patient = await Patient.findOne({ userId: req.userId });
+    
+    if (!patient) {
+      return res.status(404).json({ error: 'Patient profile not found' });
+    }
+    
+    const appointment = await Appointment.findById(req.params.id);
     if (!appointment) {
       return res.status(404).json({ error: 'Appointment not found' });
     }
+    
+    // Ensure patient is deleting their own appointment
+    if (appointment.patient.toString() !== patient._id.toString()) {
+      return res.status(403).json({ error: 'Cannot cancel appointments of other patients' });
+    }
+    
+    await Appointment.findByIdAndDelete(req.params.id);
     res.json({ message: 'Appointment cancelled' });
   } catch (error) {
     res.status(500).json({ error: error.message });

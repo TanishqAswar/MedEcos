@@ -29,14 +29,23 @@ router.get('/:id', auth, async (req, res) => {
 // Update patient profile
 router.put('/:id', auth, authorize('patient'), async (req, res) => {
   try {
+    const Patient = require('../models/Patient');
+    const patientProfile = await Patient.findById(req.params.id);
+    
+    if (!patientProfile) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+    
+    // Ensure patient is updating their own profile
+    if (patientProfile.userId.toString() !== req.userId.toString()) {
+      return res.status(403).json({ error: 'Cannot update other patient profiles' });
+    }
+    
     const patient = await Patient.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     );
-    if (!patient) {
-      return res.status(404).json({ error: 'Patient not found' });
-    }
     res.json(patient);
   } catch (error) {
     res.status(500).json({ error: error.message });

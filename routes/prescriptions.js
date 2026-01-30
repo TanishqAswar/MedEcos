@@ -6,6 +6,19 @@ const Prescription = require('../models/Prescription');
 // Create prescription (doctors only)
 router.post('/', auth, authorize('doctor'), async (req, res) => {
   try {
+    const Doctor = require('../models/Doctor');
+    const doctor = await Doctor.findOne({ userId: req.userId });
+    
+    if (!doctor) {
+      return res.status(404).json({ error: 'Doctor profile not found' });
+    }
+    
+    // Ensure doctor is creating prescription for themselves
+    if (req.body.doctor && req.body.doctor !== doctor._id.toString()) {
+      return res.status(403).json({ error: 'Cannot create prescriptions on behalf of other doctors' });
+    }
+    
+    req.body.doctor = doctor._id;
     const prescription = new Prescription(req.body);
     await prescription.save();
     res.status(201).json(prescription);
@@ -21,10 +34,16 @@ router.get('/', auth, async (req, res) => {
     if (req.user.userType === 'patient') {
       const Patient = require('../models/Patient');
       const patient = await Patient.findOne({ userId: req.userId });
+      if (!patient) {
+        return res.status(404).json({ error: 'Patient profile not found' });
+      }
       query.patient = patient._id;
     } else if (req.user.userType === 'doctor') {
       const Doctor = require('../models/Doctor');
       const doctor = await Doctor.findOne({ userId: req.userId });
+      if (!doctor) {
+        return res.status(404).json({ error: 'Doctor profile not found' });
+      }
       query.doctor = doctor._id;
     }
 
