@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/data_service.dart';
-import '../../../core/models/prescription_model.dart';
 import '../../../core/theme/app_colors.dart';
-import 'prescription_form_screen.dart';
 import '../../patient/screens/patient_details_screen.dart';
 
 class PrescriptionListScreen extends StatefulWidget {

@@ -14,17 +14,64 @@ class Sidebar extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 32),
-          // Logo Area
-          Image.asset("assets/Icon.jpeg", height: 80, width: 80),
-          const SizedBox(height: 16),
-          Text(
-            "MedEcos",
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+          // Doctor Profile Section
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [AppColors.primary, AppColors.accent],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    border: Border.all(
+                      color: AppColors.primaryLight,
+                      width: 3,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      "assets/Icon.jpeg",
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Colors.white,
+                        );
+                      },
+                    ),
+                  ),
                 ),
+                const SizedBox(height: 16),
+                const Text(
+                  "Dr. Marttin Deo",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "MBBS, FCPS, MD (Medicine), MCPS",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: 32),
+          const Divider(height: 1),
+          const SizedBox(height: 16),
           // Navigation Items
           _NavItem(
             icon: Icons.dashboard, 
@@ -33,10 +80,16 @@ class Sidebar extends StatelessWidget {
             onTap: () => onItemSelected(0),
           ),
           _NavItem(
-            icon: Icons.assignment,
-            label: "Prescriptions", 
-            isSelected: selectedIndex == 1,
-            onTap: () => onItemSelected(1),
+            icon: Icons.calendar_today,
+            label: "Appointment", 
+            isSelected: selectedIndex == 3,
+            onTap: () => onItemSelected(3),
+          ),
+          _NavItem(
+            icon: Icons.calendar_month, 
+            label: "Appointment Page",
+            isSelected: selectedIndex == 3,
+            onTap: () => onItemSelected(3),
           ),
           _NavItem(
             icon: Icons.people, 
@@ -45,10 +98,16 @@ class Sidebar extends StatelessWidget {
             onTap: () => onItemSelected(2),
           ),
           _NavItem(
-            icon: Icons.calendar_month, 
-            label: "Appointments",
-            isSelected: selectedIndex == 3,
-            onTap: () => onItemSelected(3),
+            icon: Icons.account_balance_wallet,
+            label: "Payment", 
+            isSelected: selectedIndex == 1,
+            onTap: () => onItemSelected(1),
+          ),
+          _NavItem(
+            icon: Icons.person, 
+            label: "Profile", 
+            isSelected: selectedIndex == 5,
+            onTap: () => onItemSelected(5),
           ),
           const Spacer(),
           _NavItem(
@@ -56,6 +115,12 @@ class Sidebar extends StatelessWidget {
             label: "Settings", 
             isSelected: selectedIndex == 4,
             onTap: () => onItemSelected(4),
+          ),
+          _NavItem(
+            icon: Icons.logout, 
+            label: "Logout", 
+            isSelected: false,
+            onTap: () {},
           ),
           const SizedBox(height: 20),
         ],

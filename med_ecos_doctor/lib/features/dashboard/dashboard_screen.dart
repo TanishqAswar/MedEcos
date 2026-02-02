@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/sidebar.dart';
 import 'widgets/header.dart';
-import 'widgets/stat_card.dart';
+import 'widgets/circular_stat_card.dart';
+import 'widgets/donut_chart_widget.dart';
+import 'widgets/today_appointments_widget.dart';
+import 'widgets/next_patient_details_widget.dart';
+import 'widgets/patient_review_widget.dart';
+import 'widgets/appointment_requests_widget.dart';
+import 'widgets/calendar_widget.dart';
+import 'services/dashboard_data_service.dart';
 import '../prescription/screens/prescription_list_screen.dart';
 import '../patient/screens/patient_lookup_screen.dart';
 import 'screens/appointments_screen.dart';
@@ -58,31 +65,95 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                 ),
                 const SizedBox(height: 24),
-                // Stats Grid
+                // Top Stat Cards Row
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    return Wrap(
-                      spacing: 24,
-                      runSpacing: 24,
+                    return Row(
                       children: [
-                        StatCard(title: "Appointments Today", value: "12", icon: Icons.calendar_today, color: Colors.blue),
-                        StatCard(title: "Pending Reports", value: "5", icon: Icons.assignment_late, color: Colors.orange),
-                        StatCard(title: "Total Patients", value: "1,240", icon: Icons.people, color: Colors.teal),
-                        StatCard(title: "Weekly Engagement", value: "+12%", icon: Icons.trending_up, color: Colors.green),
+                        Expanded(
+                          child: CircularStatCard(
+                            title: "Total Patient",
+                            value: "2000+",
+                            subtitle: "Till Today",
+                            icon: Icons.people,
+                            iconBackgroundColor: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: CircularStatCard(
+                            title: "Today Patient",
+                            value: "068",
+                            subtitle: "21 Dec-2021",
+                            icon: Icons.people_outline,
+                            iconBackgroundColor: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: CircularStatCard(
+                            title: "Today Appintments",
+                            value: "085",
+                            subtitle: "21 Dec-2021",
+                            icon: Icons.event_note,
+                            iconBackgroundColor: AppColors.primary,
+                          ),
+                        ),
                       ],
                     );
                   },
                 ),
-                const SizedBox(height: 32),
-                // Placeholder for Chart or other content
-                Container(
-                  height: 300,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text("Engagement Chart Placeholder", style: TextStyle(color: AppColors.textSecondary)),
+                const SizedBox(height: 24),
+                // Main Dashboard Grid - 3 Columns
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Left Column - Donut Chart & Patient Review
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        children: [
+                          DonutChartWidget(
+                            data: DashboardDataService.getPatientSummary(),
+                          ),
+                          const SizedBox(height: 24),
+                          PatientReviewWidget(
+                            reviews: DashboardDataService.getPatientReviews(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    // Middle Column - Today's Appointments & Requests
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        children: [
+                          TodayAppointmentsWidget(
+                            appointments: DashboardDataService.getTodayAppointments(),
+                          ),
+                          const SizedBox(height: 24),
+                          AppointmentRequestsWidget(
+                            requests: DashboardDataService.getAppointmentRequests(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    // Right Column - Next Patient & Calendar
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        children: [
+                          NextPatientDetailsWidget(
+                            patient: DashboardDataService.getNextPatient(),
+                          ),
+                          const SizedBox(height: 24),
+                          const CalendarWidget(),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

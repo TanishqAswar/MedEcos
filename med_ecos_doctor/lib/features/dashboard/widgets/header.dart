@@ -8,59 +8,81 @@ class Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 80,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         children: [
-          // Search Bar
-          Expanded(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "Search patients, appointments...",
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: AppColors.background,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+          const Spacer(),
+          // Mail Icon
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.email_outlined),
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(width: 8),
+          // Notification Icon
+          Stack(
+            children: [
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.notifications_outlined),
+                color: AppColors.textSecondary,
+              ),
+              Positioned(
+                right: 10,
+                top: 10,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: AppColors.error,
+                    shape: BoxShape.circle,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 16),
+          // Search Icon with Search Field
+          Container(
+            width: 250,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "Search",
+                hintStyle: const TextStyle(
+                  color: AppColors.textTertiary,
+                  fontSize: 14,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: AppColors.textSecondary,
+                  size: 20,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
           ),
-          const Spacer(),
-          // Actions
+          const SizedBox(width: 16),
+          // Menu Icon
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_outlined),
-          ),
-          const SizedBox(width: 16),
-          // Profile
-          const CircleAvatar(
-            backgroundColor: AppColors.primaryLight,
-            child: Icon(Icons.person, color: AppColors.primary),
-          ),
-          const SizedBox(width: 16),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Dr. Tanishq",
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              Text(
-                "Cardiologist",
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-              ),
-            ],
+            icon: const Icon(Icons.menu),
+            color: AppColors.textSecondary,
           ),
         ],
       ),
