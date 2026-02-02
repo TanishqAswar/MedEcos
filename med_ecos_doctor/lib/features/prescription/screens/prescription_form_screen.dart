@@ -14,10 +14,13 @@ class PrescriptionFormScreen extends StatefulWidget {
 
 class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
   final List<Map<String, String>> _medicines = [];
-  
+  final List<String> _selectedLabTests = [];
+
   // Form Controllers
   final TextEditingController _symptomsController = TextEditingController();
   final TextEditingController _medicineSearchController = TextEditingController();
+  final TextEditingController _labTestSearchController = TextEditingController();
+
   
   // Dosage Selections
   String _selectedTiming = 'Morning';
@@ -27,6 +30,13 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
   final List<String> _timings = ['Morning', 'Afternoon', 'Evening', 'Night', '2 Times/Day', '3 Times/Day'];
   final List<String> _contexts = ['After Food', 'Before Food', 'With Food', 'Empty Stomach'];
   final List<String> _instructions = ['None', 'With Warm Water', 'With Milk', 'Chewable', 'Dissolve in water'];
+
+  // Dummy Data
+  final List<String> _labTests = [
+    'Complete Blood Count (CBC)', 'Lipid Profile', 'Liver Function Test (LFT)', 
+    'Kidney Function Test (KFT)', 'Blood Sugar Fasting', 'Blood Sugar PP', 
+    'HbA1c', 'Thyroid Profile', 'Urine Routine', 'X-Ray Chest', 'ECG', 'USG Abdomen'
+  ];
 
   // Dummy Medicine List
   final List<String> _allMedicines = [
@@ -44,6 +54,16 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
           'instruction': _selectedInstructions,
         });
         _medicineSearchController.clear();
+        _selectedInstructions = 'None'; 
+      });
+    }
+  }
+
+  void _addLabTest() {
+    if (_labTestSearchController.text.isNotEmpty && !_selectedLabTests.contains(_labTestSearchController.text)) {
+      setState(() {
+        _selectedLabTests.add(_labTestSearchController.text);
+        _labTestSearchController.clear();
       });
     }
   }
@@ -61,11 +81,41 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
         patientId: widget.patientId,
         symptoms: _symptomsController.text,
         medicines: _medicines,
+        labTests: _selectedLabTests,
         date: DateTime.now().toString().split(' ')[0],
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
+  }
+
+  Widget _buildOptionsView(BuildContext context, AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+    return Align(
+      alignment: Alignment.topLeft,
+      child: Material(
+        elevation: 4.0,
+        borderRadius: BorderRadius.circular(8),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 250, maxWidth: 400),
+          child: ListView.separated(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            itemCount: options.length,
+            separatorBuilder: (context, index) => const Divider(height: 1),
+            itemBuilder: (BuildContext context, int index) {
+              final String option = options.elementAt(index);
+              return InkWell(
+                onTap: () => onSelected(option),
+                child: Container(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(option),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -101,7 +151,7 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
                   Text("Add Medicine", style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
                   
-                  // Medicine Search
+                  // Medicine Search (Allows custom)
                   Autocomplete<String>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
                       if (textEditingValue.text == '') {
@@ -111,21 +161,28 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
                         return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
                       });
                     },
+                    optionsViewBuilder: _buildOptionsView,
                     onSelected: (String selection) {
-                      _medicineSearchController.text = selection;
+                       setState(() {
+                        _medicineSearchController.text = selection;
+                       });
                     },
                     fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      _medicineSearchController.value = controller.value; // Sync
+                      // Ensure the initial value is synced
+                      if (controller.text != _medicineSearchController.text) {
+                        controller.text = _medicineSearchController.text;
+                      }
                       return TextField(
                         controller: controller, // Use the Autocomplete controller
                         focusNode: focusNode,
                         onEditingComplete: onEditingComplete,
                         decoration: const InputDecoration(
-                          labelText: "Medicine Name",
+                          labelText: "Medicine Name (Select or Type New)",
                           prefixIcon: Icon(Icons.medication),
                         ),
-                        // Manually sync controller text on change if needed, but Autocomplete handles it usually
-                        onChanged: (val) => _medicineSearchController.text = val,
+                        onChanged: (val) {
+                           _medicineSearchController.text = val;
+                        },
                       );
                     },
                   ),
@@ -154,11 +211,35 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _selectedInstructions,
-                    items: _instructions.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                    onChanged: (v) => setState(() => _selectedInstructions = v!),
-                    decoration: const InputDecoration(labelText: "Special Instructions"),
+
+                  // Special Instructions (Fixed Dropdown)
+                  Autocomplete<String>(
+                    initialValue: TextEditingValue(text: _selectedInstructions == 'None' ? '' : _selectedInstructions),
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      return _instructions.where((String option) {
+                        return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                      });
+                    },
+                    optionsViewBuilder: _buildOptionsView,
+                    onSelected: (String selection) {
+                      setState(() {
+                         _selectedInstructions = selection;
+                      });
+                    },
+                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        onEditingComplete: onEditingComplete,
+                        decoration: const InputDecoration(
+                          labelText: "Special Instructions",
+                          suffixIcon: Icon(Icons.arrow_drop_down),
+                        ),
+                        onChanged: (val) {
+                           _selectedInstructions = val;
+                        },
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
                   
@@ -167,6 +248,53 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
                     icon: const Icon(Icons.add),
                     label: const Text("Add Medicine"),
                     style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+                  ),
+
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  
+                  Text("Lab Tests", style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+
+                  // Lab Test Search
+                  Autocomplete<String>(
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text == '') return const Iterable<String>.empty();
+                      return _labTests.where((String option) {
+                        return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                      });
+                    },
+                    optionsViewBuilder: _buildOptionsView,
+                    onSelected: (String selection) {
+                       setState(() {
+                        _labTestSearchController.text = selection;
+                       });
+                    },
+                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                      if (controller.text != _labTestSearchController.text) {
+                        controller.text = _labTestSearchController.text;
+                      }
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        onEditingComplete: onEditingComplete,
+                        decoration: const InputDecoration(
+                          labelText: "Lab Test Name",
+                          prefixIcon: Icon(Icons.science),
+                        ),
+                        onChanged: (val) {
+                           _labTestSearchController.text = val;
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: _addLabTest,
+                    icon: const Icon(Icons.add_task),
+                    label: const Text("Add Lab Test"),
+                    style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50), backgroundColor: AppColors.accent),
                   ),
                 ],
               ),
@@ -200,8 +328,37 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
                           isThreeLine: true,
                         );
                       },
+
                     ),
                   ),
+                  
+                  if (_selectedLabTests.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text("Lab Tests", style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: ListView.builder(
+                        itemCount: _selectedLabTests.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            dense: true,
+                            leading: const Icon(Icons.science, size: 16, color: AppColors.textSecondary),
+                            title: Text(_selectedLabTests[index]),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close, size: 16),
+                              onPressed: () => setState(() => _selectedLabTests.removeAt(index)),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: _generatePrescription,

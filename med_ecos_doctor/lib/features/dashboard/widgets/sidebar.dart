@@ -13,7 +13,7 @@ class Sidebar extends StatelessWidget {
         children: [
           const SizedBox(height: 32),
           // Logo Area
-          const Icon(Icons.medical_services, size: 48, color: AppColors.primary),
+          Image.asset("assets/Icon.jpeg", height: 80, width: 80),
           const SizedBox(height: 16),
           Text(
             "MedEcos",

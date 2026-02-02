@@ -9,6 +9,7 @@ class PdfService {
     required String patientId,
     required String symptoms,
     required List<Map<String, String>> medicines,
+    required List<String> labTests,
     required String date,
   }) async {
     final doc = pw.Document();
@@ -85,6 +86,16 @@ class PdfService {
                 ],
               ),
               
+              if (labTests.isNotEmpty) ...[
+                pw.SizedBox(height: 20),
+                pw.Text("Recommended Lab Tests:", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 8),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: labTests.map((test) => pw.Bullet(text: test)).toList(),
+                ),
+              ],
+              
               pw.Spacer(),
               
               // Footer
@@ -96,7 +107,7 @@ class PdfService {
                   pw.Column(
                     children: [
                        pw.SizedBox(height: 40),
-                       pw.Text("Doctor's Signature", style: const pw.TextStyle(decoration: pw.TextDecoration.overline)),
+                       pw.Text("Digitally Signed by $doctorName", style: const pw.TextStyle(decoration: pw.TextDecoration.overline)),
                     ],
                   ),
                 ],

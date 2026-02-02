@@ -27,11 +27,6 @@ class PatientDetailsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.primary,
                 borderRadius: BorderRadius.circular(16),
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/pattern.png'), // Placeholder
-                  opacity: 0.1,
-                  fit: BoxFit.cover,
-                )
               ),
               child: Row(
                 children: [
