@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../patient/screens/patient_lookup_screen.dart';
 
 class Sidebar extends StatelessWidget {
-  const Sidebar({super.key});
+  final Function(int) onItemSelected;
+  final int selectedIndex;
+
+  const Sidebar({super.key, required this.onItemSelected, required this.selectedIndex});
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +26,38 @@ class Sidebar extends StatelessWidget {
           ),
           const SizedBox(height: 48),
           // Navigation Items
-          _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: true),
-          _NavItem(icon: Icons.calendar_month, label: "Appointments"),
-          _NavItem(icon: Icons.people, label: "Patients"),
-          _NavItem(icon: Icons.assignment, label: "Prescriptions"),
-          _NavItem(icon: Icons.settings, label: "Settings"),
+          _NavItem(
+            icon: Icons.dashboard, 
+            label: "Dashboard", 
+            isSelected: selectedIndex == 0,
+            onTap: () => onItemSelected(0),
+          ),
+          _NavItem(
+            icon: Icons.assignment,
+            label: "Prescriptions", 
+            isSelected: selectedIndex == 1,
+            onTap: () => onItemSelected(1),
+          ),
+          _NavItem(
+            icon: Icons.people, 
+            label: "Patients", 
+            isSelected: selectedIndex == 2,
+            onTap: () => onItemSelected(2),
+          ),
+          _NavItem(
+            icon: Icons.calendar_month, 
+            label: "Appointments",
+            isSelected: selectedIndex == 3,
+            onTap: () => onItemSelected(3),
+          ),
+          const Spacer(),
+          _NavItem(
+            icon: Icons.settings, 
+            label: "Settings", 
+            isSelected: selectedIndex == 4,
+            onTap: () => onItemSelected(4),
+          ),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -39,10 +68,12 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isSelected;
+  final VoidCallback onTap;
 
   const _NavItem({
     required this.icon,
     required this.label,
+    required this.onTap,
     this.isSelected = false,
   });
 
@@ -66,11 +97,7 @@ class _NavItem extends StatelessWidget {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
-        onTap: () {
-          if (label == "Patients" || label == "Prescriptions") {
-             Navigator.push(context, MaterialPageRoute(builder: (_) => const PatientLookupScreen()));
-          }
-        },
+        onTap: onTap,
       ),
     );
   }

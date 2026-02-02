@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../services/pdf_service.dart';
+import '../../../core/models/prescription_model.dart';
+import '../../../core/services/data_service.dart';
 
 class PrescriptionFormScreen extends StatefulWidget {
   final String patientId; // Pass patient info
@@ -68,6 +70,7 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
     }
   }
 
+
   void _generatePrescription() async {
     if (_medicines.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Add at least one medicine")));
@@ -75,15 +78,41 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
     }
 
     try {
+      // Generate ID
+      final String prescriptionId = "PRES-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
+      final String date = DateTime.now().toString().split(' ')[0];
+
+      // Create Model
+      final prescription = Prescription(
+        id: prescriptionId,
+        patientId: widget.patientId,
+        patientName: widget.patientName,
+        doctorName: "Dr. Tanishq", // Hardcoded for now
+        date: DateTime.now(),
+        diagnosis: _symptomsController.text,
+        medicines: List.from(_medicines),
+        labTests: List.from(_selectedLabTests),
+      );
+
+      // Save to Service
+      DataService().addPrescription(prescription);
+
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Prescription Saved Successfully")));
+
+      // Generate PDF
       await PdfService.generateAndPrintPrescription(
-        doctorName: "Dr. Tanishq",
+        doctorName: prescription.doctorName,
         patientName: widget.patientName,
         patientId: widget.patientId,
-        symptoms: _symptomsController.text,
-        medicines: _medicines,
-        labTests: _selectedLabTests,
-        date: DateTime.now().toString().split(' ')[0],
+        symptoms: prescription.diagnosis,
+        medicines: prescription.medicines,
+        labTests: prescription.labTests,
+        date: date,
       );
+      
+      // Navigate back after printing/saving? 
+      // For now, staying on screen is fine, or we can offer to close.
+      
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
     }

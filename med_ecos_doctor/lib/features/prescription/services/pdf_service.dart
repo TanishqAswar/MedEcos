@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -13,6 +15,10 @@ class PdfService {
     required String date,
   }) async {
     final doc = pw.Document();
+    
+    // Load Logo
+    final Uint8List logoBytes = (await rootBundle.load('assets/Icon.jpeg')).buffer.asUint8List();
+    final logoImage = pw.MemoryImage(logoBytes);
 
     doc.addPage(
       pw.Page(
@@ -27,7 +33,13 @@ class PdfService {
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text("MedEcos Clinic", style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.teal)),
+                    pw.Row(
+                      children: [
+                        pw.Image(logoImage, height: 50, width: 50),
+                        pw.SizedBox(width: 16),
+                        pw.Text("MedEcos Clinic", style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.teal)),
+                      ],
+                    ),
                     pw.Text("Date: $date"),
                   ],
                 ),
