@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../core/models/medicine_model.dart';
 import '../../../core/services/database_service.dart';
+import '../../../core/services/notification_service.dart';
 import '../widgets/add_medicine_dialog.dart';
 
 class MedicineListScreen extends StatefulWidget {
@@ -55,6 +55,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () async {
                       await _db.deleteMedicine(med.id);
+                      await NotificationService().cancelMedicineNotifications(med.id);
                       _loadMedicines();
                     },
                   ),

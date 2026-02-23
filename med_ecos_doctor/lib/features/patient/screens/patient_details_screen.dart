@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/models/patient_model.dart';
+import '../../../core/services/data_service.dart';
 import '../../prescription/screens/prescription_form_screen.dart';
 
 class PatientDetailsScreen extends StatelessWidget {
@@ -9,6 +11,15 @@ class PatientDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Patient? patient = DataService().getPatientById(patientId);
+
+    if (patient == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Patient Details")),
+        body: const Center(child: Text("Patient not found.")),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Patient Details"),
@@ -40,18 +51,23 @@ class PatientDetailsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "John Doe", // Mock Data
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                        Text(
+                          patient.name,
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "ID: $patientId",
+                          "ID: ${patient.id}",
                           style: TextStyle(color: Colors.white.withOpacity(0.9)),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "Male • 34 Years",
+                          "${patient.gender} • ${patient.age} Years",
+                          style: TextStyle(color: Colors.white.withOpacity(0.9)),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Contact: ${patient.contact}",
                           style: TextStyle(color: Colors.white.withOpacity(0.9)),
                         ),
                       ],
@@ -68,8 +84,7 @@ class PatientDetailsScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // Navigate to Prescription Form
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => PrescriptionFormScreen(patientId: patientId, patientName: "John Doe")));
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => PrescriptionFormScreen(patientId: patient.id, patientName: patient.name)));
                     },
                     icon: const Icon(Icons.edit_note),
                     label: const Text("Write Prescription"),
