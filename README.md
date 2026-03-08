@@ -268,3 +268,8 @@ This project is licensed under the MIT License.
 ## Contact
 
 Project Link: [https://github.com/TanishqAswar/MedEcos](https://github.com/TanishqAswar/MedEcos)
+# MedEcos
+Medical Ecosystem
+
+## Documentation
+- [Backend API Specifications](backend_api_specs.md)
