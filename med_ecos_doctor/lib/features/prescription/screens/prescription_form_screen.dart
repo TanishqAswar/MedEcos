@@ -114,6 +114,7 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
       // For now, staying on screen is fine, or we can offer to close.
       
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }

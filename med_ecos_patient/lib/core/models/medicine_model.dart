@@ -32,7 +32,20 @@ class Medicine {
     };
   }
 
-  // Factory constructor for deserialization will be added later
+  // Factory constructor for deserialization
+  factory Medicine.fromJson(Map<String, dynamic> json) => Medicine(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        dosage: json['dosage'] as String,
+        frequency: json['frequency'] as int,
+        timings: (json['timings'] as List<dynamic>)
+            .map((t) => MedicineTiming.fromJson(t as Map<String, dynamic>))
+            .toList(),
+        startDate: DateTime.parse(json['startDate'] as String),
+        endDate: json['endDate'] != null
+            ? DateTime.parse(json['endDate'] as String)
+            : null,
+      );
 }
 
 class MedicineTiming {
@@ -53,4 +66,10 @@ class MedicineTiming {
       'offsetMinutes': offsetMinutes,
     };
   }
+
+  factory MedicineTiming.fromJson(Map<String, dynamic> json) => MedicineTiming(
+        timeType: TimeType.values[json['timeType'] as int],
+        mealRef: MealType.values[json['mealRef'] as int],
+        offsetMinutes: json['offsetMinutes'] as int,
+      );
 }

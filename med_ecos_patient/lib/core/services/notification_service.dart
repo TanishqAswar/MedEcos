@@ -67,7 +67,10 @@ class NotificationService {
     }
   }
   
-  Future<void> cancelNotifications(int id) async {
-    await _notificationsPlugin.cancel(id);
+  Future<void> cancelMedicineNotifications(String medicineId) async {
+    final baseId = medicineId.hashCode;
+    for (int i = 0; i < MealType.values.length; i++) {
+      await _notificationsPlugin.cancel(baseId + i);
+    }
   }
 }

@@ -10,6 +10,7 @@ class DatabaseService {
   DatabaseService._internal();
 
   static Database? _database;
+  static const Uuid _uuid = Uuid();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -26,12 +27,6 @@ class DatabaseService {
       version: 1,
       onCreate: _onCreate,
     );
-    
-    // Check if empty and seed
-    final count = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM medicines'));
-    if (count == 0) {
-      await _seedData(db);
-    }
     
     return db;
   }
@@ -65,7 +60,7 @@ class DatabaseService {
   Future<void> _seedData(Database db) async {
     final medicines = [
       Medicine(
-        id: const Uuid().v4(),
+        id: _uuid.v4(),
         name: 'Paracetamol',
         dosage: '500mg',
         frequency: 1,
@@ -75,7 +70,7 @@ class DatabaseService {
         startDate: DateTime.now(),
       ),
       Medicine(
-        id: const Uuid().v4(),
+        id: _uuid.v4(),
         name: 'Amoxicillin',
         dosage: '250mg',
         frequency: 2,
@@ -86,7 +81,7 @@ class DatabaseService {
         startDate: DateTime.now(),
       ),
       Medicine(
-        id: const Uuid().v4(),
+        id: _uuid.v4(),
         name: 'Pantoprazole',
         dosage: '40mg',
         frequency: 1,
@@ -96,7 +91,7 @@ class DatabaseService {
         startDate: DateTime.now(),
       ),
       Medicine(
-        id: const Uuid().v4(),
+        id: _uuid.v4(),
         name: 'Vitamin D',
         dosage: '1000IU',
         frequency: 1,
@@ -175,7 +170,7 @@ class DatabaseService {
   Future<int> logMetadata(String medicineId, String medicineName, DateTime takenTime, String status) async {
     final db = await database;
     return await db.insert('history', {
-      'id': DateTime.now().toIso8601String(), // Simple unique ID
+      'id': _uuid.v4(),
       'medicineId': medicineId,
       'medicineName': medicineName,
       'takenTime': takenTime.toIso8601String(),

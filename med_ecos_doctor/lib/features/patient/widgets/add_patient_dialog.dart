@@ -11,6 +11,9 @@ class AddPatientDialog extends StatefulWidget {
 }
 
 class _AddPatientDialogState extends State<AddPatientDialog> {
+  static final RegExp _phoneStripPattern = RegExp(r'[\s\-\+\(\)]');
+  static final RegExp _phoneDigitsPattern = RegExp(r'^\d{7,15}$');
+
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
@@ -22,13 +25,13 @@ class _AddPatientDialogState extends State<AddPatientDialog> {
       final id = "PAT-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
       final patient = Patient(
         id: id,
-        name: _nameController.text,
-        age: int.parse(_ageController.text),
+        name: _nameController.text.trim(),
+        age: int.parse(_ageController.text.trim()),
         gender: _gender,
-        contact: _contactController.text,
+        contact: _contactController.text.trim(),
       );
 
-      DataService().addPatient(patient); // Need to add this method to DataService
+      DataService().addPatient(patient);
       Navigator.pop(context, patient);
     }
   }
@@ -56,7 +59,13 @@ class _AddPatientDialogState extends State<AddPatientDialog> {
                       controller: _ageController,
                       decoration: const InputDecoration(labelText: "Age"),
                       keyboardType: TextInputType.number,
-                      validator: (v) => v!.isEmpty ? "Required" : null,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return "Required";
+                        final age = int.tryParse(v.trim());
+                        if (age == null) return "Enter a valid number";
+                        if (age < 0 || age > 150) return "Enter a valid age (0–150)";
+                        return null;
+                      },
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -75,7 +84,14 @@ class _AddPatientDialogState extends State<AddPatientDialog> {
                 controller: _contactController,
                 decoration: const InputDecoration(labelText: "Contact Number"),
                 keyboardType: TextInputType.phone,
-                validator: (v) => v!.isEmpty ? "Required" : null,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return "Required";
+                  final digits = v.trim().replaceAll(_phoneStripPattern, '');
+                  if (!_phoneDigitsPattern.hasMatch(digits)) {
+                    return "Enter a valid phone number (7–15 digits)";
+                  }
+                  return null;
+                },
               ),
             ],
           ),
