@@ -142,7 +142,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 32),
             const Align(alignment: Alignment.centerLeft, child: Text('Daily Routine Timings', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
             const SizedBox(height: 16),
-            _buildTimeSelector('Morning / Wake Up', _morningTime, (t) => setState(() => _morningTime = t)),
+            _buildTimeSelector('Morning / Breakfast', _morningTime, (t) => setState(() => _morningTime = t)),
             _buildTimeSelector('Afternoon / Lunch', _afternoonTime, (t) => setState(() => _afternoonTime = t)),
             _buildTimeSelector('Evening / Snacks', _eveningTime, (t) => setState(() => _eveningTime = t)),
             _buildTimeSelector('Night / Dinner', _nightTime, (t) => setState(() => _nightTime = t)),
