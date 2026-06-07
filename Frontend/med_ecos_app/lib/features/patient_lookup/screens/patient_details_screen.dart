@@ -5,6 +5,7 @@ import '../../../core/models/patient_model.dart';
 import '../../../core/services/api_service.dart';
 import '../../prescription/screens/doctor_prescription_form_screen.dart' as doctor;
 import '../../prescription/screens/pharmacist_prescription_form_screen.dart' as pharmacist;
+import '../../billing/screens/pharmacist_billing_screen.dart';
 import '../../../core/utils/medicine_utils.dart';
 import 'package:intl/intl.dart';
 
@@ -126,6 +127,24 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                     label: const Text("Write Prescription"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accent,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                    ),
+                  ),
+                ),
+              ],
+              if (_userRole == 'Pharmacist') ...[
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => PharmacistBillingScreen(
+                        initialAbhaId: widget.patientId,
+                      )));
+                    },
+                    icon: const Icon(Icons.receipt_long),
+                    label: const Text("Generate Bill"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 20),
                     ),
                   ),

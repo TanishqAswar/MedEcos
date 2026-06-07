@@ -4,11 +4,12 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import 'package:intl/intl.dart';
-import '../../../core/constants/app_constants.dart';
-import 'services/billing_pdf_service.dart';
-
+import '../../../core/utils/constants.dart';
+import '../services/billing_pdf_service.dart';
+import 'package:flutter/services.dart';
 class PharmacistBillingScreen extends StatefulWidget {
-  const PharmacistBillingScreen({super.key});
+  final String? initialAbhaId;
+  const PharmacistBillingScreen({super.key, this.initialAbhaId});
 
   @override
   State<PharmacistBillingScreen> createState() => _PharmacistBillingScreenState();
@@ -51,6 +52,12 @@ class _PharmacistBillingScreenState extends State<PharmacistBillingScreen> {
   void initState() {
     super.initState();
     _fetchInventory();
+    if (widget.initialAbhaId != null && widget.initialAbhaId!.isNotEmpty) {
+      _abhaController.text = widget.initialAbhaId!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _searchPatient();
+      });
+    }
   }
 
   Future<void> _fetchInventory() async {

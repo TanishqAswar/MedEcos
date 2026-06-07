@@ -37,6 +37,11 @@ const prescriptionSchema = new mongoose.Schema({
         enum: ['Active', 'Past'],
         default: 'Active'
     },
+    fulfillmentStatus: {
+        type: String,
+        enum: ['Unfulfilled', 'Fulfilled'],
+        default: 'Unfulfilled'
+    },
     doctorNotes: {
         type: String,
     },

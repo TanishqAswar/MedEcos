@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import '../../billing/screens/pharmacist_billing_screen.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/models/prescription_model.dart';
 import '../../../core/services/api_service.dart';
@@ -238,6 +239,27 @@ class _PrescriptionDetailsScreenState extends State<PrescriptionDetailsScreen> {
                 ),
               ),
             ),
+
+            if (_userRole == 'Pharmacist' && widget.prescription.fulfillmentStatus == 'Unfulfilled') ...[
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => PharmacistBillingScreen(
+                      initialAbhaId: widget.prescription.patientId,
+                    )));
+                  },
+                  icon: const Icon(Icons.check_circle),
+                  label: const Text("Fulfill Prescription & Generate Bill"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                  ),
+                ),
+              ),
+            ],
 
             if (_userRole == 'Doctor' || _userRole == 'Pharmacist') ...[
               const SizedBox(height: 32),

@@ -11,6 +11,7 @@ class Prescription {
   final List<Map<String, String>> medicines;
   final List<String> labTests;
   final String status;
+  final String fulfillmentStatus;
   final String? doctorNotes;
   final String? pharmacistNotes;
 
@@ -27,6 +28,7 @@ class Prescription {
     required this.medicines,
     required this.labTests,
     this.status = 'Active',
+    this.fulfillmentStatus = 'Unfulfilled',
     this.doctorNotes,
     this.pharmacistNotes,
   });

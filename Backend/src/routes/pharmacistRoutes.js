@@ -49,10 +49,10 @@ router.get('/patients', protect, authorize('Pharmacist'), async (req, res) => {
     }
 });
 
-// Get Pharmacist's Prescriptions
+// Get Pharmacist's Prescriptions (Unfulfilled)
 router.get('/prescriptions', protect, authorize('Pharmacist'), async (req, res) => {
     try {
-        const prescriptions = await Prescription.find().sort({ date: -1 });
+        const prescriptions = await Prescription.find({ fulfillmentStatus: 'Unfulfilled' }).sort({ date: -1 });
         res.json(prescriptions);
     } catch (error) {
         console.error(error);
@@ -161,6 +161,15 @@ router.post('/bills', protect, authorize('Pharmacist'), async (req, res) => {
             medicines,
             grandTotal
         });
+
+        // Mark the prescription as fulfilled
+        if (prescriptionId) {
+            const prescription = await Prescription.findById(prescriptionId);
+            if (prescription) {
+                prescription.fulfillmentStatus = 'Fulfilled';
+                await prescription.save();
+            }
+        }
 
         res.status(201).json(newBill);
     } catch (error) {

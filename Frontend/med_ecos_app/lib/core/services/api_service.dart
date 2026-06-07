@@ -80,6 +80,8 @@ class ApiService {
             doctorName: e['doctorName'] ?? '',
             date: DateTime.parse(e['date'] ?? DateTime.now().toIso8601String()),
             diagnosis: e['diagnosis'] ?? '',
+            status: e['status'] ?? 'Active',
+            fulfillmentStatus: e['fulfillmentStatus'] ?? 'Unfulfilled',
             medicines: (e['fullMedicines'] as List<dynamic>? ?? e['medicines'] as List<dynamic>?)?.map((m) {
               if (m is Map) {
                 return <String, String>{
@@ -87,15 +89,14 @@ class ApiService {
                   'dosage': m['dosage']?.toString() ?? '',
                   'frequency': m['frequency']?.toString() ?? '',
                   'duration': m['duration']?.toString() ?? '',
-                  'timing': m['timing']?.toString() ?? '',
-                  'context': m['context']?.toString() ?? '',
-                  'instruction': m['instruction']?.toString() ?? '',
+                  'timing': m['timing'] ?? '',
+                  'context': m['context'] ?? '',
+                  'instruction': m['instruction'] ?? '',
                 };
               }
               return <String, String>{'name': m.toString()};
             }).toList() ?? <Map<String, String>>[],
             labTests: (e['labTests'] as List<dynamic>?)?.map((l) => l.toString()).toList() ?? <String>[],
-            status: e['status'] ?? 'Active',
             doctorNotes: e['doctorNotes'],
             pharmacistNotes: e['pharmacistNotes'],
           )).toList();
@@ -207,6 +208,8 @@ class ApiService {
           doctorName: e['doctorName'] ?? '',
           date: DateTime.parse(e['date'] ?? DateTime.now().toIso8601String()),
           diagnosis: e['diagnosis'] ?? '',
+          status: e['status'] ?? 'Active',
+          fulfillmentStatus: e['fulfillmentStatus'] ?? 'Unfulfilled',
           medicines: (e['fullMedicines'] as List<dynamic>? ?? e['medicines'] as List<dynamic>?)?.map((m) {
             if (m is Map) {
               return <String, String>{
@@ -222,7 +225,6 @@ class ApiService {
             return <String, String>{'name': m.toString()};
           }).toList() ?? <Map<String, String>>[],
           labTests: (e['labTests'] as List<dynamic>?)?.map((l) => l.toString()).toList() ?? <String>[],
-          status: e['status'] ?? 'Active',
           doctorNotes: e['doctorNotes'],
           pharmacistNotes: e['pharmacistNotes'],
         )).toList();
