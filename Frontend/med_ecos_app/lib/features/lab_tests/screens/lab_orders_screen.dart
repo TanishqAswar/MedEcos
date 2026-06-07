@@ -104,12 +104,12 @@ class _LabOrdersScreenState extends State<LabOrdersScreen> {
           _fetchOrders();
           if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report uploaded and marked as completed')));
         } else {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to upload report')));
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload report: \${res.statusCode}')));
           setState(() => _loading = false);
         }
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \$e')));
       setState(() => _loading = false);
     }
   }
