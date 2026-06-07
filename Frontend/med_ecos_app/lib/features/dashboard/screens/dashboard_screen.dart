@@ -113,7 +113,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               final med = Medicine(
                 id: m['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
                 name: m['name']?.toString() ?? 'Unknown',
-                dosage: m['frequency']?.toString() ?? m['timing']?.toString() ?? m['dosage']?.toString() ?? '',
+                dosage: [m['frequency'], m['timing'], m['dosage']].firstWhere((val) => val != null && val.toString().trim().isNotEmpty, orElse: () => '')?.toString() ?? '',
                 frequency: 1,
                 timings: [],
                 startDate: prescribeDate,
@@ -150,7 +150,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final stats = await ApiService().getDashboardStats();
       if (mounted) {
         setState(() {
-          _medicines = parsedMedicines;
+          final uniqueMedicines = <String, Medicine>{};
+          for (var m in parsedMedicines) {
+            uniqueMedicines.putIfAbsent(m.name.toLowerCase().trim(), () => m);
+          }
+          _medicines = uniqueMedicines.values.toList();
           _labTests = parsedLabTests;
           _activeMedicines = activeMeds.map((m) => m.name.toLowerCase().trim()).toSet().length;
           _totalPrescriptions = prescriptions.length;

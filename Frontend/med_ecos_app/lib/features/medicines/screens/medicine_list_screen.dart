@@ -40,7 +40,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
             parsedMedicines.add(Medicine(
               id: m['_id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
               name: m['name'] ?? 'Unknown Medicine',
-              dosage: m['dosage'] ?? '',
+              dosage: [m['frequency'], m['timing'], m['dosage']].firstWhere((val) => val != null && val.toString().trim().isNotEmpty, orElse: () => '')?.toString() ?? '',
               frequency: freq,
               timings: [], 
               startDate: DateTime.now(),
@@ -49,8 +49,13 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
         }
       }
 
+      final uniqueMedicines = <String, Medicine>{};
+      for (var m in parsedMedicines) {
+        uniqueMedicines.putIfAbsent(m.name.toLowerCase().trim(), () => m);
+      }
+
       setState(() {
-        _medicines = parsedMedicines;
+        _medicines = uniqueMedicines.values.toList();
         // _timeLabels = labels; (No timings from backend yet)
         _loading = false;
         _error = null;
