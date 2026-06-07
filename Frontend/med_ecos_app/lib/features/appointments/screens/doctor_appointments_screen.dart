@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/constants.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -29,7 +30,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       final token = prefs.getString('jwt_token') ?? '';
       
       final response = await http.get(
-        Uri.parse('http://localhost:5000/api/v1/doctor/appointments'),
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/doctor/appointments'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -62,7 +63,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       final token = prefs.getString('jwt_token') ?? '';
       
       final response = await http.post(
-        Uri.parse('http://localhost:5000/api/v1/doctor/appointments/$id/accept'),
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/doctor/appointments/$id/accept'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -138,7 +139,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                       final token = prefs.getString('jwt_token') ?? '';
                       
                       final response = await http.post(
-                        Uri.parse('http://localhost:5000/api/v1/doctor/appointments/$id/reschedule'),
+                        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/doctor/appointments/$id/reschedule'),
                         headers: {
                           'Content-Type': 'application/json',
                           'Authorization': 'Bearer $token',

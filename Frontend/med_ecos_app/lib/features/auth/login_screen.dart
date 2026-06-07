@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../dashboard/screens/dashboard_screen.dart';
 import 'signup_screen.dart';
 import '../../../core/utils/abha_formatter.dart';
+import '../../core/utils/constants.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -29,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:5000/api/auth/abha/generate-otp'),
+        Uri.parse('${AppConstants.apiBaseUrl}/api/auth/abha/generate-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'abhaId': _abhaController.text}),
       );
@@ -65,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:5000/api/auth/abha/verify-otp'),
+        Uri.parse('${AppConstants.apiBaseUrl}/api/auth/abha/verify-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'abhaId': _abhaController.text,
@@ -127,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:5000/api/auth/login'),
+        Uri.parse('${AppConstants.apiBaseUrl}/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': _emailController.text,

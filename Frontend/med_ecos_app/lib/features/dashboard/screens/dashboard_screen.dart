@@ -42,6 +42,7 @@ import '../../../features/patient_lookup/screens/pathologist_lookup_screen.dart'
 import '../../../features/profile/screens/pathologist_profile_screen.dart' as pathologist_profile;
 import '../../../features/lab_tests/screens/lab_orders_screen.dart';
 import '../../../features/lab_tests/screens/lab_locations_map_screen.dart';
+import '../../../core/utils/constants.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -136,7 +137,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('jwt_token') ?? '';
       final ordersRes = await http.get(
-        Uri.parse('http://localhost:5000/api/v1/patient/lab-test-orders'),
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/patient/lab-test-orders'),
         headers: {'Authorization': 'Bearer $token'},
       );
       List<dynamic> labOrders = [];

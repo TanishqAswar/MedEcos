@@ -7,6 +7,7 @@ import '../../core/widgets/location_picker_screen.dart';
 import 'package:latlong2/latlong.dart';
 import '../dashboard/screens/dashboard_screen.dart';
 import '../../../core/utils/abha_formatter.dart';
+import '../../core/utils/constants.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -86,7 +87,7 @@ class _SignupScreenState extends State<SignupScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://localhost:5000/api/auth/register'),
+        Uri.parse('${AppConstants.apiBaseUrl}/api/auth/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );

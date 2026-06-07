@@ -5,6 +5,7 @@ import '../../../core/models/prescription_model.dart';
 import '../../../core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../core/utils/constants.dart';
 
 class PrescriptionFormScreen extends StatefulWidget {
   final String patientId; // Pass patient info
@@ -53,7 +54,7 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
 
   Future<void> _fetchMedicines() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:5000/api/v1/public/medicines'));
+      final response = await http.get(Uri.parse('${AppConstants.apiBaseUrl}/api/v1/public/medicines'));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         if (mounted) {

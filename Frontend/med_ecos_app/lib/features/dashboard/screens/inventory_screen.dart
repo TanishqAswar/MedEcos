@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../../../core/theme/app_colors.dart';
 import '../../../core/models/inventory_model.dart';
 import '../../../core/services/api_service.dart';
+import '../../../core/utils/constants.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -194,7 +195,7 @@ class _AddInventorySheetState extends State<AddInventorySheet> {
 
   Future<void> _fetchMedicines() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:5000/api/public/medicines'));
+      final response = await http.get(Uri.parse('${AppConstants.apiBaseUrl}/api/public/medicines'));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         if (mounted) {

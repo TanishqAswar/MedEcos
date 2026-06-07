@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/constants.dart';
 
 class BookAppointmentDialog extends StatefulWidget {
   final String? initialDoctorId;
@@ -28,7 +29,7 @@ class _BookAppointmentDialogState extends State<BookAppointmentDialog> {
 
   Future<void> _fetchDoctors() async {
     try {
-      final res = await http.get(Uri.parse('http://localhost:5000/api/public/doctors'));
+      final res = await http.get(Uri.parse('${AppConstants.apiBaseUrl}/api/public/doctors'));
       if (res.statusCode == 200) {
         if (mounted) {
           setState(() {
@@ -57,7 +58,7 @@ class _BookAppointmentDialogState extends State<BookAppointmentDialog> {
       final token = prefs.getString('jwt_token') ?? '';
       
       final res = await http.post(
-        Uri.parse('http://localhost:5000/api/v1/patient/appointments'),
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/patient/appointments'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

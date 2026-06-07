@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../core/utils/constants.dart';
 
 class LabOrdersScreen extends StatefulWidget {
   const LabOrdersScreen({super.key});
@@ -28,7 +29,7 @@ class _LabOrdersScreenState extends State<LabOrdersScreen> {
       final token = prefs.getString('jwt_token') ?? '';
       
       final res = await http.get(
-        Uri.parse('http://localhost:5000/api/v1/pathologist/orders'),
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/pathologist/orders'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -53,7 +54,7 @@ class _LabOrdersScreenState extends State<LabOrdersScreen> {
       final token = prefs.getString('jwt_token') ?? '';
       
       final res = await http.put(
-        Uri.parse('http://localhost:5000/api/v1/pathologist/orders/$orderId/status'),
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/pathologist/orders/$orderId/status'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json'
@@ -88,7 +89,7 @@ class _LabOrdersScreenState extends State<LabOrdersScreen> {
         final token = prefs.getString('jwt_token') ?? '';
         
         final res = await http.put(
-          Uri.parse('http://localhost:5000/api/v1/pathologist/orders/$orderId/status'),
+          Uri.parse('${AppConstants.apiBaseUrl}/api/v1/pathologist/orders/$orderId/status'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json'
