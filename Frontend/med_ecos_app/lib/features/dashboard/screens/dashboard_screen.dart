@@ -152,7 +152,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         setState(() {
           _medicines = parsedMedicines;
           _labTests = parsedLabTests;
-          _activeMedicines = activeMeds.length;
+          _activeMedicines = activeMeds.map((m) => m.name.toLowerCase().trim()).toSet().length;
           _totalPrescriptions = prescriptions.length;
           _patientLabOrders = labOrders;
           _todayDoses = doses;
@@ -256,7 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             child: Wrap(
                               spacing: 24, runSpacing: 24,
                               children: [
-                                StatCard(title: "Medicines", value: _medicines.length.toString(), icon: Icons.medical_services, color: Colors.blue, onTap: () => _onItemSelected(3)),
+                                StatCard(title: "Medicines", value: _medicines.map((m) => m.name.toLowerCase().trim()).toSet().length.toString(), icon: Icons.medical_services, color: Colors.blue, onTap: () => _onItemSelected(3)),
                                 StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(3)),
                                 StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
                               ],
@@ -281,7 +281,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Wrap(
                             spacing: 24, runSpacing: 24,
                             children: [
-                              StatCard(title: "Medicines", value: _medicines.length.toString(), icon: Icons.medical_services, color: Colors.blue, onTap: () => _onItemSelected(1)),
+                              StatCard(title: "Medicines", value: _medicines.map((m) => m.name.toLowerCase().trim()).toSet().length.toString(), icon: Icons.medical_services, color: Colors.blue, onTap: () => _onItemSelected(1)),
                               StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(1)),
                               StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
                             ],

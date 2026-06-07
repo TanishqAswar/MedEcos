@@ -165,10 +165,12 @@ router.get('/dashboard-stats', protect, authorize('Pathologist'), async (req, re
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
 
         const appointmentsToday = await LabTestOrder.countDocuments({
             pathologistId: req.user._id,
-            createdAt: { $gte: today }
+            createdAt: { $gte: today, $lt: tomorrow }
         });
 
         const pendingOrders = await LabTestOrder.countDocuments({

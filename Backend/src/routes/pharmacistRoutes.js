@@ -11,18 +11,23 @@ router.get('/dashboard-stats', protect, authorize('Pharmacist'), async (req, res
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
         
-        const prescriptionsToday = await Prescription.countDocuments({ 
-            date: { $gte: today } 
+        const prescriptionsToday = await Bill.countDocuments({ 
+            pharmacistId: req.user.id,
+            createdAt: { $gte: today, $lt: tomorrow } 
         });
         
+        const pendingOrders = await Prescription.countDocuments({ fulfillmentStatus: 'Unfulfilled' });
+
+        const uniqueAbhaIds = await Bill.distinct('abhaId', { pharmacistId: req.user.id });
         const provider = await User.findById(req.user.id);
-        const uniqueAbhaIds = await Prescription.distinct('abhaId');
         const allPatientIds = [...new Set([...uniqueAbhaIds, ...(provider.patients || [])])];
         
         res.json({
             prescriptionsToday,
-            pendingOrders: 0, 
+            pendingOrders, 
             totalCustomers: allPatientIds.length
         });
     } catch (error) {

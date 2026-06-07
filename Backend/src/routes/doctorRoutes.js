@@ -142,10 +142,12 @@ router.get('/dashboard-stats', protect, authorize('Doctor'), async (req, res) =>
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
         
         const appointmentsToday = await Appointment.countDocuments({ 
             doctorId: req.user.id, 
-            date: { $gte: today } 
+            date: { $gte: today, $lt: tomorrow } 
         });
         
         const pendingReports = await Appointment.countDocuments({ 
