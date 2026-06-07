@@ -160,4 +160,34 @@ router.put('/orders/:id/status', protect, authorize('Pathologist'), async (req, 
     }
 });
 
+// Get Pathologist Dashboard Stats
+router.get('/dashboard-stats', protect, authorize('Pathologist'), async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const appointmentsToday = await LabTestOrder.countDocuments({
+            pathologistId: req.user._id,
+            createdAt: { $gte: today }
+        });
+
+        const pendingOrders = await LabTestOrder.countDocuments({
+            pathologistId: req.user._id,
+            status: { $in: ['Pending', 'In_Progress'] }
+        });
+
+        const uniquePatients = await LabTestOrder.distinct('patientId', { pathologistId: req.user._id });
+        const totalPatients = uniquePatients.length;
+
+        res.json({
+            appointmentsToday,
+            pendingOrders,
+            totalPatients
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 module.exports = router;
