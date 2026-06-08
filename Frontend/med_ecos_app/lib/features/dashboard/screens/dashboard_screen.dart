@@ -101,28 +101,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _fetchPatientData() async {
     try {
       final List<dynamic> prescriptions = await ApiService().getPrescriptions();
-      List<Medicine> parsedMedicines = [];
       List<String> parsedLabTests = [];
+      Map<String, Medicine> mergedMedicines = {};
       List<Medicine> activeMeds = [];
-      for (var p in prescriptions) {
+
+      for (var p in prescriptions.reversed) {
         final prescribeDate = DateTime.parse(p['date']);
         if (p['medicines'] != null) {
           for (var m in p['medicines']) {
             if (m is Map) {
+              final nameKey = m['name']?.toString().toLowerCase().trim() ?? 'unknown';
               final durationStr = m['duration']?.toString() ?? 'Ongoing';
-              final med = Medicine(
-                id: m['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-                name: m['name']?.toString() ?? 'Unknown',
-                dosage: [m['frequency'], m['timing'], m['dosage']].firstWhere((val) => val != null && val.toString().trim().isNotEmpty, orElse: () => '')?.toString() ?? '',
-                frequency: 1,
-                timings: [],
-                startDate: prescribeDate,
-                endDate: MedicineUtils.parseEndDate(prescribeDate, durationStr)
-              );
-              parsedMedicines.add(med);
+              final dosageStr = [m['frequency'], m['timing'], m['dosage']].firstWhere((val) => val != null && val.toString().trim().isNotEmpty, orElse: () => '')?.toString() ?? '';
               
-              if (MedicineUtils.isActiveMedicine(prescribeDate, durationStr)) {
-                activeMeds.add(med);
+              int days = 0;
+              bool ongoing = false;
+              if (durationStr == 'Ongoing' || durationStr.isEmpty) {
+                ongoing = true;
+              } else {
+                final parts = durationStr.split(' ');
+                if (parts.length >= 2) {
+                  final value = int.tryParse(parts[0]) ?? 0;
+                  final unit = parts[1].toLowerCase();
+                  if (unit.contains('day')) days = value;
+                  else if (unit.contains('week')) days = value * 7;
+                  else if (unit.contains('month')) days = value * 30;
+                }
+              }
+
+              if (!mergedMedicines.containsKey(nameKey)) {
+                mergedMedicines[nameKey] = Medicine(
+                  id: m['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+                  name: m['name']?.toString() ?? 'Unknown',
+                  dosage: dosageStr,
+                  frequency: 1,
+                  timings: [],
+                  startDate: prescribeDate,
+                  endDate: ongoing ? null : prescribeDate.add(Duration(days: days)),
+                );
+              } else {
+                final existing = mergedMedicines[nameKey]!;
+                DateTime newStartDate = existing.startDate;
+                DateTime? newEndDate;
+
+                if (ongoing || existing.endDate == null) {
+                  newEndDate = null;
+                } else {
+                  if (existing.endDate!.isBefore(prescribeDate)) {
+                    newStartDate = prescribeDate;
+                    newEndDate = prescribeDate.add(Duration(days: days));
+                  } else {
+                    newEndDate = existing.endDate!.add(Duration(days: days));
+                  }
+                }
+                
+                mergedMedicines[nameKey] = Medicine(
+                  id: existing.id,
+                  name: existing.name,
+                  dosage: dosageStr,
+                  frequency: 1,
+                  timings: [],
+                  startDate: newStartDate,
+                  endDate: newEndDate,
+                );
               }
             }
           }
@@ -130,6 +171,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (p['labTests'] != null) {
           for (var t in p['labTests']) {
             parsedLabTests.add(t.toString());
+          }
+        }
+      }
+
+      for (var med in mergedMedicines.values) {
+        if (med.endDate == null) {
+          activeMeds.add(med);
+        } else {
+          final now = DateTime.now();
+          final normalizedNow = DateTime(now.year, now.month, now.day);
+          final normalizedExp = DateTime(med.endDate!.year, med.endDate!.month, med.endDate!.day);
+          if (normalizedNow.compareTo(normalizedExp) <= 0) {
+            activeMeds.add(med);
           }
         }
       }
@@ -150,11 +204,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final stats = await ApiService().getDashboardStats();
       if (mounted) {
         setState(() {
-          final uniqueMedicines = <String, Medicine>{};
-          for (var m in parsedMedicines) {
-            uniqueMedicines.putIfAbsent(m.name.toLowerCase().trim(), () => m);
-          }
-          _medicines = uniqueMedicines.values.toList();
+          _medicines = mergedMedicines.values.toList();
           _labTests = parsedLabTests;
           _activeMedicines = activeMeds.map((m) => m.name.toLowerCase().trim()).toSet().length;
           _totalPrescriptions = prescriptions.length;

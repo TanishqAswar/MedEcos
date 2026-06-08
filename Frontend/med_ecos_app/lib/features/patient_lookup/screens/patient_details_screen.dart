@@ -215,21 +215,99 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   }
   
   List<Widget> _buildMedicineList(bool isActive) {
+    Map<String, Map<String, dynamic>> latestMedicines = {};
+    Map<String, int> totalDaysMap = {};
+    Map<String, DateTime> startDateMap = {};
+    Map<String, bool> isOngoingMap = {};
+
+    final reversedPrescriptions = _prescriptions.toList().reversed.toList();
+
+    for (var p in reversedPrescriptions) {
+      for (var m in p.medicines) {
+        final nameKey = m['name'].toString().toLowerCase().trim();
+        final durationStr = m['duration'] ?? '';
+        
+        int days = 0;
+        bool ongoing = false;
+        if (durationStr == 'Ongoing' || durationStr.isEmpty) {
+          ongoing = true;
+        } else {
+          final parts = durationStr.split(' ');
+          if (parts.length >= 2) {
+            final value = int.tryParse(parts[0]) ?? 0;
+            final unit = parts[1].toLowerCase();
+            if (unit.contains('day')) days = value;
+            else if (unit.contains('week')) days = value * 7;
+            else if (unit.contains('month')) days = value * 30;
+          }
+        }
+
+        if (!latestMedicines.containsKey(nameKey)) {
+          startDateMap[nameKey] = p.date;
+          totalDaysMap[nameKey] = days;
+          isOngoingMap[nameKey] = ongoing;
+          latestMedicines[nameKey] = {
+             'name': m['name'],
+             'dosage': m['dosage'],
+             'doctor': p.doctorName,
+          };
+        } else {
+          final existingStartDate = startDateMap[nameKey]!;
+          final existingOngoing = isOngoingMap[nameKey]!;
+          final existingDays = totalDaysMap[nameKey]!;
+          
+          DateTime? existingEndDate;
+          if (!existingOngoing && existingDays > 0) {
+            existingEndDate = existingStartDate.add(Duration(days: existingDays));
+          }
+          
+          if (existingEndDate != null && existingEndDate.isBefore(p.date)) {
+             startDateMap[nameKey] = p.date;
+             totalDaysMap[nameKey] = days;
+             isOngoingMap[nameKey] = ongoing;
+          } else {
+             if (ongoing) {
+               isOngoingMap[nameKey] = true;
+             } else {
+               totalDaysMap[nameKey] = existingDays + days;
+             }
+          }
+          
+          latestMedicines[nameKey]!['doctor'] = p.doctorName;
+          latestMedicines[nameKey]!['dosage'] = m['dosage'];
+        }
+      }
+    }
+
     List<Map<String, dynamic>> targetMedicines = [];
     
-    for (var p in _prescriptions) {
-      for (var m in p.medicines) {
-        final duration = m['duration'] ?? '';
-        final isMedActive = MedicineUtils.isActiveMedicine(p.date, duration);
-        if (isMedActive == isActive) {
-          targetMedicines.add({
-            'name': m['name'],
-            'dosage': m['dosage'],
-            'duration': duration,
-            'doctor': p.doctorName,
-            'date': p.date,
-          });
-        }
+    for (var nameKey in latestMedicines.keys) {
+      final startDate = startDateMap[nameKey]!;
+      final isOngoing = isOngoingMap[nameKey]!;
+      final totalDays = totalDaysMap[nameKey]!;
+      
+      DateTime? endDate;
+      if (!isOngoing && totalDays > 0) {
+        endDate = startDate.add(Duration(days: totalDays));
+      }
+      
+      bool isMedActive = true;
+      if (endDate != null) {
+        final now = DateTime.now();
+        final normalizedNow = DateTime(now.year, now.month, now.day);
+        final normalizedExp = DateTime(endDate.year, endDate.month, endDate.day);
+        isMedActive = normalizedNow.compareTo(normalizedExp) <= 0;
+      }
+
+      if (isMedActive == isActive) {
+        String displayDuration = isOngoing ? 'Ongoing' : '$totalDays Days';
+        targetMedicines.add({
+          'name': latestMedicines[nameKey]!['name'],
+          'dosage': latestMedicines[nameKey]!['dosage'],
+          'duration': displayDuration,
+          'doctor': latestMedicines[nameKey]!['doctor'],
+          'date': startDate,
+        });
       }
     }
     
