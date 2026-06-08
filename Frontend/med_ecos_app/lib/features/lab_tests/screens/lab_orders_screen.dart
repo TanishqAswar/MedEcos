@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/utils/constants.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
 
 class LabOrdersScreen extends StatefulWidget {
   const LabOrdersScreen({super.key});
@@ -114,6 +116,15 @@ class _LabOrdersScreenState extends State<LabOrdersScreen> {
     }
   }
 
+  void _viewReport(String base64Pdf) async {
+    try {
+      final bytes = base64Decode(base64Pdf);
+      await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => bytes);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to open PDF: $e')));
+    }
+  }
+
   Color _getStatusColor(String status) {
     switch (status) {
       case 'Pending': return Colors.orange;
@@ -173,24 +184,30 @@ class _LabOrdersScreenState extends State<LabOrdersScreen> {
                         Text("Completed: ${DateTime.parse(order['dateCompleted']).toLocal().toString().split('.')[0]}"),
                       
                       const SizedBox(height: 16),
-                      if (status != 'Completed')
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            if (status == 'Pending')
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
-                                onPressed: () => _updateStatus(order['_id'], 'In_Progress'),
-                                child: const Text("Start Test")
-                              ),
-                            if (status == 'In_Progress')
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                                onPressed: () => _markCompletedWithPdf(order['_id']),
-                                child: const Text("Upload PDF & Complete")
-                              ),
-                          ],
-                        )
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (status == 'Pending')
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
+                              onPressed: () => _updateStatus(order['_id'], 'In_Progress'),
+                              child: const Text("Start Test")
+                            ),
+                          if (status == 'In_Progress')
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                              onPressed: () => _markCompletedWithPdf(order['_id']),
+                              child: const Text("Upload PDF & Complete")
+                            ),
+                          if (status == 'Completed' && order['reportPdf'] != null)
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+                              onPressed: () => _viewReport(order['reportPdf']),
+                              icon: const Icon(Icons.picture_as_pdf, size: 16),
+                              label: const Text("View Report")
+                            ),
+                        ],
+                      )
                     ],
                   ),
                 ),
