@@ -20,6 +20,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   int? _remoteUid;
   bool _localUserJoined = false;
   bool _muted = false;
+  bool _videoOff = false;
   late RtcEngine _engine;
 
   @override
@@ -226,6 +227,18 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               ),
             ),
             RawMaterialButton(
+              onPressed: _onToggleVideo,
+              shape: const CircleBorder(),
+              elevation: 2.0,
+              fillColor: _videoOff ? Colors.blueAccent : Colors.white,
+              padding: const EdgeInsets.all(12.0),
+              child: Icon(
+                _videoOff ? Icons.videocam_off : Icons.videocam,
+                color: _videoOff ? Colors.white : Colors.blueAccent,
+                size: 20.0,
+              ),
+            ),
+            RawMaterialButton(
               onPressed: _onSwitchCamera,
               shape: const CircleBorder(),
               elevation: 2.0,
@@ -256,5 +269,12 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
 
   void _onSwitchCamera() {
     _engine.switchCamera();
+  }
+
+  void _onToggleVideo() {
+    setState(() {
+      _videoOff = !_videoOff;
+    });
+    _engine.muteLocalVideoStream(_videoOff);
   }
 }
