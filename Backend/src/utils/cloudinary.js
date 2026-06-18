@@ -13,13 +13,21 @@ cloudinary.config({
  * @param {Buffer} fileBuffer - The file buffer from multer
  * @returns {Promise<string>} The secure URL of the uploaded file
  */
-const uploadToCloudinary = (fileBuffer) => {
+const uploadToCloudinary = (fileBuffer, originalName = null) => {
     return new Promise((resolve, reject) => {
+        const options = {
+            resource_type: "auto", // Allows PDF previews
+            folder: "medecos_reports"
+        };
+
+        if (originalName) {
+            options.use_filename = true;
+            options.filename_override = originalName;
+            options.unique_filename = true;
+        }
+
         const cld_upload_stream = cloudinary.uploader.upload_stream(
-            {
-                resource_type: "raw", // Needed for PDFs
-                folder: "medecos_reports"
-            },
+            options,
             (error, result) => {
                 if (result) {
                     resolve(result.secure_url);

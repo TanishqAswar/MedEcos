@@ -148,7 +148,7 @@ router.put('/orders/:id/status', protect, authorize('Pathologist'), upload.singl
             // Check if a file was uploaded via multer
             if (req.file) {
                 try {
-                    const fileUrl = await uploadToCloudinary(req.file.buffer);
+                    const fileUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
                     updateData.reportPdf = fileUrl;
                 } catch (uploadError) {
                     console.error('Cloudinary Upload Error:', uploadError);
