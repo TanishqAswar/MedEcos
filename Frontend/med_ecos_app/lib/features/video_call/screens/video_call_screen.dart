@@ -91,8 +91,11 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
 
     try {
       // Fetch token from server
+      debugPrint('=== VIDEO CALL DEBUG ===');
+      debugPrint('Channel Name: ${widget.channelName}');
+      debugPrint('Local UID: $_localUid');
       final token = await _agoraService.fetchToken(widget.channelName, _localUid);
-      debugPrint('Fetched token: $token');
+      debugPrint('Fetched token: ${token != null ? "OK (${token.substring(0, 20)}...)" : "NULL"}');
       
       if (token != null) {
         await _engine.joinChannel(
