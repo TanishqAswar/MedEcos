@@ -16,14 +16,12 @@ cloudinary.config({
 const uploadToCloudinary = (fileBuffer, originalName = null) => {
     return new Promise((resolve, reject) => {
         const options = {
-            resource_type: "auto", // Allows PDF previews
+            resource_type: "raw", // Raw is required for proper PDF delivery in browsers
             folder: "medecos_reports"
         };
 
         if (originalName) {
-            options.use_filename = true;
-            options.filename_override = originalName;
-            options.unique_filename = true;
+            options.public_id = originalName;
         }
 
         const cld_upload_stream = cloudinary.uploader.upload_stream(
