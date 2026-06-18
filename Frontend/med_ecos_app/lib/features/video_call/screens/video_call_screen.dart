@@ -144,7 +144,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       ),
       body: Stack(
         children: [
-          Center(
+          Positioned.fill(
             child: _remoteVideo(),
           ),
           Align(
@@ -183,9 +183,11 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         ),
       );
     } else {
-      return const Text(
-        'Please wait for the other user to join',
-        textAlign: TextAlign.center,
+      return const Center(
+        child: Text(
+          'Please wait for the other user to join',
+          textAlign: TextAlign.center,
+        ),
       );
     }
   }
