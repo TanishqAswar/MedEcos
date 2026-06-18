@@ -51,6 +51,11 @@ app.use('/api/public', publicRoutes);
 // Test Routes
 const testRoutes = require('./routes/testRoutes');
 app.use('/api/test', testRoutes);
+
+// Agora Routes
+const agoraRoutes = require('./routes/agoraRoutes');
+app.use('/api/agora', agoraRoutes);
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

@@ -39,7 +39,7 @@ const labTestOrderSchema = new mongoose.Schema({
         type: String
     },
     reportPdf: {
-        type: String // Base64 encoded PDF
+        type: String // Cloudinary secure URL for the PDF
     }
 }, { timestamps: true });
 

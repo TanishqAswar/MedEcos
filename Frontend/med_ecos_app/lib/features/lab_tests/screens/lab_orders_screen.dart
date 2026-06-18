@@ -7,6 +7,8 @@ import 'package:file_picker/file_picker.dart';
 import '../../../core/utils/constants.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:http_parser/http_parser.dart';
 
 class LabOrdersScreen extends StatefulWidget {
   const LabOrdersScreen({super.key});
@@ -85,22 +87,26 @@ class _LabOrdersScreenState extends State<LabOrdersScreen> {
 
       if (result != null && result.files.single.bytes != null) {
         setState(() => _loading = true);
-        String base64Pdf = base64Encode(result.files.single.bytes!);
         
         final prefs = await SharedPreferences.getInstance();
         final token = prefs.getString('jwt_token') ?? '';
         
-        final res = await http.put(
+        var request = http.MultipartRequest(
+          'PUT',
           Uri.parse('${AppConstants.apiBaseUrl}/api/v1/pathologist/orders/$orderId/status'),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json'
-          },
-          body: jsonEncode({
-            'status': 'Completed',
-            'reportPdf': base64Pdf
-          })
         );
+        request.headers.addAll({'Authorization': 'Bearer $token'});
+        request.fields['status'] = 'Completed';
+        
+        request.files.add(http.MultipartFile.fromBytes(
+          'reportFile',
+          result.files.single.bytes!,
+          filename: result.files.single.name,
+          contentType: MediaType('application', 'pdf'),
+        ));
+        
+        final resStream = await request.send();
+        final res = await http.Response.fromStream(resStream);
         
         if (res.statusCode == 200) {
           _fetchOrders();
@@ -116,10 +122,14 @@ class _LabOrdersScreenState extends State<LabOrdersScreen> {
     }
   }
 
-  void _viewReport(String base64Pdf) async {
+  void _viewReport(String reportUrl) async {
     try {
-      final bytes = base64Decode(base64Pdf);
-      await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => bytes);
+      final uri = Uri.parse(reportUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not launch PDF URL')));
+      }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to open PDF: $e')));
     }

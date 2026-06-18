@@ -4,6 +4,10 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 const Prescription = require('../models/Prescription');
 const User = require('../models/User');
 const LabTestOrder = require('../models/LabTestOrder');
+const multer = require('multer');
+const { uploadToCloudinary } = require('../utils/cloudinary');
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Get Lab Tests for a Patient (Lookup by ABHA ID)
 router.get('/patients/:abhaId/lab-tests', protect, authorize('Pathologist'), async (req, res) => {
@@ -130,9 +134,9 @@ router.get('/orders', protect, authorize('Pathologist'), async (req, res) => {
 });
 
 // Update Lab Test Order Status
-router.put('/orders/:id/status', protect, authorize('Pathologist'), async (req, res) => {
+router.put('/orders/:id/status', protect, authorize('Pathologist'), upload.single('reportFile'), async (req, res) => {
     try {
-        const { status, reportPdf } = req.body;
+        const { status } = req.body;
         if (!['Pending', 'In_Progress', 'Completed'].includes(status)) {
             return res.status(400).json({ message: 'Invalid status' });
         }
@@ -140,8 +144,20 @@ router.put('/orders/:id/status', protect, authorize('Pathologist'), async (req, 
         const updateData = { status };
         if (status === 'Completed') {
             updateData.dateCompleted = Date.now();
-            if (reportPdf) {
-                updateData.reportPdf = reportPdf;
+            
+            // Check if a file was uploaded via multer
+            if (req.file) {
+                try {
+                    const fileUrl = await uploadToCloudinary(req.file.buffer);
+                    updateData.reportPdf = fileUrl;
+                } catch (uploadError) {
+                    console.error('Cloudinary Upload Error:', uploadError);
+                    return res.status(500).json({ message: 'Failed to upload report to cloud storage' });
+                }
+            } 
+            // Fallback for legacy base64 or URL passed in body
+            else if (req.body.reportPdf) {
+                updateData.reportPdf = req.body.reportPdf;
             }
         }
 

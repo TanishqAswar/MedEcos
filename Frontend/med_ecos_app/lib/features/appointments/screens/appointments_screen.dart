@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../widgets/book_appointment_dialog.dart';
 import '../../../core/utils/constants.dart';
+import '../../video_call/screens/video_call_screen.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -166,6 +167,25 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                           ElevatedButton(
                             onPressed: () => _acceptReschedule(appt['_id']),
                             child: const Text('Accept Reschedule'),
+                          )
+                        ],
+                        if (status == 'Confirmed') ...[
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => VideoCallScreen(channelName: appt['_id']),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.video_call),
+                            label: const Text('Join Video Call'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              foregroundColor: Colors.white,
+                            ),
                           )
                         ]
                       ],

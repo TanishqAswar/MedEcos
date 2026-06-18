@@ -31,6 +31,7 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isLoading = false;
   bool _isLocating = false;
   String? _errorMessage;
+  bool _obscurePassword = true;
 
   Future<void> _signup() async {
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
@@ -331,10 +332,20 @@ class _SignupScreenState extends State<SignupScreen> {
                 ],
                 TextField(
                   controller: _passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),

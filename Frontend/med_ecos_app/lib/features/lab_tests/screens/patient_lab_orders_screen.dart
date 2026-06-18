@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PatientLabOrdersScreen extends StatefulWidget {
   const PatientLabOrdersScreen({super.key});
@@ -44,10 +45,14 @@ class _PatientLabOrdersScreenState extends State<PatientLabOrdersScreen> {
     }
   }
 
-  void _viewReport(String base64Pdf) async {
+  void _viewReport(String reportUrl) async {
     try {
-      final bytes = base64Decode(base64Pdf);
-      await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => bytes);
+      final uri = Uri.parse(reportUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not launch PDF URL')));
+      }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to open PDF: $e')));
     }
@@ -111,7 +116,7 @@ class _PatientLabOrdersScreenState extends State<PatientLabOrdersScreen> {
                     ? DateFormat('MMM dd, yyyy').format(DateTime.parse(order['createdAt']).toLocal())
                     : 'Unknown Date';
                 
-                bool hasValidPdf = order['reportPdf'] != null && order['reportPdf'].toString().startsWith('JVBER');
+                bool hasValidPdf = order['reportPdf'] != null && order['reportPdf'].toString().isNotEmpty;
                 String status = order['status'] ?? 'Pending';
                 if (status == 'Completed' && !hasValidPdf) {
                   status = 'Pending';
