@@ -25,7 +25,7 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
   final List<Map<String, String>> _messages = [
     {
       'role': 'model',
-      'text': 'Hello! I am MedBot. How can I assist you today?'
+      'text': 'Hello! I am Vaidya. How can I assist you today?'
     }
   ];
 
@@ -33,7 +33,7 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
   void initState() {
     super.initState();
     // Pre-seed greeting based on role
-    _messages[0]['text'] = 'Hello \${widget.userRole == "Doctor" ? "Dr. " : ""}\${widget.userName}! I am MedBot. How can I assist you today?';
+    _messages[0]['text'] = 'Hello ${widget.userRole == "Doctor" ? "Dr. " : ""}${widget.userName}! I am Vaidya. How can I assist you today?';
   }
 
   void _sendMessage() async {
@@ -48,8 +48,8 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
     _scrollToBottom();
 
     final systemInstruction = """
-You are MedBot, an intelligent and helpful AI assistant embedded within the MedEcos health application. 
-You are currently talking to a \${widget.userRole} named \${widget.userName}. 
+You are Vaidya, an intelligent and helpful AI assistant embedded within the MedEcos health application. 
+You are currently talking to a ${widget.userRole} named ${widget.userName}. 
 If talking to a Patient, provide helpful, easy-to-understand health information, but ALWAYS remind them to consult their doctor for diagnosis.
 If talking to a Doctor, Pharmacist, or Pathologist, you can provide more technical medical reference information.
 Keep your answers concise, clear, and professional. Use formatting (bullet points, bold text) where appropriate.
@@ -122,10 +122,10 @@ Keep your answers concise, clear, and professional. Use formatting (bullet point
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.smart_toy, color: Colors.white),
+                            Icon(Icons.health_and_safety, color: Colors.white),
                             SizedBox(width: 8),
                             Text(
-                              "MedBot",
+                              "Vaidya AI",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -170,7 +170,7 @@ Keep your answers concise, clear, and professional. Use formatting (bullet point
                             child: CircularProgressIndicator(strokeWidth: 2),
                           ),
                           SizedBox(width: 8),
-                          Text("MedBot is typing...", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          Text("Vaidya is typing...", style: TextStyle(color: Colors.grey, fontSize: 12)),
                         ],
                       ),
                     ),
