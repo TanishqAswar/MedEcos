@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/agora_service.dart';
 
 class VideoCallScreen extends StatefulWidget {
@@ -36,11 +35,8 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     // Create the engine
     _engine = createAgoraRtcEngine();
     
-    final appId = dotenv.env['AGORA_APP_ID'] ?? '';
-    if (appId.isEmpty) {
-      print('Agora App ID is not provided');
-      return;
-    }
+    // The App ID is safe to embed in the client app. The App Certificate remains secret on the backend.
+    final appId = '0493c83dfe054c64a38fb68197f703ea';
 
     await _engine.initialize(RtcEngineContext(
       appId: appId,
