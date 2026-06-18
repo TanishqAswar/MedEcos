@@ -145,24 +145,51 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       ),
       body: Stack(
         children: [
+          // Remote video - full screen
           Positioned.fill(
             child: _remoteVideo(),
           ),
+          // Local video preview - top left corner
           Align(
             alignment: Alignment.topLeft,
-            child: SizedBox(
-              width: 100,
-              height: 150,
-              child: Center(
-                child: _localUserJoined
-                    ? AgoraVideoView(
-                        controller: VideoViewController(
-                          rtcEngine: _engine,
-                          canvas: VideoCanvas(uid: _localUid, renderMode: RenderModeType.renderModeHidden),
-                          useFlutterTexture: false,
-                        ),
-                      )
-                    : const CircularProgressIndicator(),
+            child: Container(
+              width: 120,
+              height: 160,
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              clipBehavior: Clip.hardEdge,
+              child: _localUserJoined
+                  ? AgoraVideoView(
+                      controller: VideoViewController(
+                        rtcEngine: _engine,
+                        canvas: const VideoCanvas(uid: 0, renderMode: RenderModeType.renderModeHidden),
+                        useFlutterTexture: false,
+                      ),
+                    )
+                  : const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
+            ),
+          ),
+          // Debug status - top right corner
+          Positioned(
+            top: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                _localUserJoined
+                    ? (_remoteUid != null ? '🟢 Connected (Remote: $_remoteUid)' : '⏳ Waiting for other user...')
+                    : '🔄 Joining channel...',
+                style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
             ),
           ),
