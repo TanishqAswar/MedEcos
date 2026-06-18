@@ -5,7 +5,7 @@ const Prescription = require('../models/Prescription');
 const User = require('../models/User');
 const LabTestOrder = require('../models/LabTestOrder');
 const multer = require('multer');
-const { uploadToCloudinary } = require('../utils/cloudinary');
+const { uploadToCloudinary, deleteFromCloudinaryByUrl } = require('../utils/cloudinary');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -141,6 +141,9 @@ router.put('/orders/:id/status', protect, authorize('Pathologist'), upload.singl
             return res.status(400).json({ message: 'Invalid status' });
         }
 
+        const existingOrder = await LabTestOrder.findOne({ _id: req.params.id, pathologistId: req.user._id });
+        if (!existingOrder) return res.status(404).json({ message: 'Order not found' });
+
         const updateData = { status };
         if (status === 'Completed') {
             updateData.dateCompleted = Date.now();
@@ -148,6 +151,10 @@ router.put('/orders/:id/status', protect, authorize('Pathologist'), upload.singl
             // Check if a file was uploaded via multer
             if (req.file) {
                 try {
+                    // If an old report exists, delete it first
+                    if (existingOrder.reportPdf) {
+                        await deleteFromCloudinaryByUrl(existingOrder.reportPdf);
+                    }
                     const fileUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
                     updateData.reportPdf = fileUrl;
                 } catch (uploadError) {
@@ -157,6 +164,9 @@ router.put('/orders/:id/status', protect, authorize('Pathologist'), upload.singl
             } 
             // Fallback for legacy base64 or URL passed in body
             else if (req.body.reportPdf) {
+                if (existingOrder.reportPdf && existingOrder.reportPdf !== req.body.reportPdf) {
+                    await deleteFromCloudinaryByUrl(existingOrder.reportPdf);
+                }
                 updateData.reportPdf = req.body.reportPdf;
             }
         }

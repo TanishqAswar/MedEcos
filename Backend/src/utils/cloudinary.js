@@ -40,4 +40,29 @@ const uploadToCloudinary = (fileBuffer, originalName = null) => {
     });
 };
 
-module.exports = { uploadToCloudinary };
+/**
+ * Deletes a file from Cloudinary given its secure URL
+ * @param {string} fileUrl - The Cloudinary secure URL
+ */
+const deleteFromCloudinaryByUrl = async (fileUrl) => {
+    try {
+        if (!fileUrl) return false;
+        
+        const urlParts = fileUrl.split('/upload/');
+        if (urlParts.length < 2) return false;
+        
+        let pathPart = urlParts[1].split('/').slice(1).join('/'); // remove the v123456 version
+        let publicId = pathPart.substring(0, pathPart.lastIndexOf('.')) || pathPart;
+        
+        // Try deleting as both image (auto for pdfs) and raw (legacy)
+        await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+        await cloudinary.uploader.destroy(pathPart, { resource_type: 'raw' }); 
+        
+        return true;
+    } catch (e) {
+        console.error('Error deleting from cloudinary:', e);
+        return false;
+    }
+};
+
+module.exports = { uploadToCloudinary, deleteFromCloudinaryByUrl };

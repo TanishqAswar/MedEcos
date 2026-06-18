@@ -209,13 +209,20 @@ class _LabOrdersScreenState extends State<LabOrdersScreen> {
                               onPressed: () => _markCompletedWithPdf(order['_id']),
                               child: const Text("Upload PDF & Complete")
                             ),
-                          if (status == 'Completed' && order['reportPdf'] != null)
+                          if (status == 'Completed' && order['reportPdf'] != null) ...[
                             ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
                               onPressed: () => _viewReport(order['reportPdf']),
                               icon: const Icon(Icons.picture_as_pdf, size: 16),
                               label: const Text("View Report")
                             ),
+                            const SizedBox(width: 8),
+                            OutlinedButton.icon(
+                              onPressed: () => _markCompletedWithPdf(order['_id']),
+                              icon: const Icon(Icons.upload_file, size: 16),
+                              label: const Text("Reupload")
+                            ),
+                          ],
                         ],
                       )
                     ],
