@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/models/medicine_model.dart';
+import '../../video_call/screens/video_call_screen.dart';
+import '../widgets/chatbot_widget.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/reminder_service.dart';
 import '../../../core/utils/medicine_utils.dart';
@@ -868,8 +870,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Row(
+      body: Stack(
         children: [
+          Row(
+            children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeInOut,
@@ -917,6 +921,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-    );
-  }
+      ChatbotWidget(
+        userRole: _userRole,
+        userName: _userName,
+      ),
+    ],
+  ),
+);
+}
 }

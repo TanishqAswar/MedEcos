@@ -144,4 +144,65 @@ Respond STRICTLY with "NO_CLASH" if there are no interactions. Nothing else.
       return null;
     }
   }
+
+  /// Conversational Chatbot API using Gemini
+  static Future<String?> chatWithGemini({
+    required List<Map<String, String>> history,
+    required String systemInstruction,
+  }) async {
+    String? apiKey;
+    try {
+      apiKey = dotenv.env['GEMINI_API_KEY'];
+    } catch (e) {
+      apiKey = null;
+    }
+
+    if (apiKey == null || apiKey.isEmpty) {
+      return "I'm sorry, my AI connection is currently offline.";
+    }
+
+    // Convert history format to Gemini format
+    // history expected format: [{'role': 'user', 'text': 'hi'}, {'role': 'model', 'text': 'hello'}]
+    final contents = history.map((msg) {
+      return {
+        "role": msg['role'] == 'user' ? 'user' : 'model',
+        "parts": [{"text": msg['text'] ?? ''}]
+      };
+    }).toList();
+
+    final url = Uri.parse(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey',
+    );
+
+    final body = jsonEncode({
+      "systemInstruction": {
+        "parts": [{"text": systemInstruction}]
+      },
+      "contents": contents,
+      "generationConfig": {
+        "temperature": 0.7, // Higher temp for conversational flow
+        "maxOutputTokens": 300
+      }
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final text = decoded['candidates']?[0]?['content']?['parts']?[0]?['text'] as String?;
+        return text?.trim() ?? "I didn't understand that.";
+      } else {
+        print("Gemini Chat Error: \${response.statusCode} - \${response.body}");
+        return "I'm having trouble connecting right now. Please try again later.";
+      }
+    } catch (e) {
+      print("Gemini Chat Exception: $e");
+      return "Something went wrong. Please check your connection.";
+    }
+  }
 }
