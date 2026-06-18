@@ -8,6 +8,7 @@ class Sidebar extends StatelessWidget {
   final int selectedIndex;
   final String userRole;
   final String userName;
+  final VoidCallback? onClose;
 
   const Sidebar({
     super.key, 
@@ -15,6 +16,7 @@ class Sidebar extends StatelessWidget {
     required this.selectedIndex,
     required this.userRole,
     required this.userName,
+    this.onClose,
   });
 
   @override
@@ -60,7 +62,22 @@ class Sidebar extends StatelessWidget {
       color: Colors.white,
       child: Column(
         children: [
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
+          // Close button row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (onClose != null)
+                  IconButton(
+                    icon: const Icon(Icons.menu_open, color: AppColors.primary),
+                    onPressed: onClose,
+                    tooltip: 'Close Menu',
+                  ),
+              ],
+            ),
+          ),
           // Logo Area
           Image.asset("assets/Icon.jpeg", height: 80, width: 80),
           const SizedBox(height: 16),
