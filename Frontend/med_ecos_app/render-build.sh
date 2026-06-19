@@ -11,6 +11,6 @@ echo "Adding Flutter to PATH..."
 export PATH="$PATH:`pwd`/flutter/bin"
 
 echo "Building Flutter Web application..."
-flutter build web --release
+flutter build web --release --dart-define=GEMINI_API_KEY=$GEMINI_API_KEY
 
 echo "Build complete! The output is located in build/web."
