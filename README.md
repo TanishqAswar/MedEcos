@@ -1,6 +1,6 @@
 # MedEcos Unified Medical Platform
 
-🚀 **Live App:** [https://medecos.netlify.app/](https://medecos.netlify.app/)
+🚀 **Live App:** [medecos-frontend.onrender.com](medecos-frontend.onrender.com)
 
 MedEcos is a comprehensive, modern Medical Ecosystem that seamlessly connects Patients, Doctors, and Pharmacists into a unified Flutter web application powered by a robust Node.js backend.
 
