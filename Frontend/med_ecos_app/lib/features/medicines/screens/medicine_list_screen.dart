@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/models/medicine_model.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/preferences_service.dart';
+import '../../../core/services/reminder_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 class MedicineListScreen extends StatefulWidget {
   const MedicineListScreen({super.key});
@@ -25,6 +29,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
   }
 
   Future<void> _loadMedicines() async {
+    setState(() { _loading = true; });
     try {
       final List<dynamic> prescriptions = await ApiService().getPrescriptions();
       List<Medicine> parsedMedicines = [];
@@ -49,14 +54,46 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
         }
       }
 
+      // Also include custom reminder medicines
+      final prefs = await SharedPreferences.getInstance();
+      final localJson = prefs.getString('custom_reminder_medicines');
+      if (localJson != null) {
+        try {
+          final List<dynamic> customList = jsonDecode(localJson);
+          for (var m in customList) {
+            if (m is Map) {
+              parsedMedicines.add(Medicine(
+                id: m['id']?.toString() ?? 'custom_${DateTime.now().millisecondsSinceEpoch}',
+                name: m['name']?.toString() ?? 'Custom Medicine',
+                dosage: '${m['timing'] ?? 'Morning'} • ${m['context'] ?? 'After Food'}',
+                frequency: 1,
+                timings: [],
+                startDate: DateTime.now(),
+              ));
+            }
+          }
+        } catch (_) {}
+      }
+
+      final localDelJson = prefs.getString('deleted_reminder_medicines');
+      List<String> deletedReminders = [];
+      if (localDelJson != null) {
+        try {
+          final List<dynamic> list = jsonDecode(localDelJson);
+          deletedReminders = list.map((e) => e.toString().toLowerCase().trim()).toList();
+        } catch (_) {}
+      }
+
       final uniqueMedicines = <String, Medicine>{};
       for (var m in parsedMedicines) {
-        uniqueMedicines.putIfAbsent(m.name.toLowerCase().trim(), () => m);
+        final key = m.name.toLowerCase().trim();
+        if (!deletedReminders.contains(key) && !deletedReminders.contains(m.id)) {
+          uniqueMedicines.putIfAbsent(key, () => m);
+        }
       }
 
       setState(() {
         _medicines = uniqueMedicines.values.toList();
-        // _timeLabels = labels; (No timings from backend yet)
         _loading = false;
         _error = null;
       });
@@ -68,31 +105,222 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
     }
   }
 
+  void _showAddMedicineReminderDialog() {
+    final nameCtrl = TextEditingController();
+    final dosageCtrl = TextEditingController(text: '1 Tablet');
+    final instructionCtrl = TextEditingController();
+    String selectedTiming = 'Morning';
+    String selectedContext = 'After Food';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Add Medicine Reminder',
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: nameCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Medicine Name *',
+                        hintText: 'e.g. Paracetamol 500mg, Vitamin D3',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.medication),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: dosageCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Dosage',
+                        hintText: 'e.g. 1 Tablet, 10 ml',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.scale),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Timing', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: ['Morning', 'Afternoon', 'Evening', 'Night'].map((t) {
+                        final isSel = selectedTiming == t;
+                        return ChoiceChip(
+                          label: Text(t),
+                          selected: isSel,
+                          selectedColor: AppColors.primary.withOpacity(0.2),
+                          onSelected: (selected) {
+                            if (selected) setModalState(() => selectedTiming = t);
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Context', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: ['After Food', 'Before Food', 'With Food'].map((c) {
+                        final isSel = selectedContext == c;
+                        return ChoiceChip(
+                          label: Text(c),
+                          selected: isSel,
+                          selectedColor: AppColors.primary.withOpacity(0.2),
+                          onSelected: (selected) {
+                            if (selected) setModalState(() => selectedContext = c);
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: instructionCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Special Instruction (Optional)',
+                        hintText: 'e.g. Take with warm water',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.note),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final name = nameCtrl.text.trim();
+                          if (name.isEmpty) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
+                              const SnackBar(content: Text('Please enter a medicine name')),
+                            );
+                            return;
+                          }
+                          Navigator.pop(ctx);
+                          await ReminderService().addCustomMedicine(
+                            name: name,
+                            timing: selectedTiming,
+                            context: selectedContext,
+                            instruction: instructionCtrl.text.trim(),
+                            dosage: dosageCtrl.text.trim(),
+                          );
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Reminder for $name added successfully!')),
+                            );
+                            _loadMedicines();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Add Reminder', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteMedicine(Medicine med) async {
+    await ReminderService().deleteReminderMedicine(med.id, med.name);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Removed ${med.name} from reminders')),
+      );
+      _loadMedicines();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Medicines')),
+      appBar: AppBar(
+        title: const Text('Medicines & Reminders'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadMedicines,
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showAddMedicineReminderDialog,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Medicine'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
               ? Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.red)))
-              : ListView.builder(
-              itemCount: _medicines.length,
-              itemBuilder: (context, index) {
-                final med = _medicines[index];
-                return ListTile(
-                  title: Text(med.name),
-                  subtitle: Column(
-                     crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [
-                       Text('${med.dosage} • ${med.frequency}x daily'),
-                       if (_timeLabels.containsKey(med.id))
-                         Text(_timeLabels[med.id]!, style: const TextStyle(color: Colors.blueGrey, fontSize: 13)),
-                     ],
-                  ),
-                );
-              },
-            ),
+              : _medicines.isEmpty
+                  ? const Center(child: Text('No medicines found. Tap "+ Add Medicine" to create a reminder!'))
+                  : ListView.builder(
+                      itemCount: _medicines.length,
+                      itemBuilder: (context, index) {
+                        final med = _medicines[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppColors.primary.withOpacity(0.15),
+                              child: const Icon(Icons.medication, color: AppColors.primary),
+                            ),
+                            title: Text(med.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('${med.dosage} • ${med.frequency}x daily'),
+                                if (_timeLabels.containsKey(med.id))
+                                  Text(_timeLabels[med.id]!, style: const TextStyle(color: Colors.blueGrey, fontSize: 13)),
+                              ],
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                              tooltip: 'Remove reminder',
+                              onPressed: () => _deleteMedicine(med),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
     );
   }
 }

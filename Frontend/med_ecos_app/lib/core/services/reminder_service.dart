@@ -75,6 +75,27 @@ class ReminderService {
     final eveningTime = routine['evening']?.toString() ?? '05:00 PM';
     final nightTime = routine['night']?.toString() ?? '09:00 PM';
 
+    final prefs = await SharedPreferences.getInstance();
+    final localCustomJson = prefs.getString('custom_reminder_medicines');
+    List<dynamic> localCustomMeds = [];
+    if (localCustomJson != null) {
+      try { localCustomMeds = jsonDecode(localCustomJson); } catch (_) {}
+    }
+
+    final localDelJson = prefs.getString('deleted_reminder_medicines');
+    List<String> deletedReminders = [];
+    if (localDelJson != null) {
+      try {
+        final List<dynamic> delList = jsonDecode(localDelJson);
+        deletedReminders = delList.map((e) => e.toString().toLowerCase().trim()).toList();
+      } catch (_) {}
+    }
+    final remoteDel = profile['deletedReminders'] as List<dynamic>? ?? [];
+    for (var d in remoteDel) {
+      final key = d.toString().toLowerCase().trim();
+      if (!deletedReminders.contains(key)) deletedReminders.add(key);
+    }
+
     final api = ApiService();
     await api.loadData();
     final prescriptions = api.prescriptions;
@@ -93,7 +114,6 @@ class ReminderService {
           var timingsList = timing.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
           
           if (timingsList.isEmpty) {
-            // Fallback for older prescriptions lacking explicit 'timing' fields
             final dosageStr = (med['frequency']?.isNotEmpty == true) ? med['frequency']! : (med['dosage'] ?? '');
             final parts = dosageStr.split('-');
             if (parts.isNotEmpty) {
@@ -102,7 +122,6 @@ class ReminderService {
               if (parts.length >= 3 && parts[2].trim() != '0' && parts[2].trim().isNotEmpty) timingsList.add('Evening');
               if (parts.length >= 4 && parts[3].trim() != '0' && parts[3].trim().isNotEmpty) timingsList.add('Night');
             } else {
-              // Default to Morning if unparseable
               timingsList.add('Morning');
             }
           }
@@ -128,17 +147,65 @@ class ReminderService {
       }
     }
 
+    // Merge custom medicines from backend profile and local storage
+    final remoteCustomMeds = profile['customMedicines'] as List<dynamic>? ?? [];
+    final Map<String, Map<String, dynamic>> combinedCustom = {};
+    for (var m in remoteCustomMeds) {
+      if (m is Map) {
+        final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
+        if (id.isNotEmpty) combinedCustom[id] = Map<String, dynamic>.from(m);
+      }
+    }
+    for (var m in localCustomMeds) {
+      if (m is Map) {
+        final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
+        if (id.isNotEmpty) combinedCustom[id] = Map<String, dynamic>.from(m);
+      }
+    }
+
+    for (var c in combinedCustom.values) {
+      final name = c['name']?.toString() ?? 'Unknown';
+      final timing = c['timing']?.toString() ?? 'Morning';
+      final ctx = c['context']?.toString() ?? 'After Food';
+      final inst = c['instruction']?.toString() ?? '1 Unit';
+      final id = c['id']?.toString() ?? "custom_$name";
+
+      var timingsList = timing.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      if (timingsList.isEmpty) timingsList.add('Morning');
+
+      for (var t in timingsList) {
+        String baseTimeStr = morningTime;
+        if (t.toLowerCase() == 'afternoon') baseTimeStr = afternoonTime;
+        if (t.toLowerCase() == 'evening') baseTimeStr = eveningTime;
+        if (t.toLowerCase() == 'night') baseTimeStr = nightTime;
+
+        final expectedTime = _parseTimeWithOffset(baseTimeStr, ctx);
+
+        todayDoses.add(MedicineDose(
+          medicineId: id,
+          medicineName: name,
+          timingLabel: t,
+          expectedTime: expectedTime,
+          context: ctx,
+          instruction: inst,
+        ));
+      }
+    }
+
+    // Filter out deleted / removed reminders
+    todayDoses = todayDoses.where((dose) {
+      final nameKey = dose.medicineName.toLowerCase().trim();
+      final idKey = dose.medicineId.toLowerCase().trim();
+      return !deletedReminders.contains(nameKey) && !deletedReminders.contains(idKey);
+    }).toList();
+
     // Now cross-reference with today's history
     final history = await api.getMedicineHistory();
     
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
     
-    // History contains { medicineName, takenTime, status }
     for (var dose in todayDoses) {
-      // Find history log for this medicine today that roughly matches the timing
-      // To simplify, if there's a log for this medicine today, we might just match it.
-      // But a medicine can be taken twice a day. So we check if there's a log within +/- 4 hours of expected time.
       bool foundLog = false;
       for (var h in history) {
         if (h['medicineName'] == dose.medicineName) {
@@ -155,14 +222,12 @@ class ReminderService {
       }
 
       if (!foundLog) {
-        // If no log and time has passed (give a 1 hour grace period), it's missed
         if (now.isAfter(dose.expectedTime.add(const Duration(hours: 1)))) {
-          dose.status = 'MISSED'; // Not explicitly skipped by user, but missed
+          dose.status = 'MISSED';
         }
       }
     }
 
-    // Sort: MISSED first, PENDING next, TAKEN/SKIPPED last. And by time.
     todayDoses.sort((a, b) {
        final statusWeightA = _getStatusWeight(a.status);
        final statusWeightB = _getStatusWeight(b.status);
@@ -179,11 +244,90 @@ class ReminderService {
     switch (status) {
       case 'MISSED': return 0;
       case 'PENDING': return 1;
-      default: return 2; // TAKEN, SKIPPED
+      default: return 2;
     }
   }
 
   Future<void> logDose(MedicineDose dose, String status) async {
     await ApiService().logMedicineHistory(dose.medicineId, dose.medicineName, dose.expectedTime, status);
+  }
+
+  Future<void> addCustomMedicine({
+    required String name,
+    required String timing,
+    required String context,
+    required String instruction,
+    String dosage = '1 Unit',
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final localJson = prefs.getString('custom_reminder_medicines');
+    List<dynamic> list = [];
+    if (localJson != null) {
+      try { list = jsonDecode(localJson); } catch (_) {}
+    }
+    final newMed = {
+      'id': 'custom_${DateTime.now().millisecondsSinceEpoch}',
+      'name': name.trim(),
+      'timing': timing,
+      'context': context,
+      'instruction': instruction,
+      'dosage': dosage,
+    };
+    list.add(newMed);
+    await prefs.setString('custom_reminder_medicines', jsonEncode(list));
+
+    final localDelJson = prefs.getString('deleted_reminder_medicines');
+    if (localDelJson != null) {
+      try {
+        List<dynamic> delList = jsonDecode(localDelJson);
+        delList.removeWhere((e) => e.toString().toLowerCase().trim() == name.trim().toLowerCase());
+        await prefs.setString('deleted_reminder_medicines', jsonEncode(delList));
+      } catch (_) {}
+    }
+
+    try {
+      final token = prefs.getString('jwt_token') ?? '';
+      await http.post(
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/patient/medicines'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(newMed),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> deleteReminderMedicine(String medicineId, String medicineName) async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    final localJson = prefs.getString('custom_reminder_medicines');
+    if (localJson != null) {
+      try {
+        List<dynamic> list = jsonDecode(localJson);
+        list.removeWhere((m) => m['id'] == medicineId || (m['name']?.toString().toLowerCase().trim() == medicineName.toLowerCase().trim()));
+        await prefs.setString('custom_reminder_medicines', jsonEncode(list));
+      } catch (_) {}
+    }
+
+    final localDelJson = prefs.getString('deleted_reminder_medicines');
+    List<dynamic> delList = [];
+    if (localDelJson != null) {
+      try { delList = jsonDecode(localDelJson); } catch (_) {}
+    }
+    final nameKey = medicineName.toLowerCase().trim();
+    if (!delList.contains(medicineId)) delList.add(medicineId);
+    if (!delList.contains(nameKey)) delList.add(nameKey);
+    await prefs.setString('deleted_reminder_medicines', jsonEncode(delList));
+
+    try {
+      final token = prefs.getString('jwt_token') ?? '';
+      await http.delete(
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/patient/medicines/$medicineId?name=${Uri.encodeComponent(medicineName)}'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+    } catch (_) {}
   }
 }

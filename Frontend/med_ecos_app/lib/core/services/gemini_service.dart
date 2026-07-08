@@ -160,7 +160,7 @@ Respond STRICTLY with "NO_CLASH" if there are no interactions. Nothing else.
     }).toList();
 
     final url = Uri.parse(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=$apiKey',
     );
 
     final body = jsonEncode({
@@ -186,7 +186,7 @@ Respond STRICTLY with "NO_CLASH" if there are no interactions. Nothing else.
         final text = decoded['candidates']?[0]?['content']?['parts']?[0]?['text'] as String?;
         return text?.trim() ?? "I didn't understand that.";
       } else {
-        print("Gemini Chat Error: \${response.statusCode} - \${response.body}");
+        print("Gemini Chat Error: ${response.statusCode} - ${response.body}");
         return "I'm having trouble connecting right now. Please try again later.";
       }
     } catch (e) {

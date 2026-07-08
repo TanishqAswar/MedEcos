@@ -59,6 +59,17 @@ const userSchema = new mongoose.Schema({
         evening: { type: String, default: '05:00 PM' },
         night: { type: String, default: '09:00 PM' }
     },
+    customMedicines: [{
+        id: { type: String },
+        name: { type: String },
+        dosage: { type: String },
+        timing: { type: String },
+        context: { type: String },
+        instruction: { type: String }
+    }],
+    deletedReminders: [{
+        type: String
+    }],
 
     // Doctor Specific Fields
     speciality: {

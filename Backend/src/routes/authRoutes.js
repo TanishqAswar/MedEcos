@@ -327,6 +327,8 @@ router.put('/profile', protect, async (req, res) => {
         if (req.body.age !== undefined) user.age = req.body.age;
         if (req.body.gender !== undefined) user.gender = req.body.gender;
         if (req.body.routine !== undefined) user.routine = req.body.routine;
+        if (req.body.customMedicines !== undefined) user.customMedicines = req.body.customMedicines;
+        if (req.body.deletedReminders !== undefined) user.deletedReminders = req.body.deletedReminders;
 
         // Doctor specific fields
         if (user.role === 'Doctor') {
