@@ -677,7 +677,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           Text(dose.medicineName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                           const SizedBox(height: 4),
-                          Text("$timeStr • ${dose.timingLabel} • ${dose.context}", style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                          Text("$timeStr • ${dose.timingLabel} • ${dose.context} • ${dose.durationLabel}", style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                           if (dose.instruction.isNotEmpty && dose.instruction != 'None')
                             Text("Note: ${dose.instruction}", style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic, fontSize: 12)),
                         ],
@@ -772,6 +772,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final nameCtrl = TextEditingController();
     final dosageCtrl = TextEditingController(text: '1 Tablet');
     final instructionCtrl = TextEditingController();
+    final durationCtrl = TextEditingController();
     String selectedTiming = 'Morning';
     String selectedContext = 'After Food';
 
@@ -827,6 +828,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         hintText: 'e.g. 1 Tablet, 10 ml',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.scale),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: durationCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Duration in Days (Optional)',
+                        hintText: 'e.g. 5, 10 (Leave empty or 0 for ongoing course)',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.calendar_today),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -892,6 +904,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             context: selectedContext,
                             instruction: instructionCtrl.text.trim(),
                             dosage: dosageCtrl.text.trim(),
+                            durationDays: int.tryParse(durationCtrl.text.trim()) ?? 0,
                           );
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(

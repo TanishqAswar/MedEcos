@@ -13,6 +13,7 @@ class MedicineDose {
   final DateTime expectedTime;
   final String context; // e.g. "Before Food"
   final String instruction;
+  final String durationLabel; // e.g. "5 Days course" or "Day 2 of 5"
   String status; // "PENDING", "TAKEN", "SKIPPED"
 
   MedicineDose({
@@ -22,6 +23,7 @@ class MedicineDose {
     required this.expectedTime,
     required this.context,
     required this.instruction,
+    this.durationLabel = 'Ongoing course',
     this.status = 'PENDING',
   });
 }
@@ -141,6 +143,7 @@ class ReminderService {
               expectedTime: expectedTime,
               context: ctx,
               instruction: inst,
+              durationLabel: duration.isNotEmpty ? duration : 'Ongoing course',
             ));
           }
         }
@@ -163,12 +166,34 @@ class ReminderService {
       }
     }
 
+    final now = DateTime.now();
+    final todayDay = DateTime(now.year, now.month, now.day);
+
     for (var c in combinedCustom.values) {
       final name = c['name']?.toString() ?? 'Unknown';
       final timing = c['timing']?.toString() ?? 'Morning';
       final ctx = c['context']?.toString() ?? 'After Food';
       final inst = c['instruction']?.toString() ?? '1 Unit';
       final id = c['id']?.toString() ?? "custom_$name";
+      final durationDays = int.tryParse(c['durationDays']?.toString() ?? '0') ?? 0;
+      final startStr = c['startDate']?.toString() ?? '';
+
+      String durationLabel = 'Ongoing course';
+      if (durationDays > 0 && startStr.isNotEmpty) {
+        try {
+          final startDt = DateTime.parse(startStr).toLocal();
+          final startDay = DateTime(startDt.year, startDt.month, startDt.day);
+          final diffDays = todayDay.difference(startDay).inDays;
+          if (diffDays < 0 || diffDays >= durationDays) {
+            continue; // Course expired or hasn't started yet
+          }
+          durationLabel = "Day ${diffDays + 1} of $durationDays";
+        } catch (_) {
+          durationLabel = "$durationDays Days course";
+        }
+      } else if (durationDays > 0) {
+        durationLabel = "$durationDays Days course";
+      }
 
       var timingsList = timing.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
       if (timingsList.isEmpty) timingsList.add('Morning');
@@ -188,6 +213,7 @@ class ReminderService {
           expectedTime: expectedTime,
           context: ctx,
           instruction: inst,
+          durationLabel: durationLabel,
         ));
       }
     }
@@ -202,7 +228,6 @@ class ReminderService {
     // Now cross-reference with today's history
     final history = await api.getMedicineHistory();
     
-    final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
     
     for (var dose in todayDoses) {
@@ -258,6 +283,8 @@ class ReminderService {
     required String context,
     required String instruction,
     String dosage = '1 Unit',
+    int durationDays = 0,
+    String? startDate,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final localJson = prefs.getString('custom_reminder_medicines');
@@ -272,6 +299,8 @@ class ReminderService {
       'context': context,
       'instruction': instruction,
       'dosage': dosage,
+      'durationDays': durationDays,
+      'startDate': startDate ?? DateTime.now().toIso8601String(),
     };
     list.add(newMed);
     await prefs.setString('custom_reminder_medicines', jsonEncode(list));

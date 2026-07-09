@@ -60,7 +60,7 @@ router.put('/profile', protect, authorize('Patient'), async (req, res) => {
 // Add Custom Reminder Medicine
 router.post('/medicines', protect, authorize('Patient'), async (req, res) => {
     try {
-        const { name, timing, context, instruction, dosage } = req.body;
+        const { name, timing, context, instruction, dosage, durationDays, startDate } = req.body;
         if (!name) return res.status(400).json({ message: 'Medicine name is required' });
         
         const medId = `custom_${Date.now()}`;
@@ -70,7 +70,9 @@ router.post('/medicines', protect, authorize('Patient'), async (req, res) => {
             timing: timing || 'Morning',
             context: context || 'After Food',
             instruction: instruction || '1 Unit',
-            dosage: dosage || '1 Unit'
+            dosage: dosage || '1 Unit',
+            durationDays: Number(durationDays) || 0,
+            startDate: startDate ? new Date(startDate) : new Date()
         };
         
         req.user.customMedicines = req.user.customMedicines || [];

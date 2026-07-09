@@ -62,10 +62,12 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
           final List<dynamic> customList = jsonDecode(localJson);
           for (var m in customList) {
             if (m is Map) {
+              final durDays = int.tryParse(m['durationDays']?.toString() ?? '0') ?? 0;
+              final durText = durDays > 0 ? '$durDays Days course' : 'Ongoing course';
               parsedMedicines.add(Medicine(
                 id: m['id']?.toString() ?? 'custom_${DateTime.now().millisecondsSinceEpoch}',
                 name: m['name']?.toString() ?? 'Custom Medicine',
-                dosage: '${m['timing'] ?? 'Morning'} • ${m['context'] ?? 'After Food'}',
+                dosage: '${m['timing'] ?? 'Morning'} • ${m['context'] ?? 'After Food'} • $durText',
                 frequency: 1,
                 timings: [],
                 startDate: DateTime.now(),
@@ -109,6 +111,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
     final nameCtrl = TextEditingController();
     final dosageCtrl = TextEditingController(text: '1 Tablet');
     final instructionCtrl = TextEditingController();
+    final durationCtrl = TextEditingController();
     String selectedTiming = 'Morning';
     String selectedContext = 'After Food';
 
@@ -164,6 +167,17 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                         hintText: 'e.g. 1 Tablet, 10 ml',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.scale),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: durationCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Duration in Days (Optional)',
+                        hintText: 'e.g. 5, 10 (Leave empty or 0 for ongoing course)',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.calendar_today),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -229,6 +243,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                             context: selectedContext,
                             instruction: instructionCtrl.text.trim(),
                             dosage: dosageCtrl.text.trim(),
+                            durationDays: int.tryParse(durationCtrl.text.trim()) ?? 0,
                           );
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(

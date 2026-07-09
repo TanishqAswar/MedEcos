@@ -65,7 +65,9 @@ const userSchema = new mongoose.Schema({
         dosage: { type: String },
         timing: { type: String },
         context: { type: String },
-        instruction: { type: String }
+        instruction: { type: String },
+        durationDays: { type: Number, default: 0 },
+        startDate: { type: Date, default: Date.now }
     }],
     deletedReminders: [{
         type: String
