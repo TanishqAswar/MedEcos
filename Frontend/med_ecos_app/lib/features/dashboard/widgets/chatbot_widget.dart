@@ -122,10 +122,15 @@ End patient responses with a gentle reminder to consult their doctor when releva
         .map((m) => {'role': m['role'] as String, 'text': m['text'] as String})
         .toList();
 
-    final response = await GeminiService.chatWithGemini(
-      history: historyForApi,
-      systemInstruction: systemInstruction,
-    );
+    String? response;
+    try {
+      response = await GeminiService.chatWithGemini(
+        history: historyForApi,
+        systemInstruction: systemInstruction,
+      );
+    } catch (e) {
+      response = "I'm having trouble connecting right now. Please try again later.";
+    }
 
     if (mounted) {
       setState(() {

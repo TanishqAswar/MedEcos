@@ -179,7 +179,7 @@ Respond STRICTLY with "NO_CLASH" if there are no interactions. Nothing else.
         url,
         headers: {"Content-Type": "application/json"},
         body: body,
-      );
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
