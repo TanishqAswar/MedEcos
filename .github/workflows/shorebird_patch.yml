@@ -1,0 +1,50 @@
+name: Shorebird Patch (OTA Update)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Frontend/med_ecos_app/**'
+
+jobs:
+  patch:
+    name: Push OTA Patch
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Frontend/med_ecos_app
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java (required for Android builds)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Setup Shorebird
+        uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
+
+      - name: Create dummy .env for asset bundling
+        run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Push Shorebird Patch (Android)
+        run: |
+          shorebird patch android \
+            --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
