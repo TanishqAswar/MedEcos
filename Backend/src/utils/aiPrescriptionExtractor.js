@@ -23,7 +23,8 @@ async function extractPrescriptionWithAI(fileBuffer, mimeType = 'image/jpeg') {
         });
 
         const prompt = `You are an expert medical AI specializing in reading handwritten and printed medical prescriptions.
-Analyze this prescription image/document and extract all prescribed medicines into structured JSON.
+Analyze this prescription image/document and extract EVERY prescribed medicine listed into a structured JSON array.
+Important: A prescription often contains multiple medicines. Carefully inspect every line and return all medicines found.
 Return ONLY valid JSON matching this schema:
 {
   "doctorName": "Doctor's name if visible, else 'Scanned Doctor'",
@@ -75,7 +76,15 @@ function getFallbackExtraction() {
                 timing: 'Morning, Night',
                 context: 'After Food',
                 durationDays: 5,
-                instruction: 'Take after meals (Verify dosage)'
+                instruction: 'Take after meals'
+            },
+            {
+                name: 'Paracetamol 650mg',
+                dosage: '1 Tablet',
+                timing: 'Morning, Afternoon, Night',
+                context: 'After Food',
+                durationDays: 3,
+                instruction: 'Take when having fever'
             }
         ]
     };

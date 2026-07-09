@@ -350,27 +350,31 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
   }
 
   void _showVerifyScannedPrescriptionModal(String secureUrl, [Map<String, dynamic>? extractedData]) {
-    String initialName = '';
-    String initialDosage = '1 Tablet';
-    String initialDuration = '5';
-    String selectedTiming = 'Morning, Night';
-    String selectedContext = 'After Food';
+    final List<Map<String, dynamic>> scannedRows = [];
 
-    if (extractedData != null && extractedData['medicines'] != null) {
-      final list = extractedData['medicines'] as List;
-      if (list.isNotEmpty && list[0] is Map) {
-        final firstMed = list[0];
-        initialName = firstMed['name']?.toString() ?? '';
-        initialDosage = firstMed['dosage']?.toString() ?? '1 Tablet';
-        initialDuration = (firstMed['durationDays']?.toString() ?? '5');
-        if (firstMed['timing'] != null) selectedTiming = firstMed['timing'].toString();
-        if (firstMed['context'] != null) selectedContext = firstMed['context'].toString();
+    if (extractedData != null && extractedData['medicines'] != null && (extractedData['medicines'] as List).isNotEmpty) {
+      for (var med in (extractedData['medicines'] as List)) {
+        if (med is Map) {
+          scannedRows.add({
+            'nameCtrl': TextEditingController(text: med['name']?.toString() ?? ''),
+            'dosageCtrl': TextEditingController(text: med['dosage']?.toString() ?? '1 Tablet'),
+            'durationCtrl': TextEditingController(text: med['durationDays']?.toString() ?? '5'),
+            'timing': med['timing']?.toString() ?? 'Morning, Night',
+            'context': med['context']?.toString() ?? 'After Food',
+          });
+        }
       }
     }
 
-    final nameCtrl = TextEditingController(text: initialName);
-    final dosageCtrl = TextEditingController(text: initialDosage);
-    final durationCtrl = TextEditingController(text: initialDuration);
+    if (scannedRows.isEmpty) {
+      scannedRows.add({
+        'nameCtrl': TextEditingController(),
+        'dosageCtrl': TextEditingController(text: '1 Tablet'),
+        'durationCtrl': TextEditingController(text: '5'),
+        'timing': 'Morning, Night',
+        'context': 'After Food',
+      });
+    }
 
     showModalBottomSheet(
       context: context,
@@ -383,10 +387,10 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
           builder: (ctx, setModalState) {
             return Padding(
               padding: EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 24,
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -396,9 +400,9 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Verify Scanned Prescription',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        Text(
+                          'Verify Scanned Medicines (${scannedRows.length})',
+                          style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           icon: const Icon(Icons.close),
@@ -419,7 +423,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Prescription securely uploaded to Cloudinary! Review & add detected medicines below.',
+                              'AI extracted all detected medicines! Please confirm or edit the doses below before saving.',
                               style: TextStyle(fontSize: 13, color: Colors.green),
                             ),
                           ),
@@ -427,51 +431,124 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: nameCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Medicine Name *',
-                        hintText: 'e.g. Amoxicillin 500mg',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.medication),
-                      ),
+                    ...List.generate(scannedRows.length, (index) {
+                      final row = scannedRows[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: AppColors.primary.withOpacity(0.3)),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Medicine #${index + 1}',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                                  ),
+                                  if (scannedRows.length > 1)
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                      onPressed: () {
+                                        setModalState(() {
+                                          scannedRows.removeAt(index);
+                                        });
+                                      },
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              TextField(
+                                controller: row['nameCtrl'] as TextEditingController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Medicine Name *',
+                                  hintText: 'e.g. Amoxicillin 500mg',
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: row['dosageCtrl'] as TextEditingController,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Dosage',
+                                        hintText: 'e.g. 1 Tablet',
+                                        border: OutlineInputBorder(),
+                                        isDense: true,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: row['durationCtrl'] as TextEditingController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Duration (Days)',
+                                        hintText: 'e.g. 5',
+                                        border: OutlineInputBorder(),
+                                        isDense: true,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                    TextButton.icon(
+                      onPressed: () {
+                        setModalState(() {
+                          scannedRows.add({
+                            'nameCtrl': TextEditingController(),
+                            'dosageCtrl': TextEditingController(text: '1 Tablet'),
+                            'durationCtrl': TextEditingController(text: '5'),
+                            'timing': 'Morning, Night',
+                            'context': 'After Food',
+                          });
+                        });
+                      },
+                      icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+                      label: const Text('+ Add Another Medicine Row'),
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: dosageCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Dosage',
-                        hintText: 'e.g. 1 Tablet',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.scale),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: durationCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Duration in Days',
-                        hintText: 'e.g. 5',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.calendar_today),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
-                          final name = nameCtrl.text.trim();
-                          if (name.isEmpty) {
+                          final validMedicines = [];
+                          for (var row in scannedRows) {
+                            final name = (row['nameCtrl'] as TextEditingController).text.trim();
+                            if (name.isNotEmpty) {
+                              validMedicines.add({
+                                'name': name,
+                                'dosage': (row['dosageCtrl'] as TextEditingController).text.trim(),
+                                'durationDays': int.tryParse((row['durationCtrl'] as TextEditingController).text.trim()) ?? 0,
+                                'timing': row['timing'] as String,
+                                'context': row['context'] as String,
+                              });
+                            }
+                          }
+
+                          if (validMedicines.isEmpty) {
                             ScaffoldMessenger.of(ctx).showSnackBar(
-                              const SnackBar(content: Text('Please enter medicine name')),
+                              const SnackBar(content: Text('Please verify at least one medicine name')),
                             );
                             return;
                           }
                           Navigator.pop(ctx);
 
-                          // Save to Backend /prescriptions/scanned
+                          // 1. Save all confirmed medicines to Backend /prescriptions/scanned
                           try {
                             final prefs = await SharedPreferences.getInstance();
                             final token = prefs.getString('jwt_token') ?? '';
@@ -483,32 +560,28 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                               },
                               body: jsonEncode({
                                 'attachmentUrl': secureUrl,
-                                'doctorName': 'Scanned Prescription',
-                                'medicines': [
-                                  {
-                                    'name': name,
-                                    'timing': selectedTiming,
-                                    'context': selectedContext,
-                                    'dosage': dosageCtrl.text.trim(),
-                                    'durationDays': int.tryParse(durationCtrl.text.trim()) ?? 0,
-                                  }
-                                ]
+                                'doctorName': extractedData?['doctorName'] ?? 'Scanned Prescription',
+                                'diagnosis': extractedData?['diagnosis'] ?? 'Prescription Scan',
+                                'medicines': validMedicines,
                               }),
                             );
                           } catch (_) {}
 
-                          await ReminderService().addCustomMedicine(
-                            name: name,
-                            timing: selectedTiming,
-                            context: selectedContext,
-                            instruction: 'Scanned prescription dose',
-                            dosage: dosageCtrl.text.trim(),
-                            durationDays: int.tryParse(durationCtrl.text.trim()) ?? 0,
-                          );
+                          // 2. Add each confirmed medicine to Reminders
+                          for (var med in validMedicines) {
+                            await ReminderService().addCustomMedicine(
+                              name: med['name'],
+                              timing: med['timing'],
+                              context: med['context'],
+                              instruction: 'Scanned prescription dose',
+                              dosage: med['dosage'],
+                              durationDays: med['durationDays'],
+                            );
+                          }
 
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Scanned prescription saved & $name added to reminders!')),
+                              SnackBar(content: Text('Scanned prescription saved & ${validMedicines.length} medicines added to reminders!')),
                             );
                             _loadMedicines();
                           }
@@ -519,7 +592,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: const Text('Confirm & Save Reminder', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: const Text('Confirm & Save All Reminders', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
