@@ -65,6 +65,14 @@ const prescriptionSchema = new mongoose.Schema({
     },
     signaturePayload: {
         type: String,
+    },
+    attachmentUrl: {
+        type: String, // Cloudinary secure URL for uploaded prescription image or PDF
+    },
+    source: {
+        type: String,
+        enum: ['Doctor', 'Scanned'],
+        default: 'Doctor'
     }
 }, { timestamps: true });
 

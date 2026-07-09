@@ -6,6 +6,10 @@ const MedicineHistory = require('../models/MedicineHistory');
 const Appointment = require('../models/Appointment');
 const User = require('../models/User');
 const LabTestOrder = require('../models/LabTestOrder');
+const multer = require('multer');
+const { uploadToCloudinary } = require('../utils/cloudinary');
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Get My Medical History (Prescriptions)
 router.get('/prescriptions', protect, authorize('Patient'), async (req, res) => {
@@ -112,6 +116,64 @@ router.delete('/medicines/:id', protect, authorize('Patient'), async (req, res) 
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Upload Prescription Image or PDF to Cloudinary
+router.post('/prescriptions/upload', protect, authorize('Patient'), upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+        const secureUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
+        res.json({ secure_url: secureUrl });
+    } catch (error) {
+        console.error('Cloudinary upload error:', error);
+        res.status(500).json({ message: 'Failed to upload prescription file to cloud' });
+    }
+});
+
+// Save Scanned Prescription with Reviewed OCR Medicines
+router.post('/prescriptions/scanned', protect, authorize('Patient'), async (req, res) => {
+    try {
+        const { attachmentUrl, doctorName, diagnosis, medicines } = req.body;
+        const abhaId = req.user.abhaId || req.user._id.toString();
+
+        const prescription = await Prescription.create({
+            abhaId,
+            doctorId: req.user._id,
+            doctorName: doctorName || 'Scanned Prescription',
+            diagnosis: diagnosis || 'Patient Uploaded Prescription',
+            patientName: req.user.name,
+            attachmentUrl: attachmentUrl || null,
+            source: 'Scanned',
+            medicines: Array.isArray(medicines) ? medicines : []
+        });
+
+        // Sync verified scanned medicines into user's customMedicines reminders
+        if (Array.isArray(medicines)) {
+            req.user.customMedicines = req.user.customMedicines || [];
+            for (const med of medicines) {
+                if (med.name) {
+                    req.user.customMedicines.push({
+                        id: `scanned_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                        name: med.name.trim(),
+                        timing: med.timing || 'Morning, Night',
+                        context: med.context || 'After Food',
+                        instruction: med.instruction || 'Scanned prescription dose',
+                        dosage: med.dosage || '1 Unit',
+                        durationDays: Number(med.durationDays) || 0,
+                        startDate: new Date()
+                    });
+                }
+            }
+            await req.user.save();
+        }
+
+        res.status(201).json({ message: 'Scanned prescription saved and reminders created successfully', prescription });
+    } catch (error) {
+        console.error('Error saving scanned prescription:', error);
+        res.status(500).json({ message: 'Server error saving scanned prescription' });
     }
 });
 
