@@ -61,7 +61,22 @@ You MUST respond with ONLY raw JSON — no markdown, no code blocks, no explanat
         };
     } catch (error) {
         console.error('Gemini Vision OCR extraction failed:', error.message);
-        return getFallbackExtraction();
+        // Instead of silent fallback, return the error so it shows up in the UI
+        return {
+            success: false,
+            doctorName: 'Error Extracting',
+            diagnosis: 'Error Extracting',
+            medicines: [
+                {
+                    name: `AI ERROR: ${error.message}`,
+                    dosage: 'N/A',
+                    timing: 'N/A',
+                    context: 'N/A',
+                    durationDays: 0,
+                    instruction: 'Please check backend logs or restart server.'
+                }
+            ]
+        };
     }
 }
 
