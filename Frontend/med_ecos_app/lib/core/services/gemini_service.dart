@@ -84,7 +84,7 @@ class GeminiService {
   }
 
   static Future<String?> _callGemini(List<String> currentMedicines, String newMedicine) async {
-    final apiKey = (dotenv.isInitialized ? dotenv.env['GEMINI_API_KEY'] : null) ?? String.fromEnvironment('GEMINI_API_KEY');
+    final apiKey = (dotenv.isInitialized ? dotenv.env['GEMINI_API_KEY'] : null) ?? const String.fromEnvironment('GEMINI_API_KEY');
     
     if (apiKey.isEmpty) {
       return null; // No key, skip silently
@@ -144,7 +144,7 @@ Respond STRICTLY with "NO_CLASH" if there are no interactions. Nothing else.
     required List<Map<String, String>> history,
     required String systemInstruction,
   }) async {
-    final apiKey = (dotenv.isInitialized ? dotenv.env['GEMINI_API_KEY'] : null) ?? String.fromEnvironment('GEMINI_API_KEY');
+    final apiKey = (dotenv.isInitialized ? dotenv.env['GEMINI_API_KEY'] : null) ?? const String.fromEnvironment('GEMINI_API_KEY');
 
     if (apiKey.isEmpty) {
       return "I'm sorry, my AI connection is currently offline.";
