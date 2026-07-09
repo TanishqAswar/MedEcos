@@ -129,7 +129,7 @@ End patient responses with a gentle reminder to consult their doctor when releva
         systemInstruction: systemInstruction,
       );
     } catch (e) {
-      response = "I'm having trouble connecting right now. Please try again later.";
+      response = "DEBUG EXCEPTION CATCH: $e";
     }
 
     if (mounted) {

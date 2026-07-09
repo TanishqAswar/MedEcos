@@ -187,11 +187,11 @@ Respond STRICTLY with "NO_CLASH" if there are no interactions. Nothing else.
         return text?.trim() ?? "I didn't understand that.";
       } else {
         print("Gemini Chat Error: ${response.statusCode} - ${response.body}");
-        return "I'm having trouble connecting right now. Please try again later.";
+        return "DEBUG ERROR: ${response.statusCode} - ${response.body}";
       }
     } catch (e) {
       print("Gemini Chat Exception: $e");
-      return "Something went wrong. Please check your connection.";
+      return "DEBUG EXCEPTION: $e";
     }
   }
 }
