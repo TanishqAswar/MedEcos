@@ -603,7 +603,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
+                IconButton(
+                  icon: const Icon(Icons.document_scanner, color: AppColors.primary),
+                  tooltip: 'Scan Prescription',
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MedicineListScreen()),
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.refresh, color: AppColors.primary),
                   onPressed: _fetchPatientData,
