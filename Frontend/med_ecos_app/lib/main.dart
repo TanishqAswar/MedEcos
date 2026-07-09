@@ -5,9 +5,16 @@ import 'core/theme/app_theme.dart';
 import 'features/dashboard/screens/dashboard_screen.dart';
 import 'features/auth/login_screen.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // dotenv.load() removed to prevent build/runtime crashes in production
+  
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    // Silently ignore if .env is missing (e.g., in production where --dart-define is used)
+  }
 
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('jwt_token');
