@@ -328,8 +328,9 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
         if (res.statusCode == 200) {
           final data = jsonDecode(res.body);
           final secureUrl = data['secure_url'] ?? '';
+          final extracted = data['extracted'] as Map<String, dynamic>?;
           if (mounted) {
-            _showVerifyScannedPrescriptionModal(secureUrl);
+            _showVerifyScannedPrescriptionModal(secureUrl, extracted);
           }
         } else {
           if (mounted) {
@@ -348,12 +349,28 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
     }
   }
 
-  void _showVerifyScannedPrescriptionModal(String secureUrl) {
-    final nameCtrl = TextEditingController();
-    final dosageCtrl = TextEditingController(text: '1 Tablet');
-    final durationCtrl = TextEditingController(text: '5');
+  void _showVerifyScannedPrescriptionModal(String secureUrl, [Map<String, dynamic>? extractedData]) {
+    String initialName = '';
+    String initialDosage = '1 Tablet';
+    String initialDuration = '5';
     String selectedTiming = 'Morning, Night';
     String selectedContext = 'After Food';
+
+    if (extractedData != null && extractedData['medicines'] != null) {
+      final list = extractedData['medicines'] as List;
+      if (list.isNotEmpty && list[0] is Map) {
+        final firstMed = list[0];
+        initialName = firstMed['name']?.toString() ?? '';
+        initialDosage = firstMed['dosage']?.toString() ?? '1 Tablet';
+        initialDuration = (firstMed['durationDays']?.toString() ?? '5');
+        if (firstMed['timing'] != null) selectedTiming = firstMed['timing'].toString();
+        if (firstMed['context'] != null) selectedContext = firstMed['context'].toString();
+      }
+    }
+
+    final nameCtrl = TextEditingController(text: initialName);
+    final dosageCtrl = TextEditingController(text: initialDosage);
+    final durationCtrl = TextEditingController(text: initialDuration);
 
     showModalBottomSheet(
       context: context,

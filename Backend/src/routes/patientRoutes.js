@@ -8,6 +8,7 @@ const User = require('../models/User');
 const LabTestOrder = require('../models/LabTestOrder');
 const multer = require('multer');
 const { uploadToCloudinary } = require('../utils/cloudinary');
+const { extractPrescriptionWithAI } = require('../utils/aiPrescriptionExtractor');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -119,17 +120,25 @@ router.delete('/medicines/:id', protect, authorize('Patient'), async (req, res) 
     }
 });
 
-// Upload Prescription Image or PDF to Cloudinary
+// Upload Prescription Image or PDF to Cloudinary & Run AI Extraction
 router.post('/prescriptions/upload', protect, authorize('Patient'), upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
-        const secureUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
-        res.json({ secure_url: secureUrl });
+        // Run Cloudinary upload and Gemini AI extraction in parallel
+        const [secureUrl, extracted] = await Promise.all([
+            uploadToCloudinary(req.file.buffer, req.file.originalname),
+            extractPrescriptionWithAI(req.file.buffer, req.file.mimetype || 'image/jpeg')
+        ]);
+
+        res.json({
+            secure_url: secureUrl,
+            extracted: extracted
+        });
     } catch (error) {
-        console.error('Cloudinary upload error:', error);
-        res.status(500).json({ message: 'Failed to upload prescription file to cloud' });
+        console.error('Cloudinary upload or AI extraction error:', error);
+        res.status(500).json({ message: 'Failed to upload and analyze prescription file' });
     }
 });
 
