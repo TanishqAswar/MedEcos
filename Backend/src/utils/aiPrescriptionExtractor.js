@@ -15,17 +15,16 @@ async function extractPrescriptionWithAI(fileBuffer, mimeType = 'image/jpeg') {
 
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-flash',
-            generationConfig: {
-                responseMimeType: 'application/json',
-            }
-        });
+
+        const model = genAI.getGenerativeModel(
+            { model: 'gemini-2.5-flash' },
+            { apiVersion: 'v1beta' }
+        );
 
         const prompt = `You are an expert medical AI specializing in reading handwritten and printed medical prescriptions.
 Analyze this prescription image/document and extract EVERY prescribed medicine listed into a structured JSON array.
 Important: A prescription often contains multiple medicines. Carefully inspect every line and return all medicines found.
-Return ONLY valid JSON matching this schema:
+You MUST respond with ONLY raw JSON — no markdown, no code blocks, no explanation. Just pure JSON matching this schema exactly:
 {
   "doctorName": "Doctor's name if visible, else 'Scanned Doctor'",
   "diagnosis": "Diagnosis or complaint if visible, else 'General Prescription'",
@@ -49,7 +48,9 @@ Return ONLY valid JSON matching this schema:
         };
 
         const result = await model.generateContent([prompt, imagePart]);
-        const responseText = result.response.text();
+        let responseText = result.response.text().trim();
+        // Strip markdown code fences if Gemini wraps in ```json ... ```
+        responseText = responseText.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
         const parsed = JSON.parse(responseText);
 
         return {
