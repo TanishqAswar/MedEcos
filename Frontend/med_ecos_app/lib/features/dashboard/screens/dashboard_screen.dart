@@ -242,6 +242,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _removeMedicine(Medicine med) async {
+    try {
+      await ReminderService().deleteReminderMedicine(med.id, med.name);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${med.name} removed from active medicines'),
+            backgroundColor: Colors.red.shade400,
+          ),
+        );
+        _fetchPatientData();
+      }
+    } catch (e) {
+      debugPrint('Error removing medicine: $e');
+    }
+  }
+
   void _onItemSelected(int index) {
     setState(() {
       _selectedIndex = index;
@@ -313,7 +330,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             child: Wrap(
                               spacing: 24, runSpacing: 24,
                               children: [
-                                StatCard(title: "Medicines", value: _medicines.map((m) => m.name.toLowerCase().trim()).toSet().length.toString(), icon: Icons.medical_services, color: Colors.blue, onTap: () => _onItemSelected(3)),
                                 StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(3)),
                                 StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
                               ],
@@ -338,7 +354,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Wrap(
                             spacing: 24, runSpacing: 24,
                             children: [
-                              StatCard(title: "Medicines", value: _medicines.map((m) => m.name.toLowerCase().trim()).toSet().length.toString(), icon: Icons.medical_services, color: Colors.blue, onTap: () => _onItemSelected(1)),
                               StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(1)),
                               StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
                             ],
@@ -355,9 +370,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 32),
                 _buildTodaysReminders(),
                 const SizedBox(height: 32),
-                ActiveMedicinesList(medicines: _medicines.where((med) => 
-                  med.endDate == null || med.endDate!.isAfter(DateTime.now().subtract(const Duration(days: 1)))
-                ).toList()),
+                ActiveMedicinesList(
+                  medicines: _medicines.where((med) => 
+                    med.endDate == null || med.endDate!.isAfter(DateTime.now().subtract(const Duration(days: 1)))
+                  ).toList(),
+                  onRemove: _removeMedicine,
+                ),
                 const SizedBox(height: 32),
                 _buildPreviousMedicinesAndLabTests(),
               ],
