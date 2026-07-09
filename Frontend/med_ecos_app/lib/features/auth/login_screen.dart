@@ -167,6 +167,104 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  bool _useEmailOtp = false;
+  String? _emailTransactionId;
+
+  Future<void> _generateEmailOtp() async {
+    if (_emailController.text.isEmpty) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('${AppConstants.apiBaseUrl}/api/auth/email/generate-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text,
+          'purpose': 'Login Verification'
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _emailTransactionId = data['transactionId'];
+        });
+      } else {
+        setState(() {
+          _errorMessage = data['message'] ?? 'Failed to send Gmail OTP';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Network error: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _verifyEmailOtp() async {
+    if (_otpController.text.isEmpty || _emailTransactionId == null) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('${AppConstants.apiBaseUrl}/api/auth/email/verify-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text,
+          'transactionId': _emailTransactionId,
+          'otp': _otpController.text,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        if (data['isNewUser'] == true) {
+          if (mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SignupScreen()),
+            );
+          }
+          return;
+        }
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwt_token', data['token'] ?? '');
+        await prefs.setString('user_id', data['_id'] ?? '');
+        await prefs.setString('user_role', data['role'] ?? _selectedRole);
+        await prefs.setString('username', data['username'] ?? 'User');
+
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          );
+        }
+      } else {
+        setState(() {
+          _errorMessage = data['message'] ?? 'Invalid verification code';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Network error: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
