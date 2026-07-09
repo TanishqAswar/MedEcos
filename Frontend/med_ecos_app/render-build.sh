@@ -10,6 +10,9 @@ fi
 echo "Adding Flutter to PATH..."
 export PATH="$PATH:`pwd`/flutter/bin"
 
+echo "Creating dummy .env file to satisfy pubspec.yaml asset requirement..."
+touch .env
+
 echo "Building Flutter Web application..."
 flutter build web --release --dart-define=GEMINI_API_KEY=$GEMINI_API_KEY
 
