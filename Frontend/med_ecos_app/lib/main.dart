@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'core/theme/app_theme.dart';
+import 'core/updater/app_updater.dart';
 import 'features/dashboard/screens/dashboard_screen.dart';
 import 'features/auth/login_screen.dart';
 
@@ -33,28 +33,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final _updater = ShorebirdUpdater();
-
   @override
   void initState() {
     super.initState();
-    _checkForUpdate();
+    AppUpdater.checkForUpdate();
   }
 
-  Future<void> _checkForUpdate() async {
-    // Only attempt OTA updates in release mode (Shorebird is a no-op in debug)
-    if (!kReleaseMode) return;
-
-    try {
-      final status = await _updater.checkForUpdate();
-      if (status == UpdateStatus.outdated) {
-        // Download silently in background; will apply on next cold start
-        await _updater.update();
-      }
-    } catch (_) {
-      // Network unavailable or update check failed — continue normally
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
