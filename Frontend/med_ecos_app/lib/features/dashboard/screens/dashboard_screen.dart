@@ -1122,7 +1122,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: isWide ? null : AppBar(
-        title: const Text('MedEcos', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.asset('assets/Icon.jpeg', height: 28, width: 28),
+            ),
+            const SizedBox(width: 10),
+            const Text('MedEcos', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+          ],
+        ),
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: AppColors.primary),
         elevation: 0,

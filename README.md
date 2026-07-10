@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="Frontend/med_ecos_app/assets/Icon.jpeg" alt="MedEcos Logo" width="140" />
+</p>
+
 # MedEcos Unified Medical Platform
 
 🚀 **Live App:** [medecos-frontend.onrender.com](medecos-frontend.onrender.com)
