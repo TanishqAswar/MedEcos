@@ -36,8 +36,19 @@ jobs:
         with:
           cache: true
 
-      - name: Create dummy .env for asset bundling
-        run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+      - name: Decode & place release keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/medecos.jks
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=medecos.jks" >> android/key.properties
+
+      - name: Create .env for asset bundling
+        run: |
+          echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" > .env
+          echo "AGORA_APP_ID=${{ secrets.AGORA_APP_ID }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
 
       - name: Flutter pub get
         run: flutter pub get
@@ -45,6 +56,6 @@ jobs:
       - name: Push Shorebird Patch (Android)
         run: |
           shorebird patch android \
-            --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}

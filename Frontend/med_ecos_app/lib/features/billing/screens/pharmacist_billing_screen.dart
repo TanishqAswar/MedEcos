@@ -362,6 +362,8 @@ class _PharmacistBillingScreenState extends State<PharmacistBillingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width > 800;
+    
     return Column(
       children: [
         Padding(
@@ -381,217 +383,233 @@ class _PharmacistBillingScreenState extends State<PharmacistBillingScreen> {
         ),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left Column: Patient & Inventory Search
-                Expanded(
-                  flex: 3,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        // Patient Search Card
-                        Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text("Patient lookup (Optional)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: TextField(
-                                      controller: _abhaController,
-                                      inputFormatters: [_AbhaInputFormatter()],
-                                      keyboardType: TextInputType.number,
-                                      decoration: const InputDecoration(labelText: 'Enter ABHA ID', border: OutlineInputBorder()),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  ElevatedButton(
-                                    onPressed: _searchPatient,
-                                    child: const Text('Search'),
-                                  )
-                                ],
-                              ),
-                              if (_patientName != null) ...[
-                                const SizedBox(height: 16),
-                                Text("Patient: $_patientName", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
-                              ],
-                              if (_prescriptions.isNotEmpty) ...[
-                                const SizedBox(height: 16),
-                                const Text("Unfulfilled Prescriptions:"),
-                                const SizedBox(height: 8),
-                                Container(
-                                  constraints: const BoxConstraints(maxHeight: 150),
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: _prescriptions.length,
-                                    itemBuilder: (context, index) {
-                                      final p = _prescriptions[index];
-                                      final date = DateFormat.yMMMd().format(DateTime.parse(p['date']));
-                                      return ListTile(
-                                        title: Text("Rx from $date"),
-                                        subtitle: Text("Doctor: ${p['doctorName'] ?? 'Unknown'}"),
-                                        trailing: ElevatedButton(
-                                          onPressed: () => _importPrescription(p),
-                                          child: const Text('Import'),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                )
-                              ]
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Inventory Search
-                      Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text("Add Medicines", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                const SizedBox(height: 8),
-                                Autocomplete<Map<String, dynamic>>(
-                                  optionsBuilder: (TextEditingValue textEditingValue) {
-                                    if (textEditingValue.text.isEmpty) {
-                                      return const Iterable<Map<String, dynamic>>.empty();
-                                    }
-                                    return _inventory.where((dynamic item) {
-                                      return item['medicineName']
-                                          .toString()
-                                          .toLowerCase()
-                                          .contains(textEditingValue.text.toLowerCase());
-                                    }).map((e) => Map<String, dynamic>.from(e as Map));
-                                  },
-                                  displayStringForOption: (Map<String, dynamic> option) => option['medicineName'],
-                                  onSelected: (Map<String, dynamic> selection) {
-                                    _medNameController.text = selection['medicineName'];
-                                    _priceController.text = selection['price'].toString();
-                                    _quantityController.text = '1';
-                                  },
-                                  fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                                    controller.addListener(() {
-                                      if (controller.text != _medNameController.text) {
-                                        _medNameController.text = controller.text;
-                                      }
-                                    });
-                                    return TextField(
-                                      controller: controller,
-                                      focusNode: focusNode,
-                                      decoration: const InputDecoration(labelText: 'Medicine Name', border: OutlineInputBorder()),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                Row(
-                                  children: [
-                                    Expanded(child: TextField(controller: _priceController, decoration: const InputDecoration(labelText: 'Price', border: OutlineInputBorder()), keyboardType: const TextInputType.numberWithOptions(decimal: true))),
-                                    const SizedBox(width: 8),
-                                    Expanded(child: TextField(controller: _quantityController, decoration: const InputDecoration(labelText: 'Quantity', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
-                                  ]
-                                ),
-                                const SizedBox(height: 16),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: ElevatedButton.icon(onPressed: _addManualToCart, icon: const Icon(Icons.add_shopping_cart), label: const Text("Add to Bill"))
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                // Right Column: Cart
-                Expanded(
-                  flex: 2,
-                  child: Card(
-                    color: Colors.blue.shade50,
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Current Bill", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                          const SizedBox(height: 16),
-                          Expanded(
-                            child: _cart.isEmpty 
-                              ? const Center(child: Text("Cart is empty"))
-                              : ListView.builder(
-                                  itemCount: _cart.length,
-                                  itemBuilder: (context, index) {
-                                    final item = _cart[index];
-                                    return Card(
-                                      child: ListTile(
-                                        title: Text(item['medicineName']),
-                                        subtitle: Text("₹${item['pricePerUnit'].toStringAsFixed(2)} x ${item['quantity']}"),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.edit, size: 16, color: Colors.blue),
-                                              onPressed: () => _showEditDialog(index),
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.remove, size: 16),
-                                              onPressed: () => _updateQuantity(index, item['quantity'] - 1),
-                                            ),
-                                            Text(item['quantity'].toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
-                                            IconButton(
-                                              icon: const Icon(Icons.add, size: 16),
-                                              onPressed: () => _updateQuantity(index, item['quantity'] + 1),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                )
-                          ),
-                          const Divider(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text("Grand Total:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                              Text("₹${_grandTotal.toStringAsFixed(2)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: _loading || _cart.isEmpty ? null : _checkout,
-                              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
-                              child: _loading 
-                                ? const CircularProgressIndicator(color: Colors.white)
-                                : const Text("Generate Bill & Print", style: TextStyle(fontSize: 16)),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: isWide ? _buildWideLayout() : _buildNarrowLayout(),
           ),
         ),
       ],
     );
   }
-}
 
+  Widget _buildWideLayout() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(flex: 3, child: _buildLeftColumn()),
+        const SizedBox(width: 16),
+        Expanded(flex: 2, child: _buildRightColumn()),
+      ],
+    );
+  }
+
+  Widget _buildNarrowLayout() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildLeftColumn(),
+          const SizedBox(height: 16),
+          SizedBox(height: 500, child: _buildRightColumn()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeftColumn() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Patient Search Card
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Patient lookup (Optional)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _abhaController,
+                          inputFormatters: [_AbhaInputFormatter()],
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(labelText: 'Enter ABHA ID', border: OutlineInputBorder()),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: _searchPatient,
+                        child: const Text('Search'),
+                      )
+                    ],
+                  ),
+                  if (_patientName != null) ...[
+                    const SizedBox(height: 16),
+                    Text("Patient: $_patientName", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                  ],
+                  if (_prescriptions.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    const Text("Unfulfilled Prescriptions:"),
+                    const SizedBox(height: 8),
+                    Container(
+                      constraints: const BoxConstraints(maxHeight: 150),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _prescriptions.length,
+                        itemBuilder: (context, index) {
+                          final p = _prescriptions[index];
+                          final date = DateFormat.yMMMd().format(DateTime.parse(p['date']));
+                          return ListTile(
+                            title: Text("Rx from $date"),
+                            subtitle: Text("Doctor: ${p['doctorName'] ?? 'Unknown'}"),
+                            trailing: ElevatedButton(
+                              onPressed: () => _importPrescription(p),
+                              child: const Text('Import'),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  ]
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Inventory Search
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Add Medicines", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  Autocomplete<Map<String, dynamic>>(
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return const Iterable<Map<String, dynamic>>.empty();
+                      }
+                      return _inventory.where((dynamic item) {
+                        return item['medicineName']
+                            .toString()
+                            .toLowerCase()
+                            .contains(textEditingValue.text.toLowerCase());
+                      }).map((e) => Map<String, dynamic>.from(e as Map));
+                    },
+                    displayStringForOption: (Map<String, dynamic> option) => option['medicineName'],
+                    onSelected: (Map<String, dynamic> selection) {
+                      _medNameController.text = selection['medicineName'];
+                      _priceController.text = selection['price'].toString();
+                      _quantityController.text = '1';
+                    },
+                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                      controller.addListener(() {
+                        if (controller.text != _medNameController.text) {
+                          _medNameController.text = controller.text;
+                        }
+                      });
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        decoration: const InputDecoration(labelText: 'Medicine Name', border: OutlineInputBorder()),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(child: TextField(controller: _priceController, decoration: const InputDecoration(labelText: 'Price', border: OutlineInputBorder()), keyboardType: const TextInputType.numberWithOptions(decimal: true))),
+                      const SizedBox(width: 8),
+                      Expanded(child: TextField(controller: _quantityController, decoration: const InputDecoration(labelText: 'Quantity', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
+                    ]
+                  ),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton.icon(onPressed: _addManualToCart, icon: const Icon(Icons.add_shopping_cart), label: const Text("Add to Bill"))
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRightColumn() {
+    return Card(
+      color: Colors.blue.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Current Bill", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+            const SizedBox(height: 16),
+            Expanded(
+              child: _cart.isEmpty 
+                ? const Center(child: Text("Cart is empty"))
+                : ListView.builder(
+                    itemCount: _cart.length,
+                    itemBuilder: (context, index) {
+                      final item = _cart[index];
+                      return Card(
+                        child: ListTile(
+                          title: Text(item['medicineName']),
+                          subtitle: Text("₹${item['pricePerUnit'].toStringAsFixed(2)} x ${item['quantity']}"),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, size: 16, color: Colors.blue),
+                                onPressed: () => _showEditDialog(index),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.remove, size: 16),
+                                onPressed: () => _updateQuantity(index, item['quantity'] - 1),
+                              ),
+                              Text(item['quantity'].toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                              IconButton(
+                                icon: const Icon(Icons.add, size: 16),
+                                onPressed: () => _updateQuantity(index, item['quantity'] + 1),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  )
+            ),
+            const Divider(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Grand Total:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text("₹${_grandTotal.toStringAsFixed(2)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
+              ],
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _loading || _cart.isEmpty ? null : _checkout,
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+                child: _loading 
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Generate Bill & Print", style: TextStyle(fontSize: 16)),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _AbhaInputFormatter extends TextInputFormatter {
   @override

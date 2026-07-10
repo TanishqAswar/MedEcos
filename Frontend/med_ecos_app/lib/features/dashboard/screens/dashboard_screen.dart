@@ -1121,63 +1121,81 @@ class _DashboardScreenState extends State<DashboardScreen> {
     
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: isWide ? null : AppBar(
+        title: const Text('MedEcos', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: AppColors.primary),
+        elevation: 0,
+      ),
+      drawer: isWide ? null : Drawer(
+        child: Sidebar(
+          onItemSelected: (index) {
+            _onItemSelected(index);
+            Navigator.pop(context);
+          },
+          selectedIndex: _selectedIndex,
+          userRole: _userRole,
+          userName: _userName,
+          onClose: () => Navigator.pop(context),
+        ),
+      ),
       body: Stack(
         children: [
           Row(
             children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOut,
-            width: _sidebarOpen ? 250 : 0,
-            child: _sidebarOpen
-                ? Sidebar(
-                    onItemSelected: _onItemSelected,
-                    selectedIndex: _selectedIndex,
-                    userRole: _userRole,
-                    userName: _userName,
-                    onClose: () => setState(() => _sidebarOpen = false),
-                  )
-                : const SizedBox.shrink(),
+              if (isWide)
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  width: _sidebarOpen ? 250 : 0,
+                  child: _sidebarOpen
+                      ? Sidebar(
+                          onItemSelected: _onItemSelected,
+                          selectedIndex: _selectedIndex,
+                          userRole: _userRole,
+                          userName: _userName,
+                          onClose: () => setState(() => _sidebarOpen = false),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              Expanded(
+                child: Column(
+                  children: [
+                    if (isWide && !_sidebarOpen)
+                      Container(
+                        height: 56,
+                        color: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.menu, color: AppColors.primary),
+                              onPressed: () => setState(() => _sidebarOpen = true),
+                              tooltip: 'Open Menu',
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'MedEcos',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Expanded(child: _buildContent()),
+                  ],
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Column(
-              children: [
-                // Top bar with hamburger icon when sidebar is closed
-                if (!_sidebarOpen)
-                  Container(
-                    height: 56,
-                    color: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.menu, color: AppColors.primary),
-                          onPressed: () => setState(() => _sidebarOpen = true),
-                          tooltip: 'Open Menu',
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'MedEcos',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                Expanded(child: _buildContent()),
-              ],
-            ),
+          ChatbotWidget(
+            userRole: _userRole,
+            userName: _userName,
           ),
         ],
       ),
-      ChatbotWidget(
-        userRole: _userRole,
-        userName: _userName,
-      ),
-    ],
-  ),
-);
-}
+    );
+  }
 }

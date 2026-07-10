@@ -156,6 +156,96 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
+  bool _isEmailVerified = false;
+  String? _emailTransactionId;
+  final _emailOtpController = TextEditingController();
+  bool _sendingEmailOtp = false;
+
+  Future<void> _sendEmailOtp() async {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(_emailController.text)) {
+      setState(() {
+        _errorMessage = 'Please enter a valid email address first';
+      });
+      return;
+    }
+    setState(() {
+      _sendingEmailOtp = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('${AppConstants.apiBaseUrl}/api/auth/email/generate-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text,
+          'purpose': 'Account Registration'
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        setState(() {
+          _emailTransactionId = data['transactionId'];
+        });
+      } else {
+        setState(() {
+          _errorMessage = data['message'] ?? 'Failed to send OTP to email';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Network error: $e';
+      });
+    } finally {
+      setState(() {
+        _sendingEmailOtp = false;
+      });
+    }
+  }
+
+  Future<void> _verifyEmailOtp() async {
+    if (_emailOtpController.text.isEmpty || _emailTransactionId == null) return;
+    setState(() {
+      _sendingEmailOtp = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('${AppConstants.apiBaseUrl}/api/auth/email/verify-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text,
+          'transactionId': _emailTransactionId,
+          'otp': _emailOtpController.text,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        setState(() {
+          _isEmailVerified = true;
+          _emailTransactionId = null;
+          _errorMessage = null;
+        });
+      } else {
+        setState(() {
+          _errorMessage = data['message'] ?? 'Invalid verification code';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Network error: $e';
+      });
+    } finally {
+      setState(() {
+        _sendingEmailOtp = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -182,11 +272,52 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: _emailController,
-                  decoration: const InputDecoration(
+                  readOnly: _isEmailVerified,
+                  decoration: InputDecoration(
                     labelText: 'Email',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: _isEmailVerified
+                        ? const Icon(Icons.verified, color: Colors.green)
+                        : TextButton.icon(
+                            onPressed: _sendingEmailOtp ? null : _sendEmailOtp,
+                            icon: const Icon(Icons.mail_outline, size: 18),
+                            label: _sendingEmailOtp
+                                ? const SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2))
+                                : const Text('Verify Gmail'),
+                          ),
                   ),
                 ),
+                if (_emailTransactionId != null && !_isEmailVerified) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _emailOtpController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Enter 6-digit Gmail OTP',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: _sendingEmailOtp ? null : _verifyEmailOtp,
+                        child: _sendingEmailOtp
+                            ? const SizedBox(
+                                height: 16,
+                                width: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Text('Verify Code'),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: _selectedRole,

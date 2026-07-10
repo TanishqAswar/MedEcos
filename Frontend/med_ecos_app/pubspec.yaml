@@ -55,6 +55,7 @@ dependencies:
   url_launcher: ^6.3.2
   http_parser: ^4.1.2
   flutter_markdown: any
+  shorebird_code_push: ^1.1.2
 
 dev_dependencies:
   flutter_test:

@@ -96,6 +96,8 @@ class _PatientLookupScreenState extends State<PatientLookupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width > 800;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text("Patient Lookup"),
@@ -107,171 +109,195 @@ class _PatientLookupScreenState extends State<PatientLookupScreen> {
           ),
         ],
       ),
-      body: Row(
+      body: isWide ? _buildWideLayout(context) : _buildMobileLayout(context),
+    );
+  }
+
+  Widget _buildWideLayout(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 1,
+          child: _buildSearchCard(context),
+        ),
+        Expanded(
+          flex: 2,
+          child: _buildRecentPatientsSection(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildSearchCard(context),
+          SizedBox(
+            height: 500,
+            child: _buildRecentPatientsSection(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchCard(BuildContext context) {
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 400),
+        padding: const EdgeInsets.all(24),
+        margin: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Icon(Icons.medical_information, size: 48, color: AppColors.primary),
+            const SizedBox(height: 16),
+            Text(
+              "Find Patient",
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Start typing to search, scan QR, or register new patient",
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            
+            // Autocomplete Search
+            Autocomplete<Patient>(
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text.isEmpty) {
+                  return const Iterable<Patient>.empty();
+                }
+                return ApiService().searchPatients(textEditingValue.text);
+              },
+              displayStringForOption: (Patient patient) => patient.name,
+              optionsViewBuilder: _buildOptionsView,
+              onSelected: (Patient patient) {
+                _navigateToDetails(patient.id);
+              },
+              fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                return TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  decoration: const InputDecoration(
+                    labelText: "Patient ID or Name",
+                    hintText: "Start typing...",
+                    prefixIcon: Icon(Icons.person_search),
+                    border: OutlineInputBorder(),
+                  ),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("QR Scanner: Simulating patient lookup..."))
+                      );
+                      final patients = ApiService().patients;
+                      if (patients.isNotEmpty) {
+                        _navigateToDetails(patients.first.id);
+                      }
+                    },
+                    icon: const Icon(Icons.qr_code_scanner, size: 20),
+                    label: const Text("QR Scan"),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      side: const BorderSide(color: AppColors.primary),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _showAddPatientDialog,
+                    icon: const Icon(Icons.person_add, size: 20),
+                    label: const Text("New Patient"),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      side: BorderSide(color: AppColors.accent),
+                      foregroundColor: AppColors.accent,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentPatientsSection(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left Side - Centered Search Card
-          Expanded(
-            flex: 1,
-            child: Center(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 400),
-                padding: const EdgeInsets.all(24),
-                margin: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Icon(Icons.medical_information, size: 48, color: AppColors.primary),
-                    const SizedBox(height: 16),
-                    Text(
-                      "Find Patient",
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Start typing to search, scan QR, or register new patient",
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Autocomplete Search
-                    Autocomplete<Patient>(
-                      optionsBuilder: (TextEditingValue textEditingValue) {
-                        if (textEditingValue.text.isEmpty) {
-                          return const Iterable<Patient>.empty();
-                        }
-                        return ApiService().searchPatients(textEditingValue.text);
-                      },
-                      displayStringForOption: (Patient patient) => patient.name,
-                      optionsViewBuilder: _buildOptionsView,
-                      onSelected: (Patient patient) {
-                        _navigateToDetails(patient.id);
-                      },
-                      fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                        return TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          decoration: const InputDecoration(
-                            labelText: "Patient ID or Name",
-                            hintText: "Start typing...",
-                            prefixIcon: Icon(Icons.person_search),
-                            border: OutlineInputBorder(),
-                          ),
-                        );
-                      },
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("QR Scanner: Simulating patient lookup..."))
-                              );
-                              final patients = ApiService().patients;
-                              if (patients.isNotEmpty) {
-                                _navigateToDetails(patients.first.id);
-                              }
-                            },
-                            icon: const Icon(Icons.qr_code_scanner, size: 20),
-                            label: const Text("QR Scan"),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              side: const BorderSide(color: AppColors.primary),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _showAddPatientDialog,
-                            icon: const Icon(Icons.person_add, size: 20),
-                            label: const Text("New Patient"),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              side: BorderSide(color: AppColors.accent),
-                              foregroundColor: AppColors.accent,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+          Text(
+            "Recent Patients",
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
             ),
           ),
-          
-          // Right Side - Recent Patients Section
+          const SizedBox(height: 16),
           Expanded(
-            flex: 2,
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Recent Patients",
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
+            child: ListView.separated(
+              itemCount: ApiService().patients.length,
+              separatorBuilder: (c, i) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final patient = ApiService().patients[index];
+                return Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.withOpacity(0.2)),
                   ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: ApiService().patients.length,
-                      separatorBuilder: (c, i) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final patient = ApiService().patients[index];
-                        return Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: Colors.grey.withOpacity(0.2)),
-                          ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(16),
-                            leading: CircleAvatar(
-                              radius: 24,
-                              backgroundColor: AppColors.primary,
-                              child: Text(
-                                patient.name[0],
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            title: Text(patient.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text("ID: ${patient.id} • ${patient.age} Yrs • ${patient.gender}"),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () => _navigateToDetails(patient.id),
-                          ),
-                        );
-                      },
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16),
+                    leading: CircleAvatar(
+                      radius: 24,
+                      backgroundColor: AppColors.primary,
+                      child: Text(
+                        patient.name[0],
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
                     ),
+                    title: Text(patient.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text("ID: ${patient.id} • ${patient.age} Yrs • ${patient.gender}"),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _navigateToDetails(patient.id),
                   ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],

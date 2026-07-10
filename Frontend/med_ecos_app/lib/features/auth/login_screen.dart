@@ -328,46 +328,114 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                    if (!_useEmailOtp) ...[
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.lock),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    if (_errorMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(color: Colors.red),
+                      const SizedBox(height: 24),
+                      if (_errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _loginWithEmail,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: _isLoading 
+                            ? const CircularProgressIndicator() 
+                            : const Text('Login'),
+                      ),
+                    ] else ...[
+                      if (_emailTransactionId == null) ...[
+                        const SizedBox(height: 8),
+                        ElevatedButton.icon(
+                          onPressed: _isLoading ? null : _generateEmailOtp,
+                          icon: const Icon(Icons.mail_outline),
+                          label: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : const Text('Send Verification Code via Gmail'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                        ),
+                      ] else ...[
+                        Text(
+                          'Verification code sent to Gmail address: ${_emailController.text}',
+                          style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
-                      ),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _loginWithEmail,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: _isLoading 
-                          ? const CircularProgressIndicator() 
-                          : const Text('Login'),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _otpController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Enter 6-digit Verification Code',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.security),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        if (_errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(color: Colors.red),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _verifyEmailOtp,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          child: _isLoading 
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : const Text('Verify Code & Continue'),
+                        ),
+                      ],
+                    ],
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _useEmailOtp = !_useEmailOtp;
+                          _errorMessage = null;
+                        });
+                      },
+                      icon: Icon(_useEmailOtp ? Icons.lock : Icons.mark_email_read),
+                      label: Text(_useEmailOtp ? 'Login with Password instead' : 'Login with Gmail OTP verification'),
                     ),
                     if (_selectedRole == 'Patient') ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
                       TextButton(
                         onPressed: () {
                           setState(() {
