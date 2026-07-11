@@ -1,11 +1,15 @@
 const nodemailer = require('nodemailer');
 
-const createTransporter = (port, secure) => {
+const createTransporter = () => {
+    const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
+    const port = parseInt(process.env.EMAIL_PORT || '587', 10);
+    const secure = port === 465; // DO NOT use 465 on Render; 587 uses STARTTLS (secure: false)
+
     const user = process.env.EMAIL_USER || 'medecosmail@gmail.com';
-    const pass = (process.env.EMAIL_APP_PASSWORD || 'tcll qyrr ntjg pona').replace(/['"\s]/g, '').trim();
+    const pass = (process.env.EMAIL_APP_PASSWORD || process.env.EMAIL_PASS || 'tcll qyrr ntjg pona').replace(/['"\s]/g, '').trim();
 
     return nodemailer.createTransport({
-        host: 'smtp.gmail.com',
+        host: host,
         port: port,
         secure: secure,
         auth: {
@@ -15,9 +19,9 @@ const createTransporter = (port, secure) => {
         tls: {
             rejectUnauthorized: false
         },
-        connectionTimeout: 8000,
-        greetingTimeout: 8000,
-        socketTimeout: 10000
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000
     });
 };
 
@@ -124,15 +128,8 @@ const sendOtpEmail = async (toEmail, otp, purpose = 'Verification') => {
         html: htmlContent
     };
 
-    // First try Port 587 (STARTTLS - standard for cloud container environments)
-    try {
-        const transporter587 = createTransporter(587, false);
-        return await transporter587.sendMail(mailOptions);
-    } catch (err587) {
-        console.warn('Port 587 attempt failed, trying fallback Port 465...', err587.message);
-        const transporter465 = createTransporter(465, true);
-        return await transporter465.sendMail(mailOptions);
-    }
+    const transporter = createTransporter();
+    return await transporter.sendMail(mailOptions);
 };
 
 module.exports = {
