@@ -4,11 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/models/medicine_model.dart';
-import '../../video_call/screens/video_call_screen.dart';
 import '../widgets/chatbot_widget.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/reminder_service.dart';
-import '../../../core/utils/medicine_utils.dart';
 import '../../../core/services/notification_service.dart';
 
 // Common Widgets
@@ -204,7 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       final doses = await ReminderService().getTodaysReminders();
 
-      final stats = await ApiService().getDashboardStats();
+      await ApiService().getDashboardStats();
       if (mounted) {
         setState(() {
           _medicines = mergedMedicines.values.toList();
