@@ -14,6 +14,7 @@ class MedicineDose {
   final String context; // e.g. "Before Food"
   final String instruction;
   final String durationLabel; // e.g. "5 Days course" or "Day 2 of 5"
+  final String dosage;
   String status; // "PENDING", "TAKEN", "SKIPPED"
 
   MedicineDose({
@@ -24,6 +25,7 @@ class MedicineDose {
     required this.context,
     required this.instruction,
     this.durationLabel = 'Ongoing course',
+    this.dosage = '1 Unit',
     this.status = 'PENDING',
   });
 }
@@ -144,6 +146,7 @@ class ReminderService {
               context: ctx,
               instruction: inst,
               durationLabel: duration.isNotEmpty ? duration : 'Ongoing course',
+              dosage: med['dosage']?.toString() ?? med['frequency']?.toString() ?? '1 Unit',
             ));
           }
         }
@@ -214,6 +217,7 @@ class ReminderService {
           context: ctx,
           instruction: inst,
           durationLabel: durationLabel,
+          dosage: m['dosage']?.toString() ?? '1 Unit',
         ));
       }
     }
