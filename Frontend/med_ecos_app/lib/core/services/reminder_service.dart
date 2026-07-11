@@ -217,7 +217,7 @@ class ReminderService {
           context: ctx,
           instruction: inst,
           durationLabel: durationLabel,
-          dosage: m['dosage']?.toString() ?? '1 Unit',
+          dosage: c['dosage']?.toString() ?? '1 Unit',
         ));
       }
     }
