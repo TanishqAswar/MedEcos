@@ -278,7 +278,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       'assets/Icon.jpeg',
                       height: 90,
                       width: 90,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),

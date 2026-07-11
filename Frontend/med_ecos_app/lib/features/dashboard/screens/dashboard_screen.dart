@@ -1126,7 +1126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
-              child: Image.asset('assets/Icon.jpeg', height: 28, width: 28),
+              child: Image.asset('assets/Icon.jpeg', height: 28, width: 28, fit: BoxFit.contain),
             ),
             const SizedBox(width: 10),
             const Text('MedEcos', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),

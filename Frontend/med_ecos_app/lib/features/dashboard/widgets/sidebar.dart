@@ -79,7 +79,7 @@ class Sidebar extends StatelessWidget {
             ),
           ),
           // Logo Area
-          Image.asset("assets/Icon.jpeg", height: 80, width: 80),
+          Image.asset("assets/Icon.jpeg", height: 80, width: 80, fit: BoxFit.contain),
           const SizedBox(height: 16),
           Text(
             "MedEcos",
