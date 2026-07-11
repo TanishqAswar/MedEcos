@@ -4,6 +4,7 @@ import '../../../core/services/api_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../prescription/services/pdf_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PrescriptionsScreen extends StatefulWidget {
   const PrescriptionsScreen({super.key});
@@ -173,6 +174,33 @@ class _PrescriptionsScreenState extends State<PrescriptionsScreen> {
                         child: TextButton.icon(
                           onPressed: () async {
                             try {
+                              final possibleUrlKeys = [
+                                'attachmentUrl',
+                                'fileUrl',
+                                'prescriptionUrl',
+                                'imageUrl',
+                                'pdfUrl',
+                                'cloudinaryUrl',
+                                'url',
+                              ];
+                              String? cloudUrl;
+                              for (final key in possibleUrlKeys) {
+                                final val = p[key]?.toString().trim();
+                                if (val != null &&
+                                    (val.startsWith('http://') || val.startsWith('https://'))) {
+                                  cloudUrl = val;
+                                  break;
+                                }
+                              }
+
+                              if (cloudUrl != null) {
+                                final uri = Uri.parse(cloudUrl);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  return;
+                                }
+                              }
+
                               final prefs = await SharedPreferences.getInstance();
                               final patientName = prefs.getString('username') ?? 'Patient';
                               final patientId = prefs.getString('user_id') ?? 'Unknown ID';
