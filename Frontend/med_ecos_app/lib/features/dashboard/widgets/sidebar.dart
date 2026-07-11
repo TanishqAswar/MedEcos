@@ -184,12 +184,16 @@ class _NavItem extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final Color rolePrimary;
+  final Color roleLight;
 
   const _NavItem({
     required this.icon,
     required this.label,
     required this.onTap,
     this.isSelected = false,
+    this.rolePrimary = AppColors.primary,
+    this.roleLight = AppColors.surfaceVariant,
   });
 
   @override
@@ -197,25 +201,25 @@ class _NavItem extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.surfaceVariant : Colors.transparent,
+        color: isSelected ? roleLight : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Material(
         color: Colors.transparent,
         child: ListTile(
-        leading: Icon(
-          icon,
-          color: isSelected ? AppColors.primary : AppColors.textSecondary,
-        ),
-        title: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? AppColors.primary : AppColors.textSecondary,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          leading: Icon(
+            icon,
+            color: isSelected ? rolePrimary : AppColors.textSecondary,
           ),
+          title: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? rolePrimary : AppColors.textSecondary,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+          onTap: onTap,
         ),
-        onTap: onTap,
-      ),
       ),
     );
   }
