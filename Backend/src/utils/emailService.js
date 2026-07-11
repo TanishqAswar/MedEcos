@@ -1,29 +1,24 @@
 const nodemailer = require('nodemailer');
 
-let cachedTransporter = null;
-
-const getTransporter = () => {
-    if (cachedTransporter) {
-        return cachedTransporter;
-    }
-
+const createTransporter = (port, secure) => {
     const user = process.env.EMAIL_USER || 'medecosmail@gmail.com';
-    // Remove quotes and all whitespace (including spaces between 4-letter chunks)
     const pass = (process.env.EMAIL_APP_PASSWORD || 'tcll qyrr ntjg pona').replace(/['"\s]/g, '').trim();
 
-    // Singleton transporter instance using Gmail service settings optimized for cloud platforms (Render/AWS)
-    cachedTransporter = nodemailer.createTransport({
-        service: 'gmail',
+    return nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: port,
+        secure: secure,
         auth: {
             user,
             pass
         },
-        connectionTimeout: 15000,
-        greetingTimeout: 15000,
-        socketTimeout: 20000
+        tls: {
+            rejectUnauthorized: false
+        },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 10000
     });
-
-    return cachedTransporter;
 };
 
 /**
@@ -131,7 +126,15 @@ const sendOtpEmail = async (toEmail, otp, purpose = 'Verification') => {
         html: htmlContent
     };
 
-    return await transporter.sendMail(mailOptions);
+    // First try Port 587 (STARTTLS - standard for cloud container environments)
+    try {
+        const transporter587 = createTransporter(587, false);
+        return await transporter587.sendMail(mailOptions);
+    } catch (err587) {
+        console.warn('Port 587 attempt failed, trying fallback Port 465...', err587.message);
+        const transporter465 = createTransporter(465, true);
+        return await transporter465.sendMail(mailOptions);
+    }
 };
 
 module.exports = {

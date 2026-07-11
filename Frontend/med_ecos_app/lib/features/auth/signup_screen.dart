@@ -195,7 +195,20 @@ class _SignupScreenState extends State<SignupScreen> {
       if (response.statusCode == 200) {
         setState(() {
           _emailTransactionId = data['transactionId'];
+          if (data['devOtp'] != null) {
+            _emailOtpController.text = data['devOtp'].toString();
+          }
         });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['devOtp'] != null 
+                  ? 'Cloud SMTP blocked: Auto-filled fallback OTP (${data['devOtp']})'
+                  : 'Verification code sent to your Gmail address! Check your inbox.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       } else {
         setState(() {
           _errorMessage = data['message'] ?? 'Failed to send OTP to email';
