@@ -327,6 +327,49 @@ class ReminderService {
     } catch (_) {}
   }
 
+  Future<void> updateReminderMedicine({
+    required String medicineId,
+    required String oldName,
+    required String newName,
+    required String timing,
+    required String context,
+    required String instruction,
+    String dosage = '1 Unit',
+    int durationDays = 0,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final localJson = prefs.getString('custom_reminder_medicines');
+    List<dynamic> list = [];
+    if (localJson != null) {
+      try { list = jsonDecode(localJson); } catch (_) {}
+    }
+
+    int index = list.indexWhere((m) => m['id'] == medicineId || (m['name']?.toString().toLowerCase().trim() == oldName.toLowerCase().trim()));
+    if (index != -1) {
+      list[index] = {
+        'id': list[index]['id'] ?? medicineId,
+        'name': newName.trim(),
+        'timing': timing,
+        'context': context,
+        'instruction': instruction,
+        'dosage': dosage,
+        'durationDays': durationDays,
+        'startDate': list[index]['startDate'] ?? DateTime.now().toIso8601String(),
+      };
+      await prefs.setString('custom_reminder_medicines', jsonEncode(list));
+    } else {
+      await deleteReminderMedicine(medicineId, oldName);
+      await addCustomMedicine(
+        name: newName,
+        timing: timing,
+        context: context,
+        instruction: instruction,
+        dosage: dosage,
+        durationDays: durationDays,
+      );
+    }
+  }
+
   Future<void> deleteReminderMedicine(String medicineId, String medicineName) async {
     final prefs = await SharedPreferences.getInstance();
     
