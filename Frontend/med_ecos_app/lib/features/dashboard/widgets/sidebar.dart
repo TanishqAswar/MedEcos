@@ -21,57 +21,60 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final rolePrimary = AppColors.getPrimaryForRole(userRole);
+    final roleLight = AppColors.getLightForRole(userRole);
+
     List<Widget> items = [];
     
     if (userRole == 'Patient') {
       items = [
-        _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0)),
-        _NavItem(icon: Icons.receipt_long, label: "Prescriptions", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1)),
-        _NavItem(icon: Icons.calendar_today, label: "Appointments", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2)),
-        _NavItem(icon: Icons.history, label: "History", isSelected: selectedIndex == 3, onTap: () => onItemSelected(3)),
-        _NavItem(icon: Icons.science, label: "Lab Orders", isSelected: selectedIndex == 4, onTap: () => onItemSelected(4)),
+        _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.receipt_long, label: "Prescriptions", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.calendar_today, label: "Appointments", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.history, label: "History", isSelected: selectedIndex == 3, onTap: () => onItemSelected(3), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.science, label: "Lab Orders", isSelected: selectedIndex == 4, onTap: () => onItemSelected(4), rolePrimary: rolePrimary, roleLight: roleLight),
         const Spacer(),
       ];
     } else if (userRole == 'Doctor') {
       items = [
-        _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0)),
-        _NavItem(icon: Icons.assignment, label: "Prescriptions", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1)),
-        _NavItem(icon: Icons.people, label: "Patients", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2)),
-        _NavItem(icon: Icons.calendar_month, label: "Appointments", isSelected: selectedIndex == 3, onTap: () => onItemSelected(3)),
+        _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.assignment, label: "Prescriptions", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.people, label: "Patients", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.calendar_month, label: "Appointments", isSelected: selectedIndex == 3, onTap: () => onItemSelected(3), rolePrimary: rolePrimary, roleLight: roleLight),
         const Spacer(),
       ];
     } else if (userRole == 'Pharmacist') {
       items = [
-        _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0)),
-        _NavItem(icon: Icons.receipt, label: "Prescriptions", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1)),
-        _NavItem(icon: Icons.search, label: "Lookup", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2)),
-        _NavItem(icon: Icons.inventory, label: "Inventory", isSelected: selectedIndex == 3, onTap: () => onItemSelected(3)),
-        _NavItem(icon: Icons.point_of_sale, label: "Billing", isSelected: selectedIndex == 4, onTap: () => onItemSelected(4)),
+        _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.point_of_sale, label: "Billing / POS", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.inventory_2, label: "Inventory", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
         const Spacer(),
       ];
-    } else if (userRole == 'Pathologist') {
+    } else if (userRole == 'Pathologist' || userRole == 'LabTester') {
       items = [
-        _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0)),
-        _NavItem(icon: Icons.search, label: "Lookup", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1)),
-        _NavItem(icon: Icons.science, label: "Lab Tests", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2)),
+        _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.science_outlined, label: "Lab Orders", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.biotech, label: "Catalog & Pricing", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
         const Spacer(),
       ];
+    } else {
+      items = [const Spacer()];
     }
 
     return Container(
+      width: 250,
       color: Colors.white,
       child: Column(
         children: [
-          const SizedBox(height: 16),
-          // Close button row
+          // Close button for drawer mode
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.only(top: 8.0, right: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (onClose != null)
                   IconButton(
-                    icon: const Icon(Icons.menu_open, color: AppColors.primary),
+                    icon: const Icon(Icons.close),
                     onPressed: onClose,
                     tooltip: 'Close Menu',
                   ),
@@ -85,7 +88,7 @@ class Sidebar extends StatelessWidget {
             "MedEcos",
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: rolePrimary,
                 ),
           ),
           const SizedBox(height: 48),
@@ -97,8 +100,8 @@ class Sidebar extends StatelessWidget {
               int profileIndex = 0;
               if (userRole == 'Patient') profileIndex = 5;
               else if (userRole == 'Doctor') profileIndex = 4;
-              else if (userRole == 'Pharmacist') profileIndex = 5;
-              else if (userRole == 'Pathologist') profileIndex = 3;
+              else if (userRole == 'Pharmacist') profileIndex = 3;
+              else if (userRole == 'Pathologist' || userRole == 'LabTester') profileIndex = 3;
               
               final isProfileSelected = selectedIndex == profileIndex;
 
@@ -109,16 +112,16 @@ class Sidebar extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isProfileSelected ? AppColors.surfaceVariant : AppColors.background,
+                    color: isProfileSelected ? roleLight : AppColors.background,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: isProfileSelected ? AppColors.primary.withOpacity(0.5) : Colors.grey.shade200),
+                    border: Border.all(color: isProfileSelected ? rolePrimary.withOpacity(0.5) : Colors.grey.shade200),
                   ),
                   child: Row(
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 20,
-                        backgroundColor: AppColors.primaryLight,
-                        child: Icon(Icons.person, color: AppColors.primary, size: 20),
+                        backgroundColor: roleLight,
+                        child: Icon(Icons.person, color: rolePrimary, size: 20),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -130,7 +133,7 @@ class Sidebar extends StatelessWidget {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold, 
                                 fontSize: 14,
-                                color: isProfileSelected ? AppColors.primary : Colors.black87,
+                                color: isProfileSelected ? rolePrimary : Colors.black87,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
