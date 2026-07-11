@@ -1,6 +1,6 @@
 {
-    "name": "med_ecos_patient",
-    "short_name": "med_ecos_patient",
+    "name": "MedEcos App",
+    "short_name": "MedEcos App",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
