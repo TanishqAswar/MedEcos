@@ -60,8 +60,9 @@ class _PrescriptionsScreenState extends State<PrescriptionsScreen> {
       return const Center(child: Text('No prescriptions found.', style: TextStyle(fontSize: 18, color: Colors.grey)));
     }
 
+    final bool isMobile = MediaQuery.of(context).size.width < 600;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(32.0),
+      padding: EdgeInsets.all(isMobile ? 16.0 : 32.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -69,6 +70,7 @@ class _PrescriptionsScreenState extends State<PrescriptionsScreen> {
             "My Prescriptions",
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  fontSize: isMobile ? 22 : 28,
                   color: AppColors.textPrimary,
                 ),
           ),

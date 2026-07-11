@@ -7,6 +7,7 @@ class StatCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback? onTap;
+  final double? width;
 
   const StatCard({
     super.key,
@@ -15,10 +16,12 @@ class StatCard extends StatelessWidget {
     required this.icon,
     required this.color,
     this.onTap,
+    this.width,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bool isMobile = MediaQuery.of(context).size.width < 600;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -28,7 +31,7 @@ class StatCard extends StatelessWidget {
         splashColor: color.withOpacity(0.1),
         highlightColor: color.withOpacity(0.05),
         child: Container(
-          width: 260,
+          width: width ?? (isMobile ? double.infinity : 260),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.white,

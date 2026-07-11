@@ -303,16 +303,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildPatientDashboard() {
+    final bool isMobile = MediaQuery.of(context).size.width < 600;
     return Column(
       children: [
         const Header(),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(isMobile ? 14 : 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Patient Dashboard", style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  "Patient Dashboard",
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: isMobile ? 22 : 28,
+                      ),
+                ),
                 const SizedBox(height: 24),
                 LayoutBuilder(
                   builder: (context, constraints) {
@@ -600,34 +607,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final List<MedicineDose> eveningDoses = _todayDoses.where((d) => d.expectedTime.hour >= 17 && d.expectedTime.hour < 20).toList();
     final List<MedicineDose> nightDoses = _todayDoses.where((d) => d.expectedTime.hour >= 20).toList();
 
+    final bool isMobile = MediaQuery.of(context).size.width < 600;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "Today's Medicine Reminders",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+        if (isMobile) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Expanded(
+                child: Text(
+                  "Today's Medicine Reminders",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ),
-            ),
-            Row(
-              children: [
-                ElevatedButton.icon(
+              IconButton(
+                icon: const Icon(Icons.refresh, color: AppColors.primary),
+                onPressed: _fetchPatientData,
+                tooltip: 'Refresh',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
                   onPressed: () => _showAddMedicineReminderDialog(context),
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text("Add Medicine"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
                 ),
-                const SizedBox(width: 4),
-                IconButton(
+              ),
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: IconButton(
                   icon: const Icon(Icons.document_scanner, color: AppColors.primary),
                   tooltip: 'Scan Prescription',
                   onPressed: () => Navigator.push(
@@ -635,14 +663,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     MaterialPageRoute(builder: (_) => const MedicineListScreen()),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.refresh, color: AppColors.primary),
-                  onPressed: _fetchPatientData,
+              ),
+            ],
+          ),
+        ] else ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Today's Medicine Reminders",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
-              ],
-            )
-          ],
-        ),
+              ),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => _showAddMedicineReminderDialog(context),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text("Add Medicine"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.document_scanner, color: AppColors.primary),
+                    tooltip: 'Scan Prescription',
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MedicineListScreen()),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: AppColors.primary),
+                    onPressed: _fetchPatientData,
+                  ),
+                ],
+              )
+            ],
+          ),
+        ],
         const SizedBox(height: 12),
 
         // 🎯 Adherence Progress Banner
@@ -651,43 +716,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           color: AppColors.surfaceVariant,
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(isMobile ? 14.0 : 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.track_changes, color: AppColors.primary, size: 26),
-                        const SizedBox(width: 10),
-                        Text(
-                          totalDoses > 0
-                              ? "Adherence Today: $takenDoses of $totalDoses taken (${(adherenceProgress * 100).toInt()}%)"
-                              : "Adherence Today: No scheduled doses",
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryDark),
-                        ),
-                      ],
+                    const Icon(Icons.track_changes, color: AppColors.primary, size: 24),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        totalDoses > 0
+                            ? "Adherence Today: $takenDoses of $totalDoses taken (${(adherenceProgress * 100).toInt()}%)"
+                            : "Adherence Today: No scheduled doses",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 13 : 15, color: AppColors.primaryDark),
+                      ),
                     ),
-                    if (totalDoses > 0 && takenDoses == totalDoses)
+                    if (totalDoses > 0 && takenDoses == totalDoses) ...[
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.green.shade700,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text("🔥 All Done!", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                      )
-                    else if (totalDoses > 0)
+                        child: const Text("🔥 All Done!", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                      ),
+                    ] else if (totalDoses > 0) ...[
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text("🔥 Keep Streak Alive", style: TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold, fontSize: 12)),
+                        child: const Text("🔥 Keep Streak Alive", style: TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold, fontSize: 11)),
                       ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -711,13 +776,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (_todayDoses.isEmpty)
           Card(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: const Padding(
-              padding: EdgeInsets.all(24.0),
+            child: Padding(
+              padding: EdgeInsets.all(isMobile ? 16.0 : 24.0),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle_outline, color: Colors.green, size: 32),
-                  SizedBox(width: 16),
-                  Text("No medicine reminders for today! You are all caught up.", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  const Icon(Icons.check_circle_outline, color: Colors.green, size: 28),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      "No medicine reminders for today! You are all caught up.",
+                      style: TextStyle(fontSize: isMobile ? 14 : 16, color: Colors.grey),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -885,8 +955,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 14),
               const Divider(height: 1),
               const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   TextButton.icon(
                     onPressed: () {
@@ -897,7 +970,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     icon: const Icon(Icons.snooze, size: 18, color: Colors.blueGrey),
                     label: const Text('Snooze 15m', style: TextStyle(color: Colors.blueGrey)),
                   ),
-                  const SizedBox(width: 8),
                   TextButton(
                     onPressed: () async {
                       setState(() { dose.status = 'SKIPPED'; });
@@ -906,7 +978,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     },
                     child: const Text('Skip', style: TextStyle(color: Colors.orange)),
                   ),
-                  const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: () async {
                       setState(() { dose.status = 'TAKEN'; });
@@ -918,7 +989,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green.shade600,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
@@ -1299,19 +1370,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildProDashboard() {
+    final bool isMobile = MediaQuery.of(context).size.width < 600;
     return Column(
       children: [
         const Header(),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(isMobile ? 14 : 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Hero Banner
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(32),
+                  padding: EdgeInsets.all(isMobile ? 18 : 32),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [AppColors.primary, AppColors.primaryDark],

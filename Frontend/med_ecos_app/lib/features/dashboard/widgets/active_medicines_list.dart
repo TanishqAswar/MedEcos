@@ -26,7 +26,7 @@ class ActiveMedicinesList extends StatelessWidget {
           children: [
             Icon(Icons.check_circle_outline, color: Colors.green, size: 24),
             SizedBox(width: 12),
-            Text("No active medicines at the moment.", style: TextStyle(color: Colors.green)),
+            Expanded(child: Text("No active medicines at the moment.", style: TextStyle(color: Colors.green))),
           ],
         ),
       );

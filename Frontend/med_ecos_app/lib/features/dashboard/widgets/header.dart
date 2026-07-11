@@ -29,9 +29,10 @@ class _HeaderState extends State<Header> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isMobile = MediaQuery.of(context).size.width < 600;
     return Container(
-      height: 80,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      height: isMobile ? 64 : 80,
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 14 : 24),
       color: Colors.white,
       child: Row(
         children: [
@@ -41,7 +42,7 @@ class _HeaderState extends State<Header> {
               constraints: const BoxConstraints(maxWidth: 400),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: "Search patients, appointments...",
+                  hintText: isMobile ? "Search..." : "Search patients, appointments...",
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
                   fillColor: AppColors.background,
