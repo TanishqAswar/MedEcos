@@ -214,12 +214,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _patientLabOrders = labOrders;
           _todayDoses = doses;
         });
-        
-        // Schedule notifications for active medicines
-        final notificationService = NotificationService();
-        for (var med in activeMeds) {
-          notificationService.scheduleMedicineReminders(med);
-        }
+
+        // Synchronize and schedule native local alarms for all pending doses of the day
+        NotificationService().syncTodayReminders(doses);
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -595,6 +592,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildTodaysReminders() {
+    final int totalDoses = _todayDoses.length;
+    final int takenDoses = _todayDoses.where((d) => d.status == 'TAKEN').length;
+    final double adherenceProgress = totalDoses > 0 ? takenDoses / totalDoses : 0.0;
+
+    // Group doses by Time of Day
+    final List<MedicineDose> morningDoses = _todayDoses.where((d) => d.expectedTime.hour < 12).toList();
+    final List<MedicineDose> afternoonDoses = _todayDoses.where((d) => d.expectedTime.hour >= 12 && d.expectedTime.hour < 17).toList();
+    final List<MedicineDose> eveningDoses = _todayDoses.where((d) => d.expectedTime.hour >= 17 && d.expectedTime.hour < 20).toList();
+    final List<MedicineDose> nightDoses = _todayDoses.where((d) => d.expectedTime.hour >= 20).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -638,128 +645,297 @@ class _DashboardScreenState extends State<DashboardScreen> {
             )
           ],
         ),
+        const SizedBox(height: 12),
+
+        // 🎯 Adherence Progress Banner
+        Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          color: AppColors.surfaceVariant,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.track_changes, color: AppColors.primary, size: 26),
+                        const SizedBox(width: 10),
+                        Text(
+                          totalDoses > 0
+                              ? "Adherence Today: $takenDoses of $totalDoses taken (${(adherenceProgress * 100).toInt()}%)"
+                              : "Adherence Today: No scheduled doses",
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryDark),
+                        ),
+                      ],
+                    ),
+                    if (totalDoses > 0 && takenDoses == totalDoses)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade700,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text("🔥 All Done!", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                      )
+                    else if (totalDoses > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text("🔥 Keep Streak Alive", style: TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold, fontSize: 12)),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: adherenceProgress,
+                    minHeight: 10,
+                    backgroundColor: Colors.white,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      adherenceProgress == 1.0 ? Colors.green : AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 16),
+
         if (_todayDoses.isEmpty)
           Card(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: const Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(24.0),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle_outline, color: Colors.green, size: 28),
+                  Icon(Icons.check_circle_outline, color: Colors.green, size: 32),
                   SizedBox(width: 16),
-                  Text("No medicine reminders for today!", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  Text("No medicine reminders for today! You are all caught up.", style: TextStyle(fontSize: 16, color: Colors.grey)),
                 ],
               ),
             ),
           )
-        else
-          ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _todayDoses.length,
-          itemBuilder: (context, index) {
-            final dose = _todayDoses[index];
-            final timeStr = "${dose.expectedTime.hour > 12 ? dose.expectedTime.hour - 12 : (dose.expectedTime.hour == 0 ? 12 : dose.expectedTime.hour)}:${dose.expectedTime.minute.toString().padLeft(2, '0')} ${dose.expectedTime.hour >= 12 ? 'PM' : 'AM'}";
-            
-            Color statusColor = Colors.grey;
-            IconData statusIcon = Icons.access_time;
-            
-            if (dose.status == 'MISSED') {
-              statusColor = Colors.red;
-              statusIcon = Icons.warning;
-            } else if (dose.status == 'TAKEN') {
-              statusColor = Colors.green;
-              statusIcon = Icons.check_circle;
-            } else if (dose.status == 'SKIPPED') {
-              statusColor = Colors.orange;
-              statusIcon = Icons.cancel;
-            } else {
-              statusColor = Colors.blue;
-            }
+        else ...[
+          if (morningDoses.isNotEmpty) ...[
+            _buildTimeOfDayGroupHeader("🌅 Morning", "Before 12:00 PM", Colors.amber.shade800),
+            ...morningDoses.map((dose) => _buildPillCard(dose)),
+          ],
+          if (afternoonDoses.isNotEmpty) ...[
+            _buildTimeOfDayGroupHeader("☀️ Afternoon", "12:00 PM - 5:00 PM", Colors.blue.shade700),
+            ...afternoonDoses.map((dose) => _buildPillCard(dose)),
+          ],
+          if (eveningDoses.isNotEmpty) ...[
+            _buildTimeOfDayGroupHeader("Sunset / Evening", "5:00 PM - 8:00 PM", Colors.orange.shade800),
+            ...eveningDoses.map((dose) => _buildPillCard(dose)),
+          ],
+          if (nightDoses.isNotEmpty) ...[
+            _buildTimeOfDayGroupHeader("🌙 Night", "8:00 PM onwards", Colors.indigo.shade700),
+            ...nightDoses.map((dose) => _buildPillCard(dose)),
+          ],
+        ],
+      ],
+    );
+  }
 
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                side: BorderSide(color: statusColor.withOpacity(0.3), width: 1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(statusIcon, color: statusColor, size: 28),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(dose.medicineName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          const SizedBox(height: 4),
-                          Text("$timeStr • ${dose.timingLabel} • ${dose.context} • ${dose.durationLabel}", style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                          if (dose.instruction.isNotEmpty && dose.instruction != 'None')
-                            Text("Note: ${dose.instruction}", style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic, fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                    if (dose.status == 'PENDING' || dose.status == 'MISSED')
+  Widget _buildTimeOfDayGroupHeader(String title, String subtitle, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+      child: Row(
+        children: [
+          Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: color)),
+          const SizedBox(width: 8),
+          Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+          const SizedBox(width: 8),
+          Expanded(child: Divider(color: color.withOpacity(0.3), thickness: 1)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPillCard(MedicineDose dose) {
+    final timeStr = "${dose.expectedTime.hour > 12 ? dose.expectedTime.hour - 12 : (dose.expectedTime.hour == 0 ? 12 : dose.expectedTime.hour)}:${dose.expectedTime.minute.toString().padLeft(2, '0')} ${dose.expectedTime.hour >= 12 ? 'PM' : 'AM'}";
+    
+    final bool isBeforeFood = dose.context.toLowerCase().contains('before');
+    final Color badgeBg = isBeforeFood ? Colors.blue.shade50 : Colors.green.shade50;
+    final Color badgeText = isBeforeFood ? Colors.blue.shade800 : Colors.green.shade800;
+    final String badgeLabel = isBeforeFood ? "🍽️ BEFORE FOOD" : "🍲 AFTER FOOD";
+
+    Color statusColor = Colors.grey;
+    IconData statusIcon = Icons.medication;
+    
+    if (dose.status == 'MISSED') {
+      statusColor = Colors.red;
+      statusIcon = Icons.warning;
+    } else if (dose.status == 'TAKEN') {
+      statusColor = Colors.green;
+      statusIcon = Icons.check_circle;
+    } else if (dose.status == 'SKIPPED') {
+      statusColor = Colors.orange;
+      statusIcon = Icons.cancel;
+    } else {
+      statusColor = AppColors.primary;
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: statusColor.withOpacity(0.35), width: 1.5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(statusIcon, color: statusColor, size: 28),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Row(
-                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          TextButton(
-                            onPressed: () async {
-                              setState(() { dose.status = 'SKIPPED'; });
-                              await ReminderService().logDose(dose, 'SKIPPED');
-                              _fetchPatientData();
-                            },
-                            child: const Text('Skip', style: TextStyle(color: Colors.orange)),
-                          ),
-                          ElevatedButton(
-                            onPressed: () async {
-                              setState(() { dose.status = 'TAKEN'; });
-                              await ReminderService().logDose(dose, 'TAKEN');
-                              _fetchPatientData();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                          Expanded(
+                            child: Text(
+                              dose.medicineName,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                             ),
-                            child: const Text('Take'),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.red),
-                            tooltip: 'Delete reminder',
-                            onPressed: () => _confirmDeleteReminder(dose),
-                          ),
-                        ],
-                      )
-                    else
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(dose.status, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold)),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.red),
-                            tooltip: 'Delete reminder',
-                            onPressed: () => _confirmDeleteReminder(dose),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: badgeBg,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              badgeLabel,
+                              style: TextStyle(color: badgeText, fontWeight: FontWeight.bold, fontSize: 11),
+                            ),
                           ),
                         ],
                       ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "$timeStr • ${dose.timingLabel} • ${dose.durationLabel}",
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
+                      ),
+                      if (dose.instruction.isNotEmpty && dose.instruction != 'None') ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          "Note: ${dose.instruction}",
+                          style: TextStyle(color: Colors.grey.shade700, fontStyle: FontStyle.italic, fontSize: 12),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: Colors.grey),
+                  tooltip: 'Manage Reminder',
+                  onSelected: (val) {
+                    if (val == 'delete') {
+                      _confirmDeleteReminder(dose);
+                    }
+                  },
+                  itemBuilder: (ctx) => [
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                          SizedBox(width: 8),
+                          Text('Delete Reminder', style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
+              ],
+            ),
+            if (dose.status == 'PENDING' || dose.status == 'MISSED') ...[
+              const SizedBox(height: 14),
+              const Divider(height: 1),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Snoozed ${dose.medicineName} for 15 minutes ⏰')),
+                      );
+                    },
+                    icon: const Icon(Icons.snooze, size: 18, color: Colors.blueGrey),
+                    label: const Text('Snooze 15m', style: TextStyle(color: Colors.blueGrey)),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: () async {
+                      setState(() { dose.status = 'SKIPPED'; });
+                      await ReminderService().logDose(dose, 'SKIPPED');
+                      _fetchPatientData();
+                    },
+                    child: const Text('Skip', style: TextStyle(color: Colors.orange)),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      setState(() { dose.status = 'TAKEN'; });
+                      await ReminderService().logDose(dose, 'TAKEN');
+                      _fetchPatientData();
+                    },
+                    icon: const Icon(Icons.check, size: 18),
+                    label: const Text('Take Dose'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade600,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
               ),
-            );
-          },
+            ] else ...[
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      dose.status == 'TAKEN' ? '✓ Taken' : dose.status,
+                      style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
         ),
-      ],
+      ),
     );
   }
 
