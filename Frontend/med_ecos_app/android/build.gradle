@@ -13,6 +13,22 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
+subprojects { project ->
+    project.plugins.withId("com.android.library") {
+        project.android {
+            ndkVersion "28.2.13676358"
+            if (namespace == null) {
+                namespace project.group
+            }
+        }
+    }
+    project.plugins.withId("com.android.application") {
+        project.android {
+            ndkVersion "28.2.13676358"
+        }
+    }
+}
+
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
