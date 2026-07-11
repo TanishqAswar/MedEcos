@@ -169,8 +169,8 @@ Respond STRICTLY with "NO_CLASH" if there are no interactions. Nothing else.
       },
       "contents": contents,
       "generationConfig": {
-        "temperature": 0.7, // Higher temp for conversational flow
-        "maxOutputTokens": 300
+        "temperature": 0.5, // Balanced precision & conversational tone for healthcare
+        "maxOutputTokens": 800
       }
     });
 

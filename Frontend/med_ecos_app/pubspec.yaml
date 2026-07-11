@@ -49,7 +49,7 @@ dependencies:
   pdf: any
   printing: any
   flutter_dotenv: any
-  file_picker: ^3.0.4
+  file_picker: ^8.1.4
   agora_rtc_engine: ^6.5.4
   permission_handler: ^12.0.3
   url_launcher: ^6.3.2

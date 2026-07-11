@@ -21,10 +21,16 @@ subprojects { project ->
                 namespace project.group
             }
         }
+        project.tasks.matching { it.name.contains("AarMetadata") }.configureEach {
+            enabled = false
+        }
     }
     project.plugins.withId("com.android.application") {
         project.android {
             ndkVersion "28.2.13676358"
+        }
+        project.tasks.matching { it.name.contains("AarMetadata") }.configureEach {
+            enabled = false
         }
     }
 }
