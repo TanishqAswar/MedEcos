@@ -11,31 +11,20 @@ const getTransporter = () => {
     // Remove quotes and all whitespace (including spaces between 4-letter chunks)
     const pass = (process.env.EMAIL_APP_PASSWORD || 'tcll qyrr ntjg pona').replace(/['"\s]/g, '').trim();
 
-    // Using connection pooling so TCP & TLS connections stay open, making sending OTP emails almost instantaneous
+    // Singleton transporter instance using Gmail service settings optimized for cloud platforms (Render/AWS)
     cachedTransporter = nodemailer.createTransport({
-        pool: true,
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
+        service: 'gmail',
         auth: {
             user,
             pass
         },
-        maxConnections: 5,
-        maxMessages: 100
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000
     });
 
     return cachedTransporter;
 };
-
-// Warm up transporter connection pool asynchronously on startup
-getTransporter().verify((error) => {
-    if (error) {
-        console.log('Notice: Email transporter initial verify:', error.message);
-    } else {
-        console.log('Email service connection pool ready and verified');
-    }
-});
 
 /**
  * Sends a stylized HTML OTP Verification email to the user.
