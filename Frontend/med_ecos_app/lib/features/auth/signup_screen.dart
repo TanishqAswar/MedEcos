@@ -42,6 +42,13 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
+    if (!_isEmailVerified) {
+      setState(() {
+        _errorMessage = 'Please verify your email address using the "Verify Gmail" button before signing up.';
+      });
+      return;
+    }
+
     if (_selectedRole == 'Doctor' || _selectedRole == 'Pathologist') {
       if (_latController.text.isEmpty || _lngController.text.isEmpty || _addressController.text.isEmpty) {
         setState(() {

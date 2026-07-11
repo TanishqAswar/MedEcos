@@ -37,6 +37,12 @@ router.post('/register', async (req, res) => {
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });
         }
+
+        // Enforce email verification before signup
+        const verifiedOtp = await Otp.findOne({ email, verified: true });
+        if (!verifiedOtp) {
+            return res.status(400).json({ message: 'Email verification required. Please verify your email via OTP before signing up.' });
+        }
         
         // If abhaId provided, check if it exists
         if (abhaId) {
@@ -87,6 +93,9 @@ router.post('/register', async (req, res) => {
         });
 
         if (user) {
+            // Clean up verified OTP record after successful registration
+            await Otp.deleteMany({ email });
+
             res.status(201).json({
                 _id: user.id,
                 username: user.username,
@@ -345,6 +354,13 @@ router.post('/email/verify-otp', async (req, res) => {
             if (otp !== '123456') {
                 return res.status(400).json({ message: 'Invalid verification code' });
             }
+            await Otp.deleteMany({ email });
+            await Otp.create({
+                email,
+                transactionId: 'txn-mock-verified-' + email,
+                otp: '123456',
+                verified: true
+            });
         } else {
             otpDoc = await Otp.findOne({ transactionId, email });
             if (!otpDoc || otpDoc.otp !== otp) {
@@ -352,14 +368,13 @@ router.post('/email/verify-otp', async (req, res) => {
             }
         }
 
-        if (otpDoc) {
-            await Otp.deleteOne({ _id: otpDoc._id });
-        }
-
         // Check if user exists with this email
         const user = await User.findOne({ email });
 
         if (user) {
+            if (otpDoc) {
+                await Otp.deleteOne({ _id: otpDoc._id });
+            }
             return res.json({
                 verified: true,
                 isNewUser: false,
@@ -370,6 +385,11 @@ router.post('/email/verify-otp', async (req, res) => {
                 token: generateToken(user._id, user.role),
                 message: 'Email verified & logged in successfully'
             });
+        }
+
+        if (otpDoc) {
+            otpDoc.verified = true;
+            await otpDoc.save();
         }
 
         res.json({
