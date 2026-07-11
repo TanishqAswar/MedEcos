@@ -28,8 +28,6 @@ const createTransporter = (port, secure) => {
  * @param {string} purpose - Purpose description (e.g. "Login Verification", "Account Registration")
  */
 const sendOtpEmail = async (toEmail, otp, purpose = 'Verification') => {
-    const transporter = getTransporter();
-
     const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
