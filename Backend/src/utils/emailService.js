@@ -121,6 +121,52 @@ const sendOtpEmail = async (toEmail, otp, purpose = 'Verification') => {
     </html>
     `;
 
+    // 1. If configured with Brevo HTTP API (Port 443 - works on Render Free Tier)
+    if (process.env.BREVO_API_KEY) {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'api-key': process.env.BREVO_API_KEY,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                sender: { name: 'MedEcos Security', email: process.env.EMAIL_USER || 'medecosmail@gmail.com' },
+                to: [{ email: toEmail }],
+                subject: `MedEcos Verification Code: ${otp}`,
+                htmlContent: htmlContent
+            })
+        });
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`Brevo HTTP API delivery failed: ${errBody}`);
+        }
+        return await response.json();
+    }
+
+    // 2. If configured with Resend HTTP API (Port 443 - works on Render Free Tier)
+    if (process.env.RESEND_API_KEY) {
+        const response = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                from: 'MedEcos Security <onboarding@resend.dev>',
+                to: [toEmail],
+                subject: `MedEcos Verification Code: ${otp}`,
+                html: htmlContent
+            })
+        });
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`Resend HTTP API delivery failed: ${errBody}`);
+        }
+        return await response.json();
+    }
+
+    // 3. Fallback to standard SMTP (Port 587/465)
     const mailOptions = {
         from: '"MedEcos Security" <medecosmail@gmail.com>',
         to: toEmail,
