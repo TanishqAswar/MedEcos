@@ -1,5 +1,6 @@
-require('dotenv').config();
-const { sendOtpEmail } = require('./src/utils/emailService');
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+const { sendOtpEmail } = require('../src/utils/emailService');
 
 async function testGmailOtp() {
     console.log('Testing Gmail OTP service...');

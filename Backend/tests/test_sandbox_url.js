@@ -38,7 +38,8 @@ async function testUrl(baseUrl) {
     }
 }
 
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 (async () => {
     await testUrl('https://sandbox.abdm.gov.in/gateway');
     await testUrl('https://dev.ndhm.gov.in/gateway');

@@ -27,5 +27,6 @@ async function testV3() {
     } catch(e) { console.error(e.message); }
 }
 
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 testV3();

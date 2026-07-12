@@ -1,7 +1,7 @@
-require('dotenv').config();
-const fs = require('fs');
 const path = require('path');
-const { extractPrescriptionWithAI } = require('./src/utils/aiPrescriptionExtractor');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+const fs = require('fs');
+const { extractPrescriptionWithAI } = require('../src/utils/aiPrescriptionExtractor');
 
 const LOCAL_PRESCRIPTION_PATH = 'C:\\Users\\TANISHQ\\Downloads\\Screenshot 2026-07-09 161847.png';
 
