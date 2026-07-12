@@ -2,52 +2,86 @@
   <img src="Frontend/med_ecos_app/assets/Icon.jpeg" alt="MedEcos Logo" width="140" />
 </p>
 
-# MedEcos Unified Medical Platform
+<h1 align="center">MedEcos Unified Medical Platform</h1>
 
-🚀 **Live App:** [medecos-frontend.onrender.com](medecos-frontend.onrender.com)
+<p align="center">
+  <a href="https://github.com/TanishqAswar/MedEcos/releases/tag/v1.0.0">
+    <img src="https://img.shields.io/badge/Release-v1.0.0-4CAF50?style=for-the-badge&logo=github" alt="Release v1.0.0" />
+  </a>
+  <a href="https://medecos-frontend.onrender.com">
+    <img src="https://img.shields.io/badge/Live%20Web%20App-Render-2196F3?style=for-the-badge" alt="Live Web App" />
+  </a>
+  <a href="https://shorebird.dev">
+    <img src="https://img.shields.io/badge/Shorebird%20OTA-Enabled-FF9800?style=for-the-badge" alt="Shorebird OTA" />
+  </a>
+</p>
 
-MedEcos is a comprehensive, modern Medical Ecosystem that seamlessly connects Patients, Doctors, and Pharmacists into a unified Flutter web application powered by a robust Node.js backend.
+🚀 **Download Official Android APK (v1.0.0):** [GitHub Release v1.0.0](https://github.com/TanishqAswar/MedEcos/releases/tag/v1.0.0)  
+🌐 **Live Web App:** [medecos-frontend.onrender.com](https://medecos-frontend.onrender.com)
+
+MedEcos is a comprehensive, modern healthcare ecosystem that seamlessly connects Patients, Doctors, Pharmacists, and Pathologists into a unified cross-platform application (Android & Web) powered by a robust Node.js backend.
+
+---
+
+## ✨ Key Highlights in v1.0.0
+
+- 📥 **Official Android Release & Shorebird OTA:** Instantly install the v1.0.0 release APK. Integrated with **Shorebird Code Push** for instant Over-The-Air live patches without APK reinstalls.
+- 🔐 **Secure Gmail OTP Verification:** Verified user registration with beautifully styled HTML OTP emails delivered via Brevo API & Nodemailer over TLS.
+- 🤖 **AI Prescription & Report Analysis:** Built-in Gemini Vision AI integration that reads physical prescriptions and reports to extract structured medicines, schedules, and physician instructions.
+- 🇮🇳 **ABDM & ABHA Gateway Integration:** Seamless integration with Ayushman Bharat Digital Mission (ABDM) ABHA IDs and standardized EHR consent management.
+- 📹 **HD Video Teleconsultation:** Low-latency real-time doctor-patient video and audio consultation sessions powered by Agora.
+
+---
 
 ## Project Structure
 
-This project has been heavily overhauled to integrate all roles into one cohesive application:
+- **[Backend](./Backend/README.md)**: A Node.js/Express REST API utilizing MongoDB. Handles authentication, RBAC, ABDM bridge services, Gemini OCR extraction, email verification, and secure medical data flows.
+- **[Frontend](./Frontend/README.md)**: A unified cross-platform Flutter application (`med_ecos_app`) that dynamically adapts UI/UX and routing based on the logged-in user role (**Patient**, **Doctor**, **Pharmacist**, or **Pathologist**).
+- **[Tests](./Backend/tests)**: Centralized test and verification scripts for ABDM, AI OCR, Gmail OTP, and authentication flows.
 
-- **[Backend](./Backend/README.md)**: A Node.js/Express REST API utilizing MongoDB. It handles authentication, role-based access control (RBAC), and manages the secure flow of medical data (Prescriptions, Appointments, Patient Histories).
-- **[Frontend](./Frontend/README.md)**: A single, unified Flutter Web application (`med_ecos_app`) that dynamically adapts its UI/UX and routing based on whether the logged-in user is a Patient, Doctor, or Pharmacist.
+---
 
-## Core Features
+## Role-Specific Features
 
 ### For Patients
-*   **Active Medicine Tracker**: View all currently prescribed medicines and mark them as "Taken".
-*   **Doctor Appointments**: Search for verified doctors in the system and send appointment requests with detailed notes.
-*   **Comprehensive Health Records**: Securely view past and active prescriptions, and maintain a profile tied to an ABHA ID.
+* **Active Medicine Tracker:** Track currently prescribed medicines and dosages.
+* **Doctor Appointments & Teleconsulting:** Search verified doctors, book appointments, and join HD video consultations directly inside the app.
+* **Comprehensive Health Records:** Securely view past prescriptions, diagnostic lab reports, and manage an ABHA ID profile.
 
 ### For Doctors
-*   **Unified Patient Roster**: A "Patient Lookup" tab automatically tracks any patient the doctor interacts with or registers.
-*   **ABHA Integration**: Instantly register new patients into the MedEcos system by querying their ABHA ID from the national database.
-*   **Digital Prescriptions**: Issue prescriptions digitally. Prescriptions feature visual 4-dot frequency indicators and can be toggled between "Active" and "Past".
-*   **Save as PDF**: Generate and download beautifully formatted PDF versions of prescriptions.
+* **Unified Patient Roster:** Automatically look up and track patient interaction histories.
+* **ABHA Integration:** Instantly query national ABHA registries to fetch verified patient records.
+* **Digital Prescriptions & AI Digitization:** Issue structured digital prescriptions with visual frequency indicators or digitize physical prescriptions using AI.
+* **PDF Export:** Generate high-quality downloadable PDF prescriptions.
 
 ### For Pharmacists
-*   **Global Patient Lookup**: Pharmacists can also instantly register patients via ABHA ID and track their customers.
-*   **Prescription Fulfillment**: Pharmacists can view global prescriptions, verify them, and add their own "Pharmacist Notes" directly onto the prescription record.
+* **Global Patient & ABHA Lookup:** Look up active prescriptions tied to patient profiles or ABHA IDs.
+* **Prescription Verification & Fulfillment:** Verify prescriptions and attach pharmacist notes directly to patient records.
 
-## Getting Started
+### For Pathologists
+* **Diagnostic Management:** Manage diagnostic lab test requests and upload verified diagnostic reports.
 
-To launch the entire platform (Frontend + Backend) simultaneously:
+---
+
+## 📥 Android APK Installation (v1.0.0)
+
+1. Download `app-release.apk` from our **[v1.0.0 Release Page](https://github.com/TanishqAswar/MedEcos/releases/tag/v1.0.0)**.
+2. Open the APK on your Android device and enable **Install from unknown sources** if prompted.
+3. Tap **Install** and launch **MedEcos**.
+
+---
+
+## Getting Started Locally
+
+To launch the entire platform locally:
 
 ```bash
-# In the root directory, run the provided bash script:
+# In the root directory, run:
 ./start_all.sh
 ```
 
-This script will automatically:
-1. Start the Node.js backend on Port 5000.
-2. Seed the MongoDB database with realistic mock data.
-3. Serve the compiled Flutter Web frontend on Port 3000.
+This starts the Node.js backend on Port 5000, seeds realistic mock data into MongoDB, and serves the Flutter Web frontend on Port 3000.
 
-You can then visit `http://localhost:3000` to interact with the app.
-
-For more detailed information, please refer to the specific documentation for each component:
+For detailed documentation:
 - [Backend Documentation](./Backend/README.md)
 - [Frontend Documentation](./Frontend/README.md)
