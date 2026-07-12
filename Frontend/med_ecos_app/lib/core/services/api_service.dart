@@ -504,4 +504,41 @@ class ApiService {
       throw Exception('Network error: $e');
     }
   }
+
+  // Patient Medicine History
+  Future<List<dynamic>> getMedicineHistory() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/patient/history'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print('Error loading medicine history: $e');
+      return [];
+    }
+  }
+
+  Future<void> logMedicineTaken(String medicineId, String medicineName, {String status = 'TAKEN'}) async {
+    try {
+      final headers = await _getHeaders();
+      await http.post(
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/patient/history'),
+        headers: headers,
+        body: jsonEncode({
+          'medicineId': medicineId,
+          'medicineName': medicineName,
+          'takenTime': DateTime.now().toIso8601String(),
+          'status': status,
+        }),
+      );
+    } catch (e) {
+      print('Error logging medicine taken: $e');
+    }
+  }
 }

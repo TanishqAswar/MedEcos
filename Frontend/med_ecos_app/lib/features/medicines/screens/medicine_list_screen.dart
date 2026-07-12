@@ -47,14 +47,20 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
   Future<void> _toggleMedicineTaken(String medId) async {
     final prefs = await SharedPreferences.getInstance();
     final todayKey = 'taken_doses_${DateFormat('yyyyMMdd').format(DateTime.now())}';
+    bool markedTaken = false;
     setState(() {
       if (_takenMedicines.contains(medId)) {
         _takenMedicines.remove(medId);
       } else {
         _takenMedicines.add(medId);
+        markedTaken = true;
       }
     });
     await prefs.setStringList(todayKey, _takenMedicines.toList());
+    if (markedTaken) {
+      final med = _medicines.firstWhere((m) => m.id == medId, orElse: () => Medicine(id: medId, name: 'Medicine', dosage: '', frequency: 1, timings: [], startDate: DateTime.now()));
+      ApiService().logMedicineTaken(med.id, med.name);
+    }
   }
 
   Future<void> _loadMedicines() async {

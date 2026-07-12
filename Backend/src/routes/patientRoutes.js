@@ -220,17 +220,12 @@ router.get('/dashboard-stats', protect, authorize('Patient'), async (req, res) =
 router.post('/history', protect, authorize('Patient'), async (req, res) => {
     try {
         const { medicineId, medicineName, takenTime, status } = req.body;
-        const abhaId = req.user.abhaId;
-
-        if (!abhaId) {
-            return res.status(400).json({ message: 'User does not have an ABHA ID linked' });
-        }
 
         const historyLog = new MedicineHistory({
             patient: req.user._id,
-            abhaId,
-            medicineId,
-            medicineName,
+            abhaId: req.user.abhaId || null,
+            medicineId: medicineId || 'unknown',
+            medicineName: medicineName || 'Medicine',
             takenTime: takenTime || new Date(),
             status: status || 'TAKEN'
         });
@@ -238,8 +233,8 @@ router.post('/history', protect, authorize('Patient'), async (req, res) => {
         await historyLog.save();
         res.status(201).json(historyLog);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Error logging medicine history:', error);
+        res.status(500).json({ message: 'Server error logging medicine history' });
     }
 });
 
@@ -247,15 +242,13 @@ router.post('/history', protect, authorize('Patient'), async (req, res) => {
 router.get('/history', protect, authorize('Patient'), async (req, res) => {
     try {
         const abhaId = req.user.abhaId;
-        if (!abhaId) {
-            return res.status(400).json({ message: 'User does not have an ABHA ID linked' });
-        }
+        const query = abhaId ? { $or: [{ patient: req.user._id }, { abhaId }] } : { patient: req.user._id };
 
-        const history = await MedicineHistory.find({ abhaId }).sort({ takenTime: -1 });
+        const history = await MedicineHistory.find(query).sort({ takenTime: -1 });
         res.json(history);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Error fetching medicine history:', error);
+        res.status(500).json({ message: 'Server error fetching medicine history' });
     }
 });
 
