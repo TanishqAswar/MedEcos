@@ -20,16 +20,41 @@ class MedicineListScreen extends StatefulWidget {
 }
 
 class _MedicineListScreenState extends State<MedicineListScreen> {
-  final PreferencesService _prefs = PreferencesService();
   List<Medicine> _medicines = [];
-  Map<String, String> _timeLabels = {};
   bool _loading = true;
   String? _error;
+  String _selectedTimeFilter = 'All'; // 'All', 'Morning', 'Afternoon', 'Evening', 'Night'
+  Set<String> _takenMedicines = {};
 
   @override
   void initState() {
     super.initState();
+    _loadTakenStatus();
     _loadMedicines();
+  }
+
+  Future<void> _loadTakenStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final todayKey = 'taken_doses_${DateFormat('yyyyMMdd').format(DateTime.now())}';
+    final list = prefs.getStringList(todayKey) ?? [];
+    if (mounted) {
+      setState(() {
+        _takenMedicines = list.toSet();
+      });
+    }
+  }
+
+  Future<void> _toggleMedicineTaken(String medId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final todayKey = 'taken_doses_${DateFormat('yyyyMMdd').format(DateTime.now())}';
+    setState(() {
+      if (_takenMedicines.contains(medId)) {
+        _takenMedicines.remove(medId);
+      } else {
+        _takenMedicines.add(medId);
+      }
+    });
+    await prefs.setStringList(todayKey, _takenMedicines.toList());
   }
 
   Future<void> _loadMedicines() async {
@@ -39,20 +64,31 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
       List<Medicine> parsedMedicines = [];
       
       for (var p in prescriptions) {
-        if (p['fullMedicines'] != null) {
-          for (var m in p['fullMedicines']) {
+        final rawDoc = p['doctorName']?.toString() ?? p['doctor']?['name']?.toString() ?? 'Prescribed Doctor';
+        final docName = rawDoc.startsWith('Dr.') ? rawDoc : 'Dr. $rawDoc';
+        final rawDateStr = p['date']?.toString() ?? p['createdAt']?.toString() ?? DateTime.now().toIso8601String();
+        final parsedDate = DateTime.tryParse(rawDateStr) ?? DateTime.now();
+        final formattedDate = DateFormat('MMM dd, yyyy').format(parsedDate);
+
+        final medList = p['fullMedicines'] ?? p['medicines'] ?? [];
+        for (var m in medList) {
+          if (m is Map) {
             final freqStr = m['frequency']?.toString().toLowerCase() ?? '';
             int freq = 1;
             if (freqStr.contains('twice') || freqStr.contains('bid') || freqStr.contains('2')) freq = 2;
             if (freqStr.contains('thrice') || freqStr.contains('tid') || freqStr.contains('3')) freq = 3;
             
+            final timingStr = m['timing']?.toString() ?? 'Morning';
             parsedMedicines.add(Medicine(
-              id: m['_id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-              name: m['name'] ?? 'Unknown Medicine',
+              id: m['_id']?.toString() ?? m['id']?.toString() ?? '${docName}_${m['name']}',
+              name: m['name']?.toString() ?? 'Unknown Medicine',
               dosage: [m['frequency'], m['timing'], m['dosage']].firstWhere((val) => val != null && val.toString().trim().isNotEmpty, orElse: () => '')?.toString() ?? '',
               frequency: freq,
               timings: [], 
-              startDate: DateTime.now(),
+              startDate: parsedDate,
+              doctorName: docName,
+              prescriptionDate: formattedDate,
+              timingCategory: timingStr,
             ));
           }
         }
@@ -68,6 +104,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
             if (m is Map) {
               final durDays = int.tryParse(m['durationDays']?.toString() ?? '0') ?? 0;
               final durText = durDays > 0 ? '$durDays Days course' : 'Ongoing course';
+              final timingStr = m['timing']?.toString() ?? 'Morning';
               parsedMedicines.add(Medicine(
                 id: m['id']?.toString() ?? 'custom_${DateTime.now().millisecondsSinceEpoch}',
                 name: m['name']?.toString() ?? 'Custom Medicine',
@@ -75,6 +112,9 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                 frequency: 1,
                 timings: [],
                 startDate: DateTime.now(),
+                doctorName: 'My Reminders',
+                prescriptionDate: DateFormat('MMM dd, yyyy').format(DateTime.now()),
+                timingCategory: timingStr,
               ));
             }
           }
@@ -92,8 +132,8 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
 
       final uniqueMedicines = <String, Medicine>{};
       for (var m in parsedMedicines) {
-        final key = m.name.toLowerCase().trim();
-        if (!deletedReminders.contains(key) && !deletedReminders.contains(m.id)) {
+        final key = '${m.name.toLowerCase().trim()}___${m.doctorName}';
+        if (!deletedReminders.contains(m.name.toLowerCase().trim()) && !deletedReminders.contains(m.id)) {
           uniqueMedicines.putIfAbsent(key, () => m);
         }
       }
@@ -645,36 +685,372 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
               ? Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.red)))
               : _medicines.isEmpty
                   ? const Center(child: Text('No medicines found. Tap "+ Add Medicine" to create a reminder!'))
-                  : ListView.builder(
-                      itemCount: _medicines.length,
-                      itemBuilder: (context, index) {
-                        final med = _medicines[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: AppColors.primary.withOpacity(0.15),
-                              child: const Icon(Icons.medication, color: AppColors.primary),
-                            ),
-                            title: Text(med.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('${med.dosage} • ${med.frequency}x daily'),
-                                if (_timeLabels.containsKey(med.id))
-                                  Text(_timeLabels[med.id]!, style: const TextStyle(color: Colors.blueGrey, fontSize: 13)),
-                              ],
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                              tooltip: 'Remove reminder',
-                              onPressed: () => _deleteMedicine(med),
-                            ),
+                  : Column(
+                      children: [
+                        _buildAdherenceBanner(),
+                        _buildTimeFilterTabs(),
+                        Expanded(
+                          child: ListView(
+                            padding: const EdgeInsets.only(bottom: 80),
+                            children: _buildDoctorGroupedContainers(),
                           ),
-                        );
-                      },
+                        ),
+                      ],
                     ),
     );
+  }
+
+  Widget _buildAdherenceBanner() {
+    final total = _medicines.length;
+    final takenCount = _medicines.where((m) => _takenMedicines.contains(m.id)).length;
+    final progress = total > 0 ? takenCount / total : 0.0;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.primary.withOpacity(0.85)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.25),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.track_changes, color: Colors.white, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    "Today's Daily Adherence",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$takenCount / $total Doses',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.white.withOpacity(0.25),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.greenAccent),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            takenCount == total
+                ? "Excellent! You've taken all your scheduled medicines today 🌟"
+                : 'Tap the checkbox on each medicine card as you complete your dose.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeFilterTabs() {
+    final times = ['All', 'Morning', 'Afternoon', 'Evening', 'Night'];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: times.map((time) {
+          final isSelected = _selectedTimeFilter == time;
+          IconData? icon;
+          if (time == 'Morning') icon = Icons.wb_sunny_outlined;
+          if (time == 'Afternoon') icon = Icons.light_mode_outlined;
+          if (time == 'Evening') icon = Icons.wb_twilight;
+          if (time == 'Night') icon = Icons.nightlight_round;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              avatar: icon != null
+                  ? Icon(
+                      icon,
+                      size: 16,
+                      color: isSelected ? Colors.white : AppColors.primary,
+                    )
+                  : null,
+              label: Text(time),
+              selected: isSelected,
+              selectedColor: AppColors.primary,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              ),
+              backgroundColor: Colors.blue.withOpacity(0.08),
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() => _selectedTimeFilter = time);
+                }
+              },
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  List<Widget> _buildDoctorGroupedContainers() {
+    // 1. Filter medicines by selected time
+    final filtered = _medicines.where((med) {
+      if (_selectedTimeFilter == 'All') return true;
+      final t = med.effectiveTiming.toLowerCase();
+      final d = med.dosage.toLowerCase();
+      final filterLower = _selectedTimeFilter.toLowerCase();
+      return t.contains(filterLower) || d.contains(filterLower);
+    }).toList();
+
+    if (filtered.isEmpty) {
+      return [
+        Padding(
+          padding: const EdgeInsets.all(40),
+          child: Center(
+            child: Text(
+              'No medicines scheduled for $_selectedTimeFilter.',
+              style: const TextStyle(color: Colors.blueGrey, fontSize: 15),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    // 2. Group by Doctor Name + Prescription Date
+    final Map<String, List<Medicine>> grouped = {};
+    for (var med in filtered) {
+      final key = '${med.doctorName}|||${med.prescriptionDate}';
+      grouped.putIfAbsent(key, () => []).add(med);
+    }
+
+    // 3. Build a Light Blue Container for each doctor group
+    final List<Widget> containers = [];
+    grouped.forEach((key, meds) {
+      final parts = key.split('|||');
+      final doctorName = parts.isNotEmpty ? parts[0] : 'Dr. Prescribed';
+      final dateStr = parts.length > 1 && parts[1].isNotEmpty
+          ? parts[1]
+          : DateFormat('MMM dd, yyyy').format(DateTime.now());
+
+      containers.add(
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEBF5FF), // Light blue container
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFB3E5FC), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Doctor Tag & Date Tag Top Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Tag of the Doctor
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.medical_services, size: 14, color: Colors.white),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Prescribed by: $doctorName',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12.5,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Date Tag
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.primary.withOpacity(0.35)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.calendar_today, size: 12, color: AppColors.primary),
+                        const SizedBox(width: 4),
+                        Text(
+                          dateStr,
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // List of medicines inside this Doctor's Light Blue Container
+              ...meds.map((med) {
+                final isTaken = _takenMedicines.contains(med.id);
+                return Card(
+                  elevation: 1,
+                  margin: const EdgeInsets.only(bottom: 10),
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(
+                      color: isTaken ? Colors.green.shade300 : Colors.grey.shade200,
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                      leading: InkWell(
+                        onTap: () => _toggleMedicineTaken(med.id),
+                        borderRadius: BorderRadius.circular(25),
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: isTaken
+                                ? Colors.green.withOpacity(0.15)
+                                : AppColors.primary.withOpacity(0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isTaken ? Icons.check_circle : Icons.medication,
+                            color: isTaken ? Colors.green : AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        med.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15.5,
+                          decoration: isTaken ? TextDecoration.lineThrough : null,
+                          color: isTaken ? Colors.grey.shade600 : Colors.black87,
+                        ),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                med.effectiveTiming,
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                med.dosage.isNotEmpty ? med.dosage : '${med.frequency}x daily',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: Colors.grey.shade700,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Checkbox(
+                            value: isTaken,
+                            activeColor: Colors.green,
+                            onChanged: (val) => _toggleMedicineTaken(med.id),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 21),
+                            tooltip: 'Remove reminder',
+                            onPressed: () => _deleteMedicine(med),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ],
+          ),
+        ),
+      );
+    });
+
+    return containers;
   }
 }

@@ -9,6 +9,9 @@ class Medicine {
   final List<MedicineTiming> timings;
   final DateTime startDate;
   final DateTime? endDate;
+  final String doctorName;
+  final String prescriptionDate;
+  final String timingCategory;
 
   Medicine({
     required this.id,
@@ -18,7 +21,21 @@ class Medicine {
     required this.timings,
     required this.startDate,
     this.endDate,
+    this.doctorName = 'Dr. Prescribed',
+    this.prescriptionDate = '',
+    this.timingCategory = 'Morning',
   });
+
+  String get effectiveTiming {
+    if (timingCategory.isNotEmpty && timingCategory != 'Morning') {
+      return timingCategory;
+    }
+    final lower = dosage.toLowerCase();
+    if (lower.contains('night') || lower.contains('bed')) return 'Night';
+    if (lower.contains('evening') || lower.contains('pm')) return 'Evening';
+    if (lower.contains('afternoon') || lower.contains('noon') || lower.contains('lunch')) return 'Afternoon';
+    return 'Morning';
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -26,9 +43,12 @@ class Medicine {
       'name': name,
       'dosage': dosage,
       'frequency': frequency,
-      'timings': timings.map((x) => x.toMap()).toList(), // We'll need to serialize this
+      'timings': timings.map((x) => x.toMap()).toList(),
       'startDate': startDate.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
+      'doctorName': doctorName,
+      'prescriptionDate': prescriptionDate,
+      'timingCategory': timingCategory,
     };
   }
 
@@ -45,6 +65,9 @@ class Medicine {
         endDate: json['endDate'] != null
             ? DateTime.parse(json['endDate'] as String)
             : null,
+        doctorName: json['doctorName'] as String? ?? 'Dr. Prescribed',
+        prescriptionDate: json['prescriptionDate'] as String? ?? '',
+        timingCategory: json['timingCategory'] as String? ?? 'Morning',
       );
 }
 
