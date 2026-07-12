@@ -145,13 +145,14 @@ router.post('/prescriptions/upload', protect, authorize('Patient'), upload.singl
 // Save Scanned Prescription with Reviewed OCR Medicines
 router.post('/prescriptions/scanned', protect, authorize('Patient'), async (req, res) => {
     try {
-        const { attachmentUrl, doctorName, diagnosis, medicines } = req.body;
+        const { attachmentUrl, doctorName, diagnosis, medicines, date, prescriptionDate } = req.body;
         const abhaId = req.user.abhaId || req.user._id.toString();
 
         const prescription = await Prescription.create({
             abhaId,
             doctorId: req.user._id,
             doctorName: doctorName || 'Scanned Prescription',
+            date: date || prescriptionDate ? new Date(date || prescriptionDate) : new Date(),
             diagnosis: diagnosis || 'Patient Uploaded Prescription',
             patientName: req.user.name,
             attachmentUrl: attachmentUrl || null,

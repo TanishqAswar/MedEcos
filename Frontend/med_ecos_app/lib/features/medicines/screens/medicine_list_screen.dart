@@ -11,6 +11,7 @@ import '../../../core/services/preferences_service.dart';
 import '../../../core/services/reminder_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/constants.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class MedicineListScreen extends StatefulWidget {
   const MedicineListScreen({super.key});
@@ -336,9 +337,9 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
           builder: (ctx) => const AlertDialog(
             content: Row(
               children: [
-                CircularProgressIndicator(),
+                MedEcosLoader(size: 42),
                 SizedBox(width: 20),
-                Expanded(child: Text('Uploading & analyzing prescription to Cloudinary...')),
+                Expanded(child: Text('Uploading & analyzing prescription via MedEcos AI...')),
               ],
             ),
           ),
@@ -686,7 +687,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
         foregroundColor: Colors.white,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const MedEcosLoader(size: 64, message: 'Loading medicines...')
           : _error != null
               ? Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.red)))
               : _medicines.isEmpty
@@ -866,9 +867,18 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
       grouped.putIfAbsent(key, () => []).add(med);
     }
 
-    // 3. Build a Light Blue Container for each doctor group
+    // 3. Build a Light Blue Container for each doctor group, sorting "My Reminders" to the top
+    final sortedKeys = grouped.keys.toList()..sort((a, b) {
+      final aIsReminder = a.contains('My Reminders') || a.contains('Reminders');
+      final bIsReminder = b.contains('My Reminders') || b.contains('Reminders');
+      if (aIsReminder && !bIsReminder) return -1;
+      if (!aIsReminder && bIsReminder) return 1;
+      return a.compareTo(b);
+    });
+
     final List<Widget> containers = [];
-    grouped.forEach((key, meds) {
+    for (final key in sortedKeys) {
+      final meds = grouped[key]!;
       final parts = key.split('|||');
       final doctorName = parts.isNotEmpty ? parts[0] : 'Dr. Prescribed';
       final dateStr = parts.length > 1 && parts[1].isNotEmpty
@@ -1055,7 +1065,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
           ),
         ),
       );
-    });
+    }
 
     return containers;
   }

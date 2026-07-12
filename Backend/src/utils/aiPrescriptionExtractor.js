@@ -27,6 +27,7 @@ Important: A prescription often contains multiple medicines. Carefully inspect e
 You MUST respond with ONLY raw JSON — no markdown, no code blocks, no explanation. Just pure JSON matching this schema exactly:
 {
   "doctorName": "Doctor's name if visible, else 'Scanned Doctor'",
+  "prescriptionDate": "Prescription date if visible formatted as YYYY-MM-DD, else today's date in YYYY-MM-DD format",
   "diagnosis": "Diagnosis or complaint if visible, else 'General Prescription'",
   "medicines": [
     {
@@ -56,6 +57,7 @@ You MUST respond with ONLY raw JSON — no markdown, no code blocks, no explanat
         return {
             success: true,
             doctorName: parsed.doctorName || 'Scanned Doctor',
+            prescriptionDate: parsed.prescriptionDate || new Date().toISOString().split('T')[0],
             diagnosis: parsed.diagnosis || 'General Prescription',
             medicines: Array.isArray(parsed.medicines) ? parsed.medicines : []
         };
@@ -84,6 +86,7 @@ function getFallbackExtraction() {
     return {
         success: false,
         doctorName: 'Scanned Prescription',
+        prescriptionDate: new Date().toISOString().split('T')[0],
         diagnosis: 'Prescription Scan',
         medicines: [
             {

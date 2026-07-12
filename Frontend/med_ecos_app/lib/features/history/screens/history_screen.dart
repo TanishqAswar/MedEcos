@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/api_service.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -17,21 +18,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
-    _loadHistory();
+    _fetchHistory();
   }
 
-  Future<void> _loadHistory() async {
+  Future<void> _fetchHistory() async {
     try {
-      final list = await ApiService().getMedicineHistory();
-      setState(() {
-        _history = list;
-        _loading = false;
-      });
+      final res = await ApiService().getMedicineHistory();
+      if (mounted) {
+        setState(() {
+          _history = res;
+          _loading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -40,7 +45,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('History')),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const MedEcosLoader(size: 64, message: 'Loading history...')
           : _error != null
               ? Center(child: Text('Error loading history: $_error', style: const TextStyle(color: Colors.red)))
               : _history.isEmpty

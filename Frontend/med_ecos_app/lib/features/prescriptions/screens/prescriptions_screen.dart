@@ -10,6 +10,7 @@ import '../../../core/services/api_service.dart';
 import '../../../core/services/reminder_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/constants.dart';
+import '../../../core/widgets/medecos_loader.dart';
 import '../../prescription/services/pdf_service.dart';
 
 class PrescriptionsScreen extends StatefulWidget {
@@ -65,7 +66,7 @@ class _PrescriptionsScreenState extends State<PrescriptionsScreen> {
           builder: (ctx) => const AlertDialog(
             content: Row(
               children: [
-                CircularProgressIndicator(),
+                MedEcosLoader(size: 42),
                 SizedBox(width: 20),
                 Expanded(child: Text('Uploading & analyzing prescription via AI...')),
               ],
@@ -345,7 +346,7 @@ class _PrescriptionsScreenState extends State<PrescriptionsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const MedEcosLoader(size: 64, message: 'Loading prescriptions...');
     }
 
     final bool isMobile = MediaQuery.of(context).size.width < 600;
