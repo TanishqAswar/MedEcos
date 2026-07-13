@@ -321,66 +321,83 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         fontSize: isMobile ? 22 : 28,
                       ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 LayoutBuilder(
                   builder: (context, constraints) {
                     if (constraints.maxWidth > 800) {
-                      return Row(
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            flex: 7,
-                            child: Wrap(
-                              spacing: 24, runSpacing: 24,
-                              children: [
-                                StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(3)),
-                                StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
-                              ],
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 7,
+                                child: Wrap(
+                                  spacing: 24, runSpacing: 24,
+                                  children: [
+                                    StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(3)),
+                                    StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  children: [
+                                    _buildFindDoctorsCard(),
+                                    const SizedBox(height: 16),
+                                    _buildFindLabsCard(),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 24),
-                          Expanded(
-                            flex: 3,
-                            child: Column(
-                              children: [
-                                _buildFindDoctorsCard(),
-                                const SizedBox(height: 16),
-                                _buildFindLabsCard(),
-                              ],
-                            ),
+                          const SizedBox(height: 32),
+                          _buildTodaysReminders(),
+                          const SizedBox(height: 32),
+                          ActiveMedicinesList(
+                            medicines: _medicines.where((med) => 
+                              med.endDate == null || med.endDate!.isAfter(DateTime.now().subtract(const Duration(days: 1)))
+                            ).toList(),
+                            onRemove: _removeMedicine,
                           ),
+                          const SizedBox(height: 32),
+                          _buildPreviousMedicinesAndLabTests(),
                         ],
                       );
                     } else {
                       return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          _buildTodaysReminders(),
+                          const SizedBox(height: 24),
                           Wrap(
-                            spacing: 24, runSpacing: 24,
+                            spacing: 16, runSpacing: 16,
                             children: [
                               StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(1)),
                               StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
                             ],
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 24),
+                          ActiveMedicinesList(
+                            medicines: _medicines.where((med) => 
+                              med.endDate == null || med.endDate!.isAfter(DateTime.now().subtract(const Duration(days: 1)))
+                            ).toList(),
+                            onRemove: _removeMedicine,
+                          ),
+                          const SizedBox(height: 24),
                           _buildFindDoctorsCard(),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
                           _buildFindLabsCard(),
+                          const SizedBox(height: 24),
+                          _buildPreviousMedicinesAndLabTests(),
                         ],
                       );
                     }
                   }
                 ),
-                const SizedBox(height: 32),
-                _buildTodaysReminders(),
-                const SizedBox(height: 32),
-                ActiveMedicinesList(
-                  medicines: _medicines.where((med) => 
-                    med.endDate == null || med.endDate!.isAfter(DateTime.now().subtract(const Duration(days: 1)))
-                  ).toList(),
-                  onRemove: _removeMedicine,
-                ),
-                const SizedBox(height: 32),
-                _buildPreviousMedicinesAndLabTests(),
               ],
             ),
           ),
