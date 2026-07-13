@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/constants.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class BookAppointmentDialog extends StatefulWidget {
   final String? initialDoctorId;
@@ -85,7 +86,7 @@ class _BookAppointmentDialogState extends State<BookAppointmentDialog> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const AlertDialog(content: SizedBox(height: 100, child: Center(child: CircularProgressIndicator())));
+    if (_loading) return const AlertDialog(content: SizedBox(height: 100, child: Center(child: MedEcosLoader())));
     if (_doctors.isEmpty) return AlertDialog(title: const Text("No Doctors"), content: const Text("No doctors available."), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close"))]);
 
     return AlertDialog(
@@ -136,7 +137,7 @@ class _BookAppointmentDialogState extends State<BookAppointmentDialog> {
         ElevatedButton(
           onPressed: _submitting ? null : _bookAppointment,
           style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-          child: _submitting ? const CircularProgressIndicator(color: Colors.white) : const Text("Book Request"),
+          child: _submitting ? const MedEcosLoader(size: 24) : const Text("Book Request"),
         ),
       ],
     );

@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import '../dashboard/screens/dashboard_screen.dart';
 import '../../../core/utils/abha_formatter.dart';
 import '../../core/utils/constants.dart';
+import '../../core/widgets/medecos_loader.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -323,10 +324,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             onPressed: _sendingEmailOtp ? null : _sendEmailOtp,
                             icon: const Icon(Icons.mail_outline, size: 18),
                             label: _sendingEmailOtp
-                                ? const SizedBox(
-                                    height: 16,
-                                    width: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2))
+                                ? const MedEcosLoader(size: 20)
                                 : const Text('Verify Gmail'),
                           ),
                   ),
@@ -350,10 +348,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ElevatedButton(
                         onPressed: _sendingEmailOtp ? null : _verifyEmailOtp,
                         child: _sendingEmailOtp
-                            ? const SizedBox(
-                                height: 16,
-                                width: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2))
+                            ? const MedEcosLoader(size: 20)
                             : const Text('Verify Code'),
                       ),
                     ],
@@ -474,7 +469,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         child: OutlinedButton.icon(
                           onPressed: _isLocating ? null : _detectLocation,
                           icon: _isLocating
-                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                              ? const MedEcosLoader(size: 20)
                               : const Icon(Icons.my_location),
                           label: Text(_isLocating ? 'Detecting...' : 'Use My Location'),
                         ),
@@ -536,7 +531,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: _isLoading 
-                      ? const CircularProgressIndicator() 
+                      ? const MedEcosLoader(size: 24) 
                       : const Text('Sign Up'),
                 ),
                 const SizedBox(height: 16),

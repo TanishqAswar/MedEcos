@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/abha_formatter.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class AddPatientDialog extends StatefulWidget {
   const AddPatientDialog({super.key});
@@ -85,7 +86,7 @@ class _AddPatientDialogState extends State<AddPatientDialog> {
         ElevatedButton(
           onPressed: _isLoading ? null : _registerPatient, 
           style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-          child: _isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text("Fetch & Register"),
+          child: _isLoading ? const MedEcosLoader(size: 20) : const Text("Fetch & Register"),
         ),
       ],
     );

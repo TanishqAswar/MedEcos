@@ -46,13 +46,15 @@ class _MedEcosLoaderState extends State<MedEcosLoader>
               height: widget.size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blueAccent.withOpacity(0.3),
-                    blurRadius: 12,
-                    spreadRadius: 2,
-                  ),
-                ],
+                boxShadow: widget.size > 30
+                    ? [
+                        BoxShadow(
+                          color: Colors.blueAccent.withOpacity(0.3),
+                          blurRadius: 12,
+                          spreadRadius: 2,
+                        ),
+                      ]
+                    : null,
               ),
               child: ClipOval(
                 child: Image.asset(
@@ -67,10 +69,10 @@ class _MedEcosLoaderState extends State<MedEcosLoader>
                         colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
                       ),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.health_and_safety,
                       color: Colors.white,
-                      size: 32,
+                      size: widget.size * 0.55,
                     ),
                   ),
                 ),

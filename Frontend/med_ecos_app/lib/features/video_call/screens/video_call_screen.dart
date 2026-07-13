@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../../core/widgets/medecos_loader.dart';
 import '../services/agora_service.dart';
 
 class VideoCallScreen extends StatefulWidget {
@@ -174,7 +175,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                       ),
                     )
                   : const Center(
-                      child: CircularProgressIndicator(color: Colors.white),
+                      child: MedEcosLoader(size: 48),
                     ),
             ),
           ),

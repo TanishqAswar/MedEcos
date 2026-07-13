@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/api_service.dart';
+import '../../../../core/widgets/medecos_loader.dart';
 
 class LabTestsListScreen extends StatefulWidget {
   final String abhaId;
@@ -54,7 +55,7 @@ class _LabTestsListScreenState extends State<LabTestsListScreen> {
         title: const Text('Pending Lab Tests'),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: MedEcosLoader())
           : _error != null
               ? Center(
                   child: Column(

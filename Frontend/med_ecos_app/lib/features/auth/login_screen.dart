@@ -6,6 +6,7 @@ import '../dashboard/screens/dashboard_screen.dart';
 import 'signup_screen.dart';
 import '../../../core/utils/abha_formatter.dart';
 import '../../core/utils/constants.dart';
+import '../../core/widgets/medecos_loader.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -385,7 +386,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         child: _isLoading 
-                            ? const CircularProgressIndicator() 
+                            ? const MedEcosLoader(size: 24) 
                             : const Text('Login'),
                       ),
                     ] else ...[
@@ -395,10 +396,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: _isLoading ? null : _generateEmailOtp,
                           icon: const Icon(Icons.mail_outline),
                           label: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              ? const MedEcosLoader(size: 20)
                               : const Text('Send Verification Code via Gmail'),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -436,10 +434,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           child: _isLoading 
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              ? const MedEcosLoader(size: 20)
                               : const Text('Verify Code & Continue'),
                         ),
                       ],
@@ -494,7 +489,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         child: _isLoading 
-                            ? const CircularProgressIndicator() 
+                            ? const MedEcosLoader(size: 24) 
                             : const Text('Send OTP'),
                       ),
                     ] else ...[
@@ -526,7 +521,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         child: _isLoading 
-                            ? const CircularProgressIndicator() 
+                            ? const MedEcosLoader(size: 24) 
                             : const Text('Verify & Login'),
                       ),
                     ],

@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../core/utils/constants.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class LabLocationsMapScreen extends StatefulWidget {
   const LabLocationsMapScreen({super.key});
@@ -175,7 +176,7 @@ class _LabLocationsMapScreenState extends State<LabLocationsMapScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Find Nearby Labs')),
       body: _loading || _userLocation == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: MedEcosLoader())
           : _errorMessage.isNotEmpty
             ? Center(child: Text(_errorMessage, style: const TextStyle(color: Colors.red)))
             : FlutterMap(

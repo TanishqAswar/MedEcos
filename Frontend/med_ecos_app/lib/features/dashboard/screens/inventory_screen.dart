@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/models/inventory_model.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/utils/constants.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -98,7 +99,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
         ),
         Expanded(
           child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: MedEcosLoader())
               : _inventory.isEmpty
                   ? Center(
                       child: Column(
@@ -266,7 +267,7 @@ class _AddInventorySheetState extends State<AddInventorySheet> {
           ),
           const SizedBox(height: 16),
           _loadingMedicines
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: MedEcosLoader())
               : Autocomplete<String>(
                   optionsBuilder: (TextEditingValue textEditingValue) {
                     if (textEditingValue.text.isEmpty) return const Iterable<String>.empty();
@@ -347,7 +348,7 @@ class _AddInventorySheetState extends State<AddInventorySheet> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: _isSaving
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const MedEcosLoader(size: 24)
                   : const Text("Save Stock", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ),

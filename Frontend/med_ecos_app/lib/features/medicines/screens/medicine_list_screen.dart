@@ -1,8 +1,10 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import '../../../core/models/medicine_model.dart';
@@ -323,68 +325,168 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
   }
 
   Future<void> _scanAndUploadPrescription() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Add Prescription',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Choose how you want to add your prescription',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.camera_alt, color: AppColors.primary),
+                ),
+                title: const Text('Scan with Camera',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Capture a photo of physical prescription'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _captureCameraPrescription();
+                },
+              ),
+              const Divider(height: 24),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.upload_file, color: AppColors.secondary),
+                ),
+                title: const Text('Upload Document / Image',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Choose PDF report or photo from files'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickFilePrescription();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _captureCameraPrescription() async {
+    try {
+      final picker = ImagePicker();
+      final XFile? photo = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+      );
+      if (photo != null) {
+        final bytes = await photo.readAsBytes();
+        await _uploadPrescriptionBytes(bytes, photo.name);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open camera: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickFilePrescription() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['jpg', 'png', 'jpeg', 'pdf'],
         withData: true,
       );
-
       if (result != null && result.files.single.bytes != null) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => const AlertDialog(
-            content: Row(
-              children: [
-                MedEcosLoader(size: 42),
-                SizedBox(width: 20),
-                Expanded(child: Text('Uploading & analyzing prescription via MedEcos AI...')),
-              ],
-            ),
+        await _uploadPrescriptionBytes(
+            result.files.single.bytes!, result.files.single.name);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error selecting file: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadPrescriptionBytes(Uint8List fileBytes, String fileName) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const AlertDialog(
+          content: Row(
+            children: [
+              MedEcosLoader(size: 48),
+              SizedBox(width: 20),
+              Expanded(child: Text('Uploading & analyzing prescription via MedEcos AI...')),
+            ],
           ),
-        );
+        ),
+      );
 
-        final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('jwt_token') ?? '';
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('jwt_token') ?? '';
 
-        var request = http.MultipartRequest(
-          'POST',
-          Uri.parse('${AppConstants.apiBaseUrl}/api/v1/patient/prescriptions/upload'),
-        );
-        request.headers.addAll({'Authorization': 'Bearer $token'});
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/patient/prescriptions/upload'),
+      );
+      request.headers.addAll({'Authorization': 'Bearer $token'});
 
-        final fileBytes = result.files.single.bytes!;
-        final fileName = result.files.single.name;
-        final ext = fileName.split('.').last.toLowerCase();
-        final contentType = ext == 'pdf'
-            ? MediaType('application', 'pdf')
-            : MediaType('image', ext == 'png' ? 'png' : 'jpeg');
+      final ext = fileName.split('.').last.toLowerCase();
+      final contentType = ext == 'pdf'
+          ? MediaType('application', 'pdf')
+          : MediaType('image', ext == 'png' ? 'png' : 'jpeg');
 
-        request.files.add(http.MultipartFile.fromBytes(
-          'file',
-          fileBytes,
-          filename: fileName,
-          contentType: contentType,
-        ));
+      request.files.add(http.MultipartFile.fromBytes(
+        'file',
+        fileBytes,
+        filename: fileName,
+        contentType: contentType,
+      ));
 
-        final resStream = await request.send();
-        final res = await http.Response.fromStream(resStream);
-        if (mounted) Navigator.pop(context); // close loading
+      final resStream = await request.send();
+      final res = await http.Response.fromStream(resStream);
+      if (mounted) Navigator.pop(context);
 
-        if (res.statusCode == 200) {
-          final data = jsonDecode(res.body);
-          final secureUrl = data['secure_url'] ?? '';
-          final extracted = data['extracted'] as Map<String, dynamic>?;
-          if (mounted) {
-            _showVerifyScannedPrescriptionModal(secureUrl, extracted);
-          }
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Failed to upload prescription to cloud storage')),
-            );
-          }
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        final secureUrl = data['secure_url'] ?? '';
+        final extracted = data['extracted'] as Map<String, dynamic>?;
+        if (mounted) {
+          _showVerifyScannedPrescriptionModal(secureUrl, extracted);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to upload prescription to cloud storage')),
+          );
         }
       }
     } catch (e) {

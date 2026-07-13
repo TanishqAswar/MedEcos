@@ -7,6 +7,7 @@ import '../../../core/models/doctor_model.dart';
 import '../../../core/services/doctors_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../widgets/doctor_bottom_sheet.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class DoctorsMapScreen extends StatefulWidget {
   const DoctorsMapScreen({super.key});
@@ -413,11 +414,7 @@ class _DoctorsMapScreenState extends State<DoctorsMapScreen> {
               elevation: 4,
               onPressed: _locating ? null : _locateMe,
               child: _locating
-                  ? const SizedBox(
-                      width: 22, height: 22,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: AppColors.primary),
-                    )
+                  ? const MedEcosLoader(size: 24)
                   : const Icon(Icons.my_location_rounded),
             ),
           ),

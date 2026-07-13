@@ -8,6 +8,7 @@ import '../../auth/login_screen.dart';
 import '../../../core/widgets/location_picker_screen.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/utils/constants.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -125,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_loading) return const Scaffold(body: Center(child: MedEcosLoader()));
     
     final p = _profile ?? {};
     final name = p['username'] ?? 'Pathologist User';
@@ -181,7 +182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _isLocating ? null : _detectLocation,
                     icon: _isLocating
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                        ? const MedEcosLoader(size: 20)
                         : const Icon(Icons.my_location),
                     label: Text(_isLocating ? 'Detecting...' : 'Use My Location'),
                   ),

@@ -8,6 +8,7 @@ import '../../prescription/screens/pharmacist_prescription_form_screen.dart' as 
 import '../../billing/screens/pharmacist_billing_screen.dart';
 import '../../../core/utils/medicine_utils.dart';
 import 'package:intl/intl.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class PatientDetailsScreen extends StatefulWidget {
   final String patientId;
@@ -55,7 +56,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_loading) return const Scaffold(body: Center(child: MedEcosLoader()));
     if (_patient == null) return const Scaffold(body: Center(child: Text("Patient not found in database.")));
 
     return Scaffold(

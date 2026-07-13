@@ -6,6 +6,7 @@ import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class PatientLabOrdersScreen extends StatefulWidget {
   const PatientLabOrdersScreen({super.key});
@@ -61,7 +62,7 @@ class _PatientLabOrdersScreenState extends State<PatientLabOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: MedEcosLoader());
     }
 
     if (_error != null) {

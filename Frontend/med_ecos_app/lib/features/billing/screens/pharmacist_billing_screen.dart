@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../core/utils/constants.dart';
 import '../services/billing_pdf_service.dart';
 import 'package:flutter/services.dart';
+import '../../../core/widgets/medecos_loader.dart';
 class PharmacistBillingScreen extends StatefulWidget {
   final String? initialAbhaId;
   const PharmacistBillingScreen({super.key, this.initialAbhaId});
@@ -600,7 +601,7 @@ class _PharmacistBillingScreenState extends State<PharmacistBillingScreen> {
                 onPressed: _loading || _cart.isEmpty ? null : _checkout,
                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
                 child: _loading 
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const MedEcosLoader(size: 24)
                   : const Text("Generate Bill & Print", style: TextStyle(fontSize: 16)),
               ),
             )

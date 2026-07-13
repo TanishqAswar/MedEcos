@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/models/meal_time_model.dart';
 import '../../../core/services/preferences_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -50,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: MedEcosLoader())
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [

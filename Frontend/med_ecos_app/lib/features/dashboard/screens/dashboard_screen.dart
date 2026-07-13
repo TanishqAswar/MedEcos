@@ -8,6 +8,7 @@ import '../widgets/chatbot_widget.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/reminder_service.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 // Common Widgets
 import '../widgets/sidebar.dart';
@@ -1530,7 +1531,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_loading) return const Scaffold(body: Center(child: MedEcosLoader()));
     
     final isWide = MediaQuery.of(context).size.width > 800;
     

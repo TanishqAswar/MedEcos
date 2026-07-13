@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/constants.dart';
 import '../../video_call/screens/video_call_screen.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -175,7 +176,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return const Center(child: MedEcosLoader());
     if (_error != null) return Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.red)));
 
     return Column(

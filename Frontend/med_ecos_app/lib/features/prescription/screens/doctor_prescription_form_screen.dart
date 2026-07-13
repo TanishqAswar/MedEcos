@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/constants.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class PrescriptionFormScreen extends StatefulWidget {
   final String patientId; // Pass patient info
@@ -89,7 +90,7 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) => const MedEcosLoader(size: 48, message: 'Generating AI Prescription...'),
     );
 
     // Get current patient's meds from data service to include in the list of what they are already taking

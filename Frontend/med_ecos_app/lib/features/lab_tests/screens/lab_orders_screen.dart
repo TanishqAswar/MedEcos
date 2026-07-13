@@ -9,6 +9,7 @@ import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http_parser/http_parser.dart';
+import '../../../core/widgets/medecos_loader.dart';
 
 class LabOrdersScreen extends StatefulWidget {
   const LabOrdersScreen({super.key});
@@ -146,7 +147,7 @@ class _LabOrdersScreenState extends State<LabOrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_loading) return const Scaffold(body: Center(child: MedEcosLoader()));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Lab Test Orders'), automaticallyImplyLeading: false),
