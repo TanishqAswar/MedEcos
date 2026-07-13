@@ -6,6 +6,7 @@ class AppColors {
   static const Color primaryLight = Color(0xFFB2DFDB);
   static const Color primaryDark = Color(0xFF00796B);
   static const Color accent = Color(0xFF26A69A);
+  static const Color secondary = Color(0xFF26A69A);
 
   // 🌿 Patient Role Palette
   static const Color patientPrimary = Color(0xFF009688);

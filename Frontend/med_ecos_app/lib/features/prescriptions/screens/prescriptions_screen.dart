@@ -103,10 +103,10 @@ class _PrescriptionsScreenState extends State<PrescriptionsScreen> {
                 leading: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withOpacity(0.1),
+                    color: AppColors.accent.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.upload_file, color: AppColors.secondary),
+                  child: const Icon(Icons.upload_file, color: AppColors.accent),
                 ),
                 title: const Text('Upload Document / Image',
                     style: TextStyle(fontWeight: FontWeight.w600)),
