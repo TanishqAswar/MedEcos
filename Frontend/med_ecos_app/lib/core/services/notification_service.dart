@@ -14,10 +14,35 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
+  void _configureLocalTimezone() {
+    tz.initializeTimeZones();
+    try {
+      final timeZoneName = DateTime.now().timeZoneName;
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+    } catch (e) {
+      try {
+        final offsetMinutes = DateTime.now().timeZoneOffset.inMinutes;
+        String defaultLocation = 'UTC';
+        if (offsetMinutes == 330) {
+          defaultLocation = 'Asia/Kolkata';
+        } else if (offsetMinutes == -300) {
+          defaultLocation = 'America/New_York';
+        } else if (offsetMinutes == -480) {
+          defaultLocation = 'America/Los_Angeles';
+        } else if (offsetMinutes == 0) {
+          defaultLocation = 'UTC';
+        }
+        tz.setLocalLocation(tz.getLocation(defaultLocation));
+      } catch (_) {
+        tz.setLocalLocation(tz.UTC);
+      }
+    }
+  }
+
   Future<void> init() async {
     if (_initialized || kIsWeb) return;
 
-    tz.initializeTimeZones();
+    _configureLocalTimezone();
 
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
