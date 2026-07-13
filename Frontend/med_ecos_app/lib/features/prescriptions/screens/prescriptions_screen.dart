@@ -285,14 +285,14 @@ class _PrescriptionsScreenState extends State<PrescriptionsScreen> {
                                 'dosage': (row['dosageCtrl'] as TextEditingController).text.trim(),
                                 'durationDays': int.tryParse((row['durationCtrl'] as TextEditingController).text.trim()) ?? 0,
                               });
-                              await ReminderService().saveCustomReminderMedicines(
+                              await ReminderService().addCustomMedicine(
                                 name: name,
                                 timing: row['timing'],
                                 context: row['context'],
                                 instruction: 'Scanned prescription',
                                 dosage: (row['dosageCtrl'] as TextEditingController).text.trim(),
                                 durationDays: int.tryParse((row['durationCtrl'] as TextEditingController).text.trim()) ?? 0,
-                                startDate: DateTime.now(),
+                                startDate: DateTime.now().toIso8601String(),
                               );
                             }
                           }

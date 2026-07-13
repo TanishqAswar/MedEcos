@@ -140,4 +140,22 @@ class NotificationService {
       }
     }
   }
+
+  /// Snooze a reminder by 15 minutes
+  Future<void> snoozeMedicineReminder(MedicineDose dose, {int minutes = 15}) async {
+    if (kIsWeb) return;
+    await init();
+
+    final snoozeTime = DateTime.now().add(Duration(minutes: minutes));
+    final notifId = 2000 + dose.medicineName.hashCode.abs() % 1000;
+    final title = '⏰ Snoozed Reminder: ${dose.medicineName}';
+    final body = 'Reminder to take ${dose.medicineName} (${dose.timingLabel} • ${dose.context}). ${dose.instruction}';
+
+    await scheduleMedicineReminder(
+      id: notifId,
+      title: title,
+      body: body,
+      scheduledTime: snoozeTime,
+    );
+  }
 }

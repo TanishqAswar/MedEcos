@@ -962,10 +962,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   TextButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Snoozed ${dose.medicineName} for 15 minutes ⏰')),
-                      );
+                    onPressed: () async {
+                      await NotificationService().snoozeMedicineReminder(dose, minutes: 15);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Snoozed ${dose.medicineName} reminder for 15 minutes ⏰')),
+                        );
+                      }
                     },
                     icon: const Icon(Icons.snooze, size: 18, color: Colors.blueGrey),
                     label: const Text('Snooze 15m', style: TextStyle(color: Colors.blueGrey)),
