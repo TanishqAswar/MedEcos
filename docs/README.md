@@ -25,3 +25,7 @@ Welcome to the **MedEcos Technical Architecture Hub**. This folder contains deta
 
 6. **[06_Gradle_Build_System_In_Flutter.md](./06_Gradle_Build_System_In_Flutter.md)**
    - Deep dive into Android native compilation in Flutter: `settings.gradle`, `build.gradle`, native C++ NDK linkers, ABI splits, and Android manifest permissions.
+
+7. **[07_Brevo_Gmail_Email_Service_Architecture.md](./07_Brevo_Gmail_Email_Service_Architecture.md)**
+   - End-to-end multi-tier email service architecture combining Brevo v3 HTTP REST API (`Port 443`), Resend API fallback, and Nodemailer Gmail SMTP (`Port 587/465`). Includes complete sequence flows, cloud firewall traversal strategy, stylized HTML OTP templates, and `.env` developer setup guide.
+
