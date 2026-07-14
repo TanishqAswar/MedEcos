@@ -18,6 +18,7 @@ import '../widgets/active_medicines_list.dart';
 
 // Patient Screens
 import '../../../features/medicines/screens/medicine_list_screen.dart';
+import '../../../features/health_vault/screens/health_vault_screen.dart';
 import '../../../features/history/screens/history_screen.dart';
 import '../../../features/doctors/screens/doctors_map_screen.dart';
 import '../../../features/lab_tests/screens/patient_lab_orders_screen.dart';
@@ -285,6 +286,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         case 3: return const HistoryScreen();
         case 4: return const PatientLabOrdersScreen();
         case 5: return const patient_profile.ProfileScreen();
+        case 6: return const HealthVaultScreen();
         default: return const Center(child: Text("Coming Soon"));
       }
     } else if (_userRole == 'Doctor') {
@@ -294,6 +296,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         case 2: return const doctor_patient_lookup.PatientLookupScreen();
         case 3: return const AppointmentsScreen();
         case 4: return const doctor_profile.ProfileScreen();
+        case 5: return const HealthVaultScreen();
         default: return const Center(child: Text("Coming Soon"));
       }
     } else if (_userRole == 'Pharmacist') {
@@ -304,6 +307,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         case 3: return const InventoryScreen();
         case 4: return const PharmacistBillingScreen();
         case 5: return const pharmacist_profile.ProfileScreen();
+        case 6: return const HealthVaultScreen();
         default: return const Center(child: Text("Coming Soon"));
       }
     } else if (_userRole == 'Pathologist') {
@@ -312,6 +316,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         case 1: return const pathologist_lookup.PathologistLookupScreen();
         case 2: return const LabOrdersScreen();
         case 3: return const pathologist_profile.ProfileScreen();
+        case 4: return const HealthVaultScreen();
         default: return const Center(child: Text("Coming Soon"));
       }
     }
@@ -740,6 +745,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.teal.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.folder_shared, color: Colors.teal),
+                  tooltip: 'Medical Locker (Health Vault)',
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HealthVaultScreen()),
+                  ),
+                ),
+              ),
             ],
           ),
         ] else ...[
@@ -773,6 +793,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const MedicineListScreen()),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.folder_shared, color: Colors.teal),
+                    tooltip: 'Medical Locker (Health Vault)',
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HealthVaultScreen()),
                     ),
                   ),
                   IconButton(
@@ -1533,6 +1561,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       label: "View Schedule",
                       color: Colors.purpleAccent,
                       onTap: () => _onItemSelected(3),
+                    ),
+                    const SizedBox(width: 16),
+                    _buildQuickActionBtn(
+                      icon: Icons.folder_shared,
+                      label: "Health Vault",
+                      color: Colors.teal,
+                      onTap: () => _onItemSelected(_userRole == 'Doctor' ? 5 : (_userRole == 'Pharmacist' ? 6 : 4)),
                     ),
                     const SizedBox(width: 16),
                     if (_userRole == 'Pharmacist')
