@@ -926,23 +926,13 @@ class _ExpandableFeatureCardState extends State<_ExpandableFeatureCard> {
                     overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Icon(
-                        _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                        size: 18,
-                        color: widget.color,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _isExpanded ? "Show Less" : "Read More",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: widget.color,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    _isExpanded ? "▲  Show Less" : "▼  Read More",
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                      color: widget.color,
+                    ),
                   ),
                 ],
               ),
@@ -1050,23 +1040,13 @@ class _ExpandableRoleCardState extends State<_ExpandableRoleCard> {
               overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(
-                  _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                  size: 18,
-                  color: widget.color,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  _isExpanded ? "Show Less" : "Read More",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: widget.color,
-                  ),
-                ),
-              ],
+            Text(
+              _isExpanded ? "▲  Show Less" : "▼  Read More",
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                color: widget.color,
+              ),
             ),
           ],
         ),
@@ -1161,23 +1141,13 @@ class _ExpandablePolicyCardState extends State<_ExpandablePolicyCard> {
               overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(
-                  _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                  size: 18,
-                  color: widget.color,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  _isExpanded ? "Show Less" : "Read More",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: widget.color,
-                  ),
-                ),
-              ],
+            Text(
+              _isExpanded ? "▲  Show Less" : "▼  Read More",
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                color: widget.color,
+              ),
             ),
           ],
         ),
@@ -1316,23 +1286,13 @@ class _ExpandableVisionCardState extends State<_ExpandableVisionCard> {
               ),
             ],
             const SizedBox(height: 14),
-            Row(
-              children: [
-                Icon(
-                  _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                  size: 18,
-                  color: widget.iconColor,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  _isExpanded ? "Show Less" : "Read More",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: widget.iconColor,
-                  ),
-                ),
-              ],
+            Text(
+              _isExpanded ? "▲  Show Less" : "▼  Read More",
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                color: widget.iconColor,
+              ),
             ),
           ],
         ),
