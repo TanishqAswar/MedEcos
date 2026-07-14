@@ -18,15 +18,16 @@ class MedEcosAppBarTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        InkWell(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const AboutUsScreen()),
-            );
-          },
-          borderRadius: BorderRadius.circular(6),
-          tooltip: 'About MedEcos',
-          child: Padding(
+        Tooltip(
+          message: 'About MedEcos',
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+              );
+            },
+            borderRadius: BorderRadius.circular(6),
+            child: Padding(
             padding: const EdgeInsets.all(2.0),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(6),
