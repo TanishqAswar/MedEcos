@@ -12,7 +12,6 @@ import '../../../core/widgets/medecos_loader.dart';
 
 // Common Widgets
 import '../widgets/sidebar.dart';
-import '../widgets/header.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/active_medicines_list.dart';
 
@@ -322,7 +321,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final bool isMobile = MediaQuery.of(context).size.width < 600;
     return Column(
       children: [
-        const Header(),
         Expanded(
           child: SingleChildScrollView(
             padding: EdgeInsets.all(isMobile ? 14 : 32),
@@ -1035,76 +1033,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             if (dose.status == 'PENDING' || dose.status == 'MISSED') ...[
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () async {
-                        for (final d in group.allDoses) {
-                          await NotificationService().snoozeMedicineReminder(d, minutes: 15);
-                        }
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Snoozed ${dose.medicineName} reminder for 15 minutes ⏰')),
-                          );
-                        }
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        side: BorderSide(color: Colors.blueGrey.withOpacity(0.4)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: const Text('⏰ Snooze', style: TextStyle(color: Colors.blueGrey, fontSize: 12.5, fontWeight: FontWeight.w600)),
-                    ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    setState(() {
+                      for (final d in group.allDoses) {
+                        d.status = 'TAKEN';
+                      }
+                    });
+                    for (final d in group.allDoses) {
+                      await ReminderService().logDose(d, 'TAKEN');
+                    }
+                    _fetchPatientData();
+                  },
+                  icon: const Icon(Icons.check, size: 18),
+                  label: const Text('Take Dose', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () async {
-                        setState(() {
-                          for (final d in group.allDoses) {
-                            d.status = 'SKIPPED';
-                          }
-                        });
-                        for (final d in group.allDoses) {
-                          await ReminderService().logDose(d, 'SKIPPED');
-                        }
-                        _fetchPatientData();
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        side: BorderSide(color: Colors.orange.withOpacity(0.5)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: const Text('Skip', style: TextStyle(color: Colors.orange, fontSize: 12.5, fontWeight: FontWeight.w600)),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        setState(() {
-                          for (final d in group.allDoses) {
-                            d.status = 'TAKEN';
-                          }
-                        });
-                        for (final d in group.allDoses) {
-                          await ReminderService().logDose(d, 'TAKEN');
-                        }
-                        _fetchPatientData();
-                      },
-                      icon: const Icon(Icons.check, size: 16),
-                      label: const Text('Take Dose', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ] else ...[
               const SizedBox(height: 8),
@@ -1484,7 +1435,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final bool isMobile = MediaQuery.of(context).size.width < 600;
     return Column(
       children: [
-        const Header(),
         Expanded(
           child: SingleChildScrollView(
             padding: EdgeInsets.all(isMobile ? 14 : 32),
