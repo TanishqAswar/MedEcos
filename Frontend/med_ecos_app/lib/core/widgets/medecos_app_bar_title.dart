@@ -53,6 +53,7 @@ class MedEcosAppBarTitle extends StatelessWidget {
             ),
           ),
         ),
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
