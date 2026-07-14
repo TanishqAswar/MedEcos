@@ -31,11 +31,11 @@ class _ChatbotWidgetState extends State<ChatbotWidget>
 
   // Quick suggestion chips
   final List<String> _suggestions = [
+    '❓ App FAQs & Support',
     '💊 Medicine side effects',
     '🩺 Common symptoms',
     '🧬 What is diabetes?',
     '💉 Vaccine schedule',
-    '❤️ Heart health tips',
   ];
 
   final List<Map<String, dynamic>> _messages = [];
@@ -97,6 +97,33 @@ class _ChatbotWidgetState extends State<ChatbotWidget>
     final text = (prefilledText ?? _controller.text).trim();
     if (text.isEmpty || _isLoading) return;
 
+    if (text == '❓ App FAQs & Support') {
+      setState(() {
+        _messages.add({
+          'role': 'user',
+          'text': text,
+          'timestamp': DateTime.now(),
+        });
+        _messages.add({
+          'role': 'model',
+          'text': '''Hare Krishna 🙏 Here are quick answers to our top MedEcos App FAQs:
+
+1. **How do I scan a prescription?**
+Tap **Scan & Digitize Prescription** on your dashboard and upload an image. Our AI extracts your medicines automatically.
+
+2. **How do I take or snooze reminders?**
+Under **Today's Reminders**, tap *Take Dose*, *Skip*, or *Snooze 15m*. Grouped medicines update together.
+
+3. **Official Support Email**:
+Reach our official team at **support@medecos.health**. You can also visit **Contact Us & FAQs** from the sidebar menu!''',
+          'timestamp': DateTime.now(),
+        });
+      });
+      _controller.clear();
+      _scrollToBottom();
+      return;
+    }
+
     setState(() {
       _messages.add({
         'role': 'user',
@@ -113,6 +140,14 @@ You are Vaidya, an intelligent, compassionate, and spiritually grounded AI healt
 You carry the warm, encouraging, and tranquil spirit of Hare Krishna and the Bhagavad Gita's wisdom on wellness of body, mind, and soul (Yukta-ahara-viharasya — balanced diet, rest, and disciplined duty from Gita Chapter 6, Verse 17).
 You are talking to a ${widget.userRole} named ${widget.userName}.
 ${widget.userRole == 'Doctor' || widget.userRole == 'Pharmacist' || widget.userRole == 'Pathologist' ? 'This is a medical professional — provide precise clinical reference information while maintaining a serene and respectful tone.' : 'This is a patient — speak with deep empathy, spiritual encouragement (inspired by the Gita\'s teachings on resilience, peace of mind, and inner strength), and clear medical clarity. ALWAYS recommend consulting their doctor for formal diagnosis or prescription changes.'}
+
+### MedEcos App FAQs & Official Support Contact:
+- **Official Support Email**: support@medecos.health (or contact@medecos.health)
+- **Scanning Prescriptions**: Users can tap 'Scan & Digitize Prescription' on their Patient Dashboard to upload prescription images for automatic AI medicine extraction.
+- **Medicine Reminders & Dosage Badge**: Under Today's Reminders, identical medicines in the same time slot are grouped with a 'Dosage: X' badge. Tapping Take Dose, Skip, or Snooze updates all combined doses at once.
+- **Finding Doctors & Diagnostic Labs**: Tap 'Doctors' or 'Lab Tests' in the menu to view interactive maps of nearby clinics and laboratories.
+- **Contact Us & FAQs Page**: Users can view FAQs and copy official support email from the 'Contact Us & FAQs' option in their sidebar or profile menu.
+
 Whenever appropriate, weave in uplifting philosophical or Gita-motivated encouragement about health, peace of mind, disciplined daily routine (Sattvic lifestyle), and healing.
 Use markdown formatting (bold **text**, bullet lists, headers) to make responses beautiful and scannable.
 Be warm, comforting, and concise. Never exceed 350 words per response.

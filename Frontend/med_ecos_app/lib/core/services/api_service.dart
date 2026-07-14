@@ -34,7 +34,14 @@ class ApiService {
   List<Patient> get patients => List.unmodifiable(_patients);
   List<Prescription> get prescriptions => List.unmodifiable(_prescriptions);
 
+  void clearCache() {
+    _patients = [];
+    _prescriptions = [];
+  }
+
   Future<void> loadData() async {
+    _patients = [];
+    _prescriptions = [];
     try {
       final headers = await _getHeaders();
       final baseUrl = await _baseUrl;

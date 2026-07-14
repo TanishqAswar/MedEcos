@@ -8,6 +8,7 @@ import '../../auth/login_screen.dart';
 import '../../../core/widgets/location_picker_screen.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/utils/constants.dart';
+import '../../../core/services/api_service.dart';
 import '../../../core/widgets/medecos_loader.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -267,6 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 48),
             ElevatedButton.icon(
               onPressed: () async {
+                ApiService().clearCache();
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.clear();
                 if (context.mounted) {

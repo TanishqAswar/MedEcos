@@ -8,6 +8,8 @@ import '../../../core/widgets/location_picker_screen.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../core/utils/constants.dart';
+import '../../../core/services/api_service.dart';
+import '../../support/screens/contact_us_screen.dart';
 import '../../../core/widgets/medecos_loader.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -204,9 +206,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: _updateProfile,
               child: const Text('Save Profile'),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 36),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+                );
+              },
+              icon: const Icon(Icons.help_outline, color: AppColors.primary),
+              label: const Text('Contact Us & FAQs', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.primary),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+            const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () async {
+                ApiService().clearCache();
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.clear();
                 if (context.mounted) {

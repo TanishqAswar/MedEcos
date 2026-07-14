@@ -870,11 +870,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           )
         else ...[
-          for (final slot in orderedSlots)
-            if (slot.groupedDoses.isNotEmpty) ...[
-              _buildTimeOfDayGroupHeader(slot.title, slot.subtitle, slot.color),
-              ...slot.groupedDoses.map((group) => _buildPillCard(group)),
-            ],
+          for (final slot in orderedSlots) ...[
+            _buildTimeOfDayGroupHeader(slot.title, slot.subtitle, slot.color),
+            if (slot.groupedDoses.isNotEmpty)
+              ...slot.groupedDoses.map((group) => _buildPillCard(group))
+            else
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: slot.color.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: slot.color.withOpacity(0.18)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.event_available, color: slot.color, size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        "No reminders scheduled for ${slot.title}",
+                        style: TextStyle(color: Colors.grey.shade700, fontSize: 13, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
         ],
       ],
     );
@@ -932,6 +955,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -946,35 +970,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Text(
+                        dose.medicineName,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, height: 1.25),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    dose.medicineName,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                                  ),
-                                ),
-                                if (group.count > 1) ...[
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      "Dosage: ${group.count}",
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
-                                    ),
-                                  ),
-                                ],
-                              ],
+                          if (group.count > 1)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                "Dosage: ${group.count}",
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                              ),
                             ),
-                          ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(

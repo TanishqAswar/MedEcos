@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/login_screen.dart';
+import '../../support/screens/contact_us_screen.dart';
+import '../../../core/services/api_service.dart';
 
 class Sidebar extends StatelessWidget {
   final Function(int) onItemSelected;
@@ -158,10 +160,22 @@ class Sidebar extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _NavItem(
+            icon: Icons.help_outline,
+            label: "Contact Us & FAQs",
+            isSelected: false,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 6),
+          _NavItem(
             icon: Icons.logout, 
             label: "Logout", 
             isSelected: false,
             onTap: () async {
+              ApiService().clearCache();
               final prefs = await SharedPreferences.getInstance();
               await prefs.clear();
               if (context.mounted) {
