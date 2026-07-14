@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/gemini_service.dart';
+import '../../../core/utils/constants.dart';
 
 class ChatbotWidget extends StatefulWidget {
   final String userRole;
@@ -64,10 +65,11 @@ class _ChatbotWidgetState extends State<ChatbotWidget>
       curve: Curves.easeIn,
     );
 
+    final displayName = widget.userRole == "Doctor" ? AppConstants.formatDoctorName(widget.userName) : widget.userName;
     _messages.add({
       'role': 'model',
       'text':
-          'Hare Krishna 🙏 Namaste ${widget.userRole == "Doctor" ? "Dr. " : ""}${widget.userName}!\n\nI\'m **Vaidya**, your holistic health assistant grounded in modern medical science and the timeless wisdom of the Bhagavad Gita.\n\n*"Yukta-āhāra-vihārasya... "* (Gita 6.17 — *Balanced nourishment, restful sleep, and peaceful mind bring true healing*).\n\nHow may I serve your well-being today?',
+          'Hare Krishna 🙏 Namaste $displayName!\n\nI\'m **Vaidya**, your holistic health assistant grounded in modern medical science and the timeless wisdom of the Bhagavad Gita.\n\n*"Yukta-āhāra-vihārasya... "* (Gita 6.17 — *Balanced nourishment, restful sleep, and peaceful mind bring true healing*).\n\nHow may I serve your well-being today?',
       'timestamp': DateTime.now(),
     });
   }
@@ -135,10 +137,11 @@ Reach our official team at **medecosmail@gmail.com**. You can also visit **Conta
     _controller.clear();
     _scrollToBottom();
 
+    final displayName = widget.userRole == "Doctor" ? AppConstants.formatDoctorName(widget.userName) : widget.userName;
     final systemInstruction = """
 You are Vaidya, an intelligent, compassionate, and spiritually grounded AI health assistant embedded within MedEcos — India's premier holistic health platform.
 You carry the warm, encouraging, and tranquil spirit of Hare Krishna and the Bhagavad Gita's wisdom on wellness of body, mind, and soul (Yukta-ahara-viharasya — balanced diet, rest, and disciplined duty from Gita Chapter 6, Verse 17).
-You are talking to a ${widget.userRole} named ${widget.userName}.
+You are talking to a ${widget.userRole} named $displayName. Never repeat or double doctor titles such as 'Dr. Dr.' or 'Dr. Doctor'.
 ${widget.userRole == 'Doctor' || widget.userRole == 'Pharmacist' || widget.userRole == 'Pathologist' ? 'This is a medical professional — provide precise clinical reference information while maintaining a serene and respectful tone.' : 'This is a patient — speak with deep empathy, spiritual encouragement (inspired by the Gita\'s teachings on resilience, peace of mind, and inner strength), and clear medical clarity. ALWAYS recommend consulting their doctor for formal diagnosis or prescription changes.'}
 
 ### MedEcos App FAQs & Official Support Contact:

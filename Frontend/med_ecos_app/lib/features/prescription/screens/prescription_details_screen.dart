@@ -8,6 +8,7 @@ import '../../billing/screens/pharmacist_billing_screen.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/models/prescription_model.dart';
 import '../../../core/services/api_service.dart';
+import '../../../core/utils/constants.dart';
 
 class PrescriptionDetailsScreen extends StatefulWidget {
   final Prescription prescription;
@@ -51,7 +52,7 @@ class _PrescriptionDetailsScreenState extends State<PrescriptionDetailsScreen> {
           children: [
             pw.Text("MedEcos Prescription", style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 20),
-            pw.Text("Doctor: Dr. ${widget.prescription.doctorName}"),
+            pw.Text("Doctor: ${AppConstants.formatDoctorName(widget.prescription.doctorName)}"),
             pw.Text("Patient: ${widget.prescription.patientName} (ABHA: ${widget.prescription.patientId})"),
             if (widget.prescription.patientAge != null || widget.prescription.patientGender != null)
               pw.Text("Demographics: ${widget.prescription.patientAge != null ? '${widget.prescription.patientAge} Yrs' : ''} ${widget.prescription.patientGender != null ? '| ${widget.prescription.patientGender}' : ''}"),
@@ -188,7 +189,7 @@ class _PrescriptionDetailsScreenState extends State<PrescriptionDetailsScreen> {
                 style: const TextStyle(fontSize: 16)
               ),
             const SizedBox(height: 8),
-            Text("Doctor: Dr. ${widget.prescription.doctorName}", style: const TextStyle(fontSize: 18)),
+            Text("Doctor: ${AppConstants.formatDoctorName(widget.prescription.doctorName)}", style: const TextStyle(fontSize: 18)),
             Text("Date: ${DateFormat.yMMMd().add_jm().format(widget.prescription.date)}", style: const TextStyle(color: Colors.grey)),
             
             const SizedBox(height: 32),

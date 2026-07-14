@@ -74,7 +74,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
       
       for (var p in prescriptions) {
         final rawDoc = p['doctorName']?.toString() ?? p['doctor']?['name']?.toString() ?? 'Prescribed Doctor';
-        final docName = rawDoc.startsWith('Dr.') ? rawDoc : 'Dr. $rawDoc';
+        final docName = AppConstants.formatDoctorName(rawDoc);
         final rawDateStr = p['date']?.toString() ?? p['createdAt']?.toString() ?? DateTime.now().toIso8601String();
         final parsedDate = DateTime.tryParse(rawDateStr) ?? DateTime.now();
         final formattedDate = DateFormat('MMM dd, yyyy').format(parsedDate);
@@ -982,7 +982,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
     for (final key in sortedKeys) {
       final meds = grouped[key]!;
       final parts = key.split('|||');
-      final doctorName = parts.isNotEmpty ? parts[0] : 'Dr. Prescribed';
+      final doctorName = parts.isNotEmpty ? AppConstants.formatDoctorName(parts[0]) : 'Dr. Prescribed';
       final dateStr = parts.length > 1 && parts[1].isNotEmpty
           ? parts[1]
           : DateFormat('MMM dd, yyyy').format(DateTime.now());

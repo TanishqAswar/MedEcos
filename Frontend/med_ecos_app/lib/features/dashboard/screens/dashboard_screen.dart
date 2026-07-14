@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/constants.dart';
 import '../../../core/models/medicine_model.dart';
 import '../widgets/chatbot_widget.dart';
 import '../../../core/services/api_service.dart';
@@ -1467,7 +1468,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Welcome back, ${_userRole == 'Doctor' ? 'Dr. ' : ''}$_userName!",
+                              "Welcome back, ${_userRole == 'Doctor' ? AppConstants.formatDoctorName(_userName) : _userName}!",
                               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,

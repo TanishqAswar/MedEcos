@@ -564,7 +564,7 @@ class _PrescriptionsScreenState extends State<PrescriptionsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Dr. ${p['doctorName'] ?? 'Unknown'}",
+                                  AppConstants.formatDoctorName(p['doctorName']?.toString()),
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary),
                                 ),
                                 const SizedBox(height: 4),
@@ -687,7 +687,7 @@ class _PrescriptionsScreenState extends State<PrescriptionsScreen> {
                               }).toList();
 
                               await PdfService.generateAndPrintPrescription(
-                                doctorName: "Dr. ${p['doctorName'] ?? 'Unknown'}",
+                                doctorName: AppConstants.formatDoctorName(p['doctorName']?.toString()),
                                 patientName: patientName,
                                 patientId: patientId,
                                 symptoms: p['diagnosis'] ?? 'N/A',

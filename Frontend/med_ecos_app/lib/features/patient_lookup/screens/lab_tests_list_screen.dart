@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/widgets/medecos_loader.dart';
+import '../../../../core/utils/constants.dart';
 
 class LabTestsListScreen extends StatefulWidget {
   final String abhaId;
@@ -145,7 +146,7 @@ class _LabTestsListScreenState extends State<LabTestsListScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text("Prescribed By: Dr. ${test['doctorName']}"),
+                                          Text("Prescribed By: ${AppConstants.formatDoctorName(test['doctorName']?.toString())}"),
                                           Text("Diagnosis: ${test['diagnosis']}"),
                                           Text("Date: $dateStr"),
                                           const SizedBox(height: 4),

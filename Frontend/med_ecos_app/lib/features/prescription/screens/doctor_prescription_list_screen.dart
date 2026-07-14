@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/models/prescription_model.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/constants.dart';
 import 'doctor_prescription_form_screen.dart';
 import 'prescription_details_screen.dart';
 
@@ -85,7 +86,7 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
                           children: [
                             const SizedBox(height: 4),
                             Text("ID: ${p.id} • ${p.date.toString().split(' ')[0]}"),
-                            Text("Dr. ${p.doctorName} • ${p.medicines.length} Medicines"),
+                            Text("${AppConstants.formatDoctorName(p.doctorName)} • ${p.medicines.length} Medicines"),
                           ],
                         ),
                         trailing: const Icon(Icons.chevron_right),

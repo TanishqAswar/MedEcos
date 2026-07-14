@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/models/medicine_model.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/constants.dart';
 
 class ActiveMedicinesList extends StatelessWidget {
   final List<Medicine> medicines;
@@ -35,7 +36,7 @@ class ActiveMedicinesList extends StatelessWidget {
     // Group by Doctor Name
     final Map<String, List<Medicine>> grouped = {};
     for (var med in medicines) {
-      final key = med.doctorName.isNotEmpty ? med.doctorName : 'Dr. Prescribed';
+      final key = med.doctorName.isNotEmpty ? AppConstants.formatDoctorName(med.doctorName) : 'Dr. Prescribed';
       grouped.putIfAbsent(key, () => []).add(med);
     }
 

@@ -181,7 +181,7 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final doctorName = prefs.getString('username') ?? 'Dr. Tanishq';
+      final doctorName = AppConstants.formatDoctorName(prefs.getString('username') ?? 'Tanishq');
       // Generate ID
       final String prescriptionId = "PRES-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
 
@@ -222,7 +222,7 @@ class _PrescriptionFormScreenState extends State<PrescriptionFormScreen> {
     
     try {
       final prefs = await SharedPreferences.getInstance();
-      final doctorName = prefs.getString('username') ?? 'Dr. Tanishq';
+      final doctorName = AppConstants.formatDoctorName(prefs.getString('username') ?? 'Tanishq');
       await PdfService.generateAndPrintPrescription(
         doctorName: doctorName,
         patientName: widget.patientName,

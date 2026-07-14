@@ -1,3 +1,5 @@
+import '../utils/constants.dart';
+
 enum MealType { breakfast, lunch, snack, dinner }
 enum TimeType { beforeMeal, afterMeal, emptyStomach }
 
@@ -65,7 +67,7 @@ class Medicine {
         endDate: json['endDate'] != null
             ? DateTime.parse(json['endDate'] as String)
             : null,
-        doctorName: json['doctorName'] as String? ?? 'Dr. Prescribed',
+        doctorName: AppConstants.formatDoctorName(json['doctorName'] as String? ?? 'Prescribed'),
         prescriptionDate: json['prescriptionDate'] as String? ?? '',
         timingCategory: json['timingCategory'] as String? ?? 'Morning',
       );
