@@ -86,7 +86,7 @@ class _HealthVaultScreenState extends State<HealthVaultScreen> {
                     labelText: 'Folder Name',
                     hintText: 'e.g. Cardiology Reports 2026',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    prefixIcon: Icon(IconData(selectedIconPoint, fontFamily: 'MaterialIcons'), color: Color(int.parse('FF${selectedHex.replaceAll('#', '')}', radix: 16))),
+                    prefixIcon: Icon(FolderModel.getIconData(selectedIconPoint), color: Color(int.parse('FF${selectedHex.replaceAll('#', '')}', radix: 16))),
                   ),
                 ),
                 const SizedBox(height: 20),

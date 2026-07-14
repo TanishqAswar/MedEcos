@@ -53,9 +53,23 @@ class FolderModel {
     }
   }
 
-  IconData get iconData {
-    return IconData(iconCodePoint, fontFamily: 'MaterialIcons');
+  static IconData getIconData(int codePoint) {
+    if (codePoint == Icons.folder.codePoint) return Icons.folder;
+    if (codePoint == Icons.description.codePoint) return Icons.description;
+    if (codePoint == Icons.biotech.codePoint) return Icons.biotech;
+    if (codePoint == Icons.local_hospital.codePoint) return Icons.local_hospital;
+    if (codePoint == Icons.security.codePoint) return Icons.security;
+    if (codePoint == Icons.monitor_heart.codePoint) return Icons.monitor_heart;
+    if (codePoint == Icons.medication.codePoint) return Icons.medication;
+    if (codePoint == Icons.family_restroom.codePoint) return Icons.family_restroom;
+    if (codePoint == Icons.folder_shared.codePoint) return Icons.folder_shared;
+    if (codePoint == Icons.receipt_long.codePoint) return Icons.receipt_long;
+    if (codePoint == Icons.healing.codePoint) return Icons.healing;
+    if (codePoint == Icons.science.codePoint) return Icons.science;
+    return Icons.folder;
   }
+
+  IconData get iconData => getIconData(iconCodePoint);
 
   FolderModel copyWith({
     String? name,
