@@ -366,11 +366,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Expanded(
                                 flex: 7,
-                                child: Wrap(
-                                  spacing: 24, runSpacing: 24,
+                                child: Row(
                                   children: [
-                                    StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(3)),
-                                    StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
+                                    Expanded(
+                                      child: StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(3)),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    Expanded(
+                                      child: StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    Expanded(
+                                      child: StatCard(title: "Health Vault", value: "Locker", icon: Icons.folder_shared, color: Colors.indigo, onTap: () => _onItemSelected(6)),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -411,9 +419,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Expanded(
                                 child: StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(3)),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 10),
                               Expanded(
                                 child: StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: StatCard(title: "Health Vault", value: "Locker", icon: Icons.folder_shared, color: Colors.indigo, onTap: () => _onItemSelected(6)),
                               ),
                             ],
                           ),
@@ -1533,14 +1545,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // Stats Grid
                 Text("Key Metrics", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
-                Wrap(
-                  spacing: 24, runSpacing: 24,
-                  children: [
-                    StatCard(title: "Prescriptions Today", value: _prescriptionsToday.toString(), icon: Icons.receipt_long, color: Colors.blueAccent, onTap: () => _onItemSelected(1)),
-                    StatCard(title: "Pending Action", value: _pendingOrders.toString(), icon: Icons.pending_actions, color: Colors.deepOrangeAccent, onTap: () => _onItemSelected(3)),
-                    StatCard(title: "Total Customers/Patients", value: _totalCustomers.toString(), icon: Icons.people_alt, color: Colors.teal, onTap: () => _onItemSelected(2)),
-                  ],
-                ),
+                MediaQuery.of(context).size.width > 800
+                    ? Row(
+                        children: [
+                          Expanded(child: StatCard(title: "Prescriptions Today", value: _prescriptionsToday.toString(), icon: Icons.receipt_long, color: Colors.blueAccent, onTap: () => _onItemSelected(1))),
+                          const SizedBox(width: 20),
+                          Expanded(child: StatCard(title: "Pending Action", value: _pendingOrders.toString(), icon: Icons.pending_actions, color: Colors.deepOrangeAccent, onTap: () => _onItemSelected(3))),
+                          const SizedBox(width: 20),
+                          Expanded(child: StatCard(title: "Total Customers/Patients", value: _totalCustomers.toString(), icon: Icons.people_alt, color: Colors.teal, onTap: () => _onItemSelected(2))),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Expanded(child: StatCard(title: "Prescriptions Today", value: _prescriptionsToday.toString(), icon: Icons.receipt_long, color: Colors.blueAccent, onTap: () => _onItemSelected(1))),
+                          const SizedBox(width: 10),
+                          Expanded(child: StatCard(title: "Pending Action", value: _pendingOrders.toString(), icon: Icons.pending_actions, color: Colors.deepOrangeAccent, onTap: () => _onItemSelected(3))),
+                          const SizedBox(width: 10),
+                          Expanded(child: StatCard(title: "Total Customers/Patients", value: _totalCustomers.toString(), icon: Icons.people_alt, color: Colors.teal, onTap: () => _onItemSelected(2))),
+                        ],
+                      ),
                 
                 const SizedBox(height: 40),
 

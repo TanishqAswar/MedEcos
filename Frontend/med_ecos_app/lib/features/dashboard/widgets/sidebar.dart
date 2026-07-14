@@ -50,16 +50,18 @@ class Sidebar extends StatelessWidget {
     } else if (userRole == 'Pharmacist') {
       items = [
         _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0), rolePrimary: rolePrimary, roleLight: roleLight),
-        _NavItem(icon: Icons.point_of_sale, label: "Billing / POS", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1), rolePrimary: rolePrimary, roleLight: roleLight),
-        _NavItem(icon: Icons.inventory_2, label: "Inventory", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.assignment, label: "Prescriptions", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.people, label: "Patients", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.inventory_2, label: "Inventory", isSelected: selectedIndex == 3, onTap: () => onItemSelected(3), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.point_of_sale, label: "Billing / POS", isSelected: selectedIndex == 4, onTap: () => onItemSelected(4), rolePrimary: rolePrimary, roleLight: roleLight),
         _NavItem(icon: Icons.folder_shared, label: "Health Vault", isSelected: selectedIndex == 6, onTap: () => onItemSelected(6), rolePrimary: rolePrimary, roleLight: roleLight),
         const Spacer(),
       ];
     } else if (userRole == 'Pathologist' || userRole == 'LabTester') {
       items = [
         _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0), rolePrimary: rolePrimary, roleLight: roleLight),
-        _NavItem(icon: Icons.science_outlined, label: "Lab Orders", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1), rolePrimary: rolePrimary, roleLight: roleLight),
-        _NavItem(icon: Icons.biotech, label: "Catalog & Pricing", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.people, label: "Patients", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.science_outlined, label: "Lab Orders", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
         _NavItem(icon: Icons.folder_shared, label: "Health Vault", isSelected: selectedIndex == 4, onTap: () => onItemSelected(4), rolePrimary: rolePrimary, roleLight: roleLight),
         const Spacer(),
       ];
@@ -106,7 +108,7 @@ class Sidebar extends StatelessWidget {
               int profileIndex = 0;
               if (userRole == 'Patient') profileIndex = 5;
               else if (userRole == 'Doctor') profileIndex = 4;
-              else if (userRole == 'Pharmacist') profileIndex = 3;
+              else if (userRole == 'Pharmacist') profileIndex = 5;
               else if (userRole == 'Pathologist' || userRole == 'LabTester') profileIndex = 3;
               
               final isProfileSelected = selectedIndex == profileIndex;
