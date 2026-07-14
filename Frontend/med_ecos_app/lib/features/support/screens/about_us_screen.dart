@@ -377,100 +377,14 @@ class _AboutUsScreenState extends State<AboutUsScreen>
     required String description,
     required List<String> highlights,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.shade100, width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(icon, color: iconColor, size: 30),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: badgeColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  badgeText,
-                  style: TextStyle(
-                    color: iconColor,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 22),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            description,
-            style: const TextStyle(
-              fontSize: 14.5,
-              color: AppColors.textSecondary,
-              height: 1.6,
-            ),
-          ),
-          const SizedBox(height: 22),
-          const Divider(height: 1),
-          const SizedBox(height: 18),
-          ...highlights.map(
-            (point) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.check_circle_outline_rounded,
-                    color: iconColor,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      point,
-                      style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return _ExpandableVisionCard(
+      icon: icon,
+      iconColor: iconColor,
+      badgeText: badgeText,
+      badgeColor: badgeColor,
+      title: title,
+      description: description,
+      highlights: highlights,
     );
   }
 
@@ -613,27 +527,60 @@ class _AboutUsScreenState extends State<AboutUsScreen>
                     'An abstract overview of how MedEcos harmonizes everyday healthcare experiences without technical complexity.',
               ),
               const SizedBox(height: 28),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: isWide ? 2 : 1,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20,
-                  childAspectRatio: isWide ? 2.1 : 1.9,
+              if (isWide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < features.length; i += 2) ...[
+                            _buildFeatureCard(
+                              title: features[i]['title'] as String,
+                              subtitle: features[i]['subtitle'] as String,
+                              description: features[i]['desc'] as String,
+                              icon: features[i]['icon'] as IconData,
+                              color: features[i]['color'] as Color,
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          for (int i = 1; i < features.length; i += 2) ...[
+                            _buildFeatureCard(
+                              title: features[i]['title'] as String,
+                              subtitle: features[i]['subtitle'] as String,
+                              description: features[i]['desc'] as String,
+                              icon: features[i]['icon'] as IconData,
+                              color: features[i]['color'] as Color,
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Column(
+                  children: [
+                    for (final f in features) ...[
+                      _buildFeatureCard(
+                        title: f['title'] as String,
+                        subtitle: f['subtitle'] as String,
+                        description: f['desc'] as String,
+                        icon: f['icon'] as IconData,
+                        color: f['color'] as Color,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ],
                 ),
-                itemCount: features.length,
-                itemBuilder: (context, index) {
-                  final f = features[index];
-                  return _buildFeatureCard(
-                    title: f['title'] as String,
-                    subtitle: f['subtitle'] as String,
-                    description: f['desc'] as String,
-                    icon: f['icon'] as IconData,
-                    color: f['color'] as Color,
-                  );
-                },
-              ),
               const SizedBox(height: 40),
             ],
           ),
@@ -649,72 +596,12 @@ class _AboutUsScreenState extends State<AboutUsScreen>
     required IconData icon,
     required Color color,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.035),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: color, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  subtitle.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: color,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: Text(
-                    description,
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      color: AppColors.textSecondary,
-                      height: 1.45,
-                    ),
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return _ExpandableFeatureCard(
+      title: title,
+      subtitle: subtitle,
+      description: description,
+      icon: icon,
+      color: color,
     );
   }
 
@@ -778,64 +665,11 @@ class _AboutUsScreenState extends State<AboutUsScreen>
               ...policies.map((p) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 20),
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.035),
-                          blurRadius: 14,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                      border: Border.all(
-                        color: (p['color'] as Color).withOpacity(0.3),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: (p['color'] as Color).withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                p['icon'] as IconData,
-                                color: p['color'] as Color,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                p['title'] as String,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: p['color'] as Color,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          p['content'] as String,
-                          style: const TextStyle(
-                            fontSize: 14.5,
-                            color: AppColors.textPrimary,
-                            height: 1.6,
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: _ExpandablePolicyCard(
+                    title: p['title'] as String,
+                    content: p['content'] as String,
+                    icon: p['icon'] as IconData,
+                    color: p['color'] as Color,
                   ),
                 );
               }),
@@ -905,89 +739,63 @@ class _AboutUsScreenState extends State<AboutUsScreen>
                     'How MedEcos connects all four pillars of healthcare into a synchronized, collaborative network.',
               ),
               const SizedBox(height: 28),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: isWide ? 2 : 1,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20,
-                  childAspectRatio: isWide ? 1.85 : 1.75,
-                ),
-                itemCount: roles.length,
-                itemBuilder: (context, index) {
-                  final r = roles[index];
-                  final color = r['color'] as Color;
-                  final lightColor = r['lightColor'] as Color;
-                  return Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withOpacity(0.08),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                      border: Border.all(color: color.withOpacity(0.25), width: 1.5),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: lightColor,
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Icon(r['icon'] as IconData, color: color, size: 28),
+              if (isWide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < roles.length; i += 2) ...[
+                            _ExpandableRoleCard(
+                              role: roles[i]['role'] as String,
+                              tag: roles[i]['tag'] as String,
+                              desc: roles[i]['desc'] as String,
+                              icon: roles[i]['icon'] as IconData,
+                              color: roles[i]['color'] as Color,
+                              lightColor: roles[i]['lightColor'] as Color,
                             ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    r['role'] as String,
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: color,
-                                    ),
-                                  ),
-                                  Text(
-                                    r['tag'] as String,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            const SizedBox(height: 20),
                           ],
-                        ),
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: Text(
-                            r['desc'] as String,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textPrimary,
-                              height: 1.5,
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  );
-                },
-              ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          for (int i = 1; i < roles.length; i += 2) ...[
+                            _ExpandableRoleCard(
+                              role: roles[i]['role'] as String,
+                              tag: roles[i]['tag'] as String,
+                              desc: roles[i]['desc'] as String,
+                              icon: roles[i]['icon'] as IconData,
+                              color: roles[i]['color'] as Color,
+                              lightColor: roles[i]['lightColor'] as Color,
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Column(
+                  children: [
+                    for (final r in roles) ...[
+                      _ExpandableRoleCard(
+                        role: r['role'] as String,
+                        tag: r['tag'] as String,
+                        desc: r['desc'] as String,
+                        icon: r['icon'] as IconData,
+                        color: r['color'] as Color,
+                        lightColor: r['lightColor'] as Color,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ],
+                ),
               const SizedBox(height: 40),
             ],
           ),
@@ -1021,6 +829,514 @@ class _AboutUsScreenState extends State<AboutUsScreen>
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// STATEFUL EXPANDABLE CARD COMPONENTS
+// ─────────────────────────────────────────────────────────────
+
+class _ExpandableFeatureCard extends StatefulWidget {
+  final String title;
+  final String subtitle;
+  final String description;
+  final IconData icon;
+  final Color color;
+
+  const _ExpandableFeatureCard({
+    required this.title,
+    required this.subtitle,
+    required this.description,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  State<_ExpandableFeatureCard> createState() => _ExpandableFeatureCardState();
+}
+
+class _ExpandableFeatureCardState extends State<_ExpandableFeatureCard> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => setState(() => _isExpanded = !_isExpanded),
+      borderRadius: BorderRadius.circular(18),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.035),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+          ],
+          border: Border.all(color: widget.color.withOpacity(_isExpanded ? 0.6 : 0.15), width: 1.2),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: widget.color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(widget.icon, color: widget.color, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.subtitle.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: widget.color,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.description,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      color: AppColors.textSecondary,
+                      height: 1.45,
+                    ),
+                    maxLines: _isExpanded ? null : 2,
+                    overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(
+                        _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                        size: 18,
+                        color: widget.color,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _isExpanded ? "Show Less" : "Read More",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: widget.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpandableRoleCard extends StatefulWidget {
+  final String role;
+  final String tag;
+  final String desc;
+  final IconData icon;
+  final Color color;
+  final Color lightColor;
+
+  const _ExpandableRoleCard({
+    required this.role,
+    required this.tag,
+    required this.desc,
+    required this.icon,
+    required this.color,
+    required this.lightColor,
+  });
+
+  @override
+  State<_ExpandableRoleCard> createState() => _ExpandableRoleCardState();
+}
+
+class _ExpandableRoleCardState extends State<_ExpandableRoleCard> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => setState(() => _isExpanded = !_isExpanded),
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: widget.color.withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+          border: Border.all(color: widget.color.withOpacity(_isExpanded ? 0.6 : 0.25), width: 1.5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: widget.lightColor,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(widget.icon, color: widget.color, size: 28),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.role,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: widget.color,
+                        ),
+                      ),
+                      Text(
+                        widget.tag,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              widget.desc,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textPrimary,
+                height: 1.5,
+              ),
+              maxLines: _isExpanded ? null : 2,
+              overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  size: 18,
+                  color: widget.color,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _isExpanded ? "Show Less" : "Read More",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: widget.color,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpandablePolicyCard extends StatefulWidget {
+  final String title;
+  final String content;
+  final IconData icon;
+  final Color color;
+
+  const _ExpandablePolicyCard({
+    required this.title,
+    required this.content,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  State<_ExpandablePolicyCard> createState() => _ExpandablePolicyCardState();
+}
+
+class _ExpandablePolicyCardState extends State<_ExpandablePolicyCard> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => setState(() => _isExpanded = !_isExpanded),
+      borderRadius: BorderRadius.circular(18),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.035),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+          ],
+          border: Border.all(
+            color: widget.color.withOpacity(_isExpanded ? 0.6 : 0.3),
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: widget.color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    widget.icon,
+                    color: widget.color,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: widget.color,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              widget.content,
+              style: const TextStyle(
+                fontSize: 14.5,
+                color: AppColors.textPrimary,
+                height: 1.6,
+              ),
+              maxLines: _isExpanded ? null : 3,
+              overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  size: 18,
+                  color: widget.color,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _isExpanded ? "Show Less" : "Read More",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: widget.color,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpandableVisionCard extends StatefulWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String badgeText;
+  final Color badgeColor;
+  final String title;
+  final String description;
+  final List<String> highlights;
+
+  const _ExpandableVisionCard({
+    required this.icon,
+    required this.iconColor,
+    required this.badgeText,
+    required this.badgeColor,
+    required this.title,
+    required this.description,
+    required this.highlights,
+  });
+
+  @override
+  State<_ExpandableVisionCard> createState() => _ExpandableVisionCardState();
+}
+
+class _ExpandableVisionCardState extends State<_ExpandableVisionCard> {
+  bool _isExpanded = true; // Goal and aim default to fully open!
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => setState(() => _isExpanded = !_isExpanded),
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+          border: Border.all(color: widget.iconColor.withOpacity(_isExpanded ? 0.5 : 0.15), width: 1.5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: widget.iconColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(widget.icon, color: widget.iconColor, size: 30),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: widget.badgeColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    widget.badgeText,
+                    style: TextStyle(
+                      color: widget.iconColor,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 22),
+            Text(
+              widget.title,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              widget.description,
+              style: const TextStyle(
+                fontSize: 14.5,
+                color: AppColors.textSecondary,
+                height: 1.6,
+              ),
+              maxLines: _isExpanded ? null : 3,
+              overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+            ),
+            if (_isExpanded) ...[
+              const SizedBox(height: 22),
+              const Divider(height: 1),
+              const SizedBox(height: 18),
+              ...widget.highlights.map(
+                (point) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline_rounded,
+                        color: widget.iconColor,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          point,
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Icon(
+                  _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  size: 18,
+                  color: widget.iconColor,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _isExpanded ? "Show Less" : "Read More",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: widget.iconColor,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
