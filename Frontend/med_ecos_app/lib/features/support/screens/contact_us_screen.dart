@@ -56,14 +56,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   }
 
   void _copyEmail() {
-    Clipboard.setData(const ClipboardData(text: 'support@medecos.health'));
+    Clipboard.setData(const ClipboardData(text: 'medecosmail@gmail.com'));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Row(
           children: [
             Icon(Icons.check_circle, color: Colors.white),
             SizedBox(width: 10),
-            Text('Official email copied: support@medecos.health'),
+            Text('Official email copied: medecosmail@gmail.com'),
           ],
         ),
         backgroundColor: Colors.green.shade700,
@@ -74,7 +74,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
   void _copySupportDraft() {
     final text = '''
-To: support@medecos.health
+To: medecosmail@gmail.com
 Subject: ${_subjectController.text.isEmpty ? "Support Request" : _subjectController.text}
 From: ${_nameController.text.isEmpty ? "MedEcos User" : _nameController.text}
 
@@ -239,7 +239,7 @@ ${_messageController.text}
                                     const SizedBox(width: 10),
                                     Flexible(
                                       child: Text(
-                                        "support@medecos.health",
+                                        "medecosmail@gmail.com",
                                         style: TextStyle(
                                           fontSize: isMobile ? 15 : 17,
                                           fontWeight: FontWeight.bold,

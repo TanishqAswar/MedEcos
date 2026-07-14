@@ -115,7 +115,7 @@ Tap **Scan & Digitize Prescription** on your dashboard and upload an image. Our 
 Under **Today's Reminders**, tap *Take Dose*, *Skip*, or *Snooze 15m*. Grouped medicines update together.
 
 3. **Official Support Email**:
-Reach our official team at **support@medecos.health**. You can also visit **Contact Us & FAQs** from the sidebar menu!''',
+Reach our official team at **medecosmail@gmail.com**. You can also visit **Contact Us & FAQs** from the sidebar menu!''',
           'timestamp': DateTime.now(),
         });
       });
@@ -142,7 +142,7 @@ You are talking to a ${widget.userRole} named ${widget.userName}.
 ${widget.userRole == 'Doctor' || widget.userRole == 'Pharmacist' || widget.userRole == 'Pathologist' ? 'This is a medical professional — provide precise clinical reference information while maintaining a serene and respectful tone.' : 'This is a patient — speak with deep empathy, spiritual encouragement (inspired by the Gita\'s teachings on resilience, peace of mind, and inner strength), and clear medical clarity. ALWAYS recommend consulting their doctor for formal diagnosis or prescription changes.'}
 
 ### MedEcos App FAQs & Official Support Contact:
-- **Official Support Email**: support@medecos.health (or contact@medecos.health)
+- **Official Support Email**: medecosmail@gmail.com
 - **Scanning Prescriptions**: Users can tap 'Scan & Digitize Prescription' on their Patient Dashboard to upload prescription images for automatic AI medicine extraction.
 - **Medicine Reminders & Dosage Badge**: Under Today's Reminders, identical medicines in the same time slot are grouped with a 'Dosage: X' badge. Tapping Take Dose, Skip, or Snooze updates all combined doses at once.
 - **Finding Doctors & Diagnostic Labs**: Tap 'Doctors' or 'Lab Tests' in the menu to view interactive maps of nearby clinics and laboratories.
