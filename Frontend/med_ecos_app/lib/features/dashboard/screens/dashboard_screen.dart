@@ -45,6 +45,21 @@ import '../../../features/lab_tests/screens/lab_orders_screen.dart';
 import '../../../features/lab_tests/screens/lab_locations_map_screen.dart';
 import '../../../core/utils/constants.dart';
 
+class GroupedMedicineDose {
+  final MedicineDose primary;
+  final List<MedicineDose> allDoses;
+  final int count;
+  GroupedMedicineDose(this.primary, this.allDoses) : count = allDoses.length;
+}
+
+class TimeSlotGroup {
+  final String title;
+  final String subtitle;
+  final Color color;
+  final List<GroupedMedicineDose> groupedDoses;
+  TimeSlotGroup(this.title, this.subtitle, this.color, this.groupedDoses);
+}
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -314,12 +329,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Patient Dashboard",
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: isMobile ? 22 : 28,
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
                       ),
+                      child: const Icon(Icons.dashboard_rounded, color: AppColors.primary, size: 22),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      "Patient Dashboard",
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: isMobile ? 20 : 26,
+                            color: AppColors.textPrimary,
+                          ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 20),
                 LayoutBuilder(
@@ -373,11 +402,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           _buildTodaysReminders(),
                           const SizedBox(height: 24),
-                          Wrap(
-                            spacing: 16, runSpacing: 16,
+                          Row(
                             children: [
-                              StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(1)),
-                              StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
+                              Expanded(
+                                child: StatCard(title: "Active Meds", value: _activeMedicines.toString(), icon: Icons.healing, color: Colors.teal, onTap: () => _onItemSelected(3)),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: StatCard(title: "Prescriptions", value: _totalPrescriptions.toString(), icon: Icons.receipt_long, color: Colors.green, onTap: () => _onItemSelected(1)),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 24),
@@ -625,6 +658,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final List<MedicineDose> eveningDoses = _todayDoses.where((d) => d.expectedTime.hour >= 17 && d.expectedTime.hour < 20).toList();
     final List<MedicineDose> nightDoses = _todayDoses.where((d) => d.expectedTime.hour >= 20).toList();
 
+    List<GroupedMedicineDose> groupDoses(List<MedicineDose> doses) {
+      final Map<String, List<MedicineDose>> groups = {};
+      for (final d in doses) {
+        final key = "${d.medicineName.toLowerCase().trim()}_${d.context.toLowerCase().trim()}_${d.status}";
+        groups.putIfAbsent(key, () => []).add(d);
+      }
+      return groups.values.map((list) => GroupedMedicineDose(list.first, list)).toList();
+    }
+
+    final morningSlot = TimeSlotGroup("🌅 Morning", "Before 12:00 PM", Colors.amber.shade800, groupDoses(morningDoses));
+    final afternoonSlot = TimeSlotGroup("☀️ Afternoon", "12:00 PM - 5:00 PM", Colors.blue.shade700, groupDoses(afternoonDoses));
+    final eveningSlot = TimeSlotGroup("🌆 Evening", "5:00 PM - 8:00 PM", Colors.orange.shade800, groupDoses(eveningDoses));
+    final nightSlot = TimeSlotGroup("🌙 Night", "8:00 PM onwards", Colors.indigo.shade700, groupDoses(nightDoses));
+
+    final int nowHour = DateTime.now().hour;
+    List<TimeSlotGroup> orderedSlots;
+    if (nowHour < 12) {
+      orderedSlots = [morningSlot, afternoonSlot, eveningSlot, nightSlot];
+    } else if (nowHour < 17) {
+      orderedSlots = [afternoonSlot, eveningSlot, nightSlot, morningSlot];
+    } else if (nowHour < 20) {
+      orderedSlots = [eveningSlot, nightSlot, morningSlot, afternoonSlot];
+    } else {
+      orderedSlots = [nightSlot, morningSlot, afternoonSlot, eveningSlot];
+    }
+
     final bool isMobile = MediaQuery.of(context).size.width < 600;
 
     return Column(
@@ -811,22 +870,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           )
         else ...[
-          if (morningDoses.isNotEmpty) ...[
-            _buildTimeOfDayGroupHeader("🌅 Morning", "Before 12:00 PM", Colors.amber.shade800),
-            ...morningDoses.map((dose) => _buildPillCard(dose)),
-          ],
-          if (afternoonDoses.isNotEmpty) ...[
-            _buildTimeOfDayGroupHeader("☀️ Afternoon", "12:00 PM - 5:00 PM", Colors.blue.shade700),
-            ...afternoonDoses.map((dose) => _buildPillCard(dose)),
-          ],
-          if (eveningDoses.isNotEmpty) ...[
-            _buildTimeOfDayGroupHeader("Sunset / Evening", "5:00 PM - 8:00 PM", Colors.orange.shade800),
-            ...eveningDoses.map((dose) => _buildPillCard(dose)),
-          ],
-          if (nightDoses.isNotEmpty) ...[
-            _buildTimeOfDayGroupHeader("🌙 Night", "8:00 PM onwards", Colors.indigo.shade700),
-            ...nightDoses.map((dose) => _buildPillCard(dose)),
-          ],
+          for (final slot in orderedSlots)
+            if (slot.groupedDoses.isNotEmpty) ...[
+              _buildTimeOfDayGroupHeader(slot.title, slot.subtitle, slot.color),
+              ...slot.groupedDoses.map((group) => _buildPillCard(group)),
+            ],
         ],
       ],
     );
@@ -847,7 +895,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildPillCard(MedicineDose dose) {
+  Widget _buildPillCard(GroupedMedicineDose group) {
+    final dose = group.primary;
     final timeStr = "${dose.expectedTime.hour > 12 ? dose.expectedTime.hour - 12 : (dose.expectedTime.hour == 0 ? 12 : dose.expectedTime.hour)}:${dose.expectedTime.minute.toString().padLeft(2, '0')} ${dose.expectedTime.hour >= 12 ? 'PM' : 'AM'}";
     
     final bool isBeforeFood = dose.context.toLowerCase().contains('before');
@@ -901,9 +950,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: Text(
-                              dose.medicineName,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                            child: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    dose.medicineName,
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                                  ),
+                                ),
+                                if (group.count > 1) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      "Dosage: ${group.count}",
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                           Container(
@@ -981,7 +1050,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   TextButton.icon(
                     onPressed: () async {
-                      await NotificationService().snoozeMedicineReminder(dose, minutes: 15);
+                      for (final d in group.allDoses) {
+                        await NotificationService().snoozeMedicineReminder(d, minutes: 15);
+                      }
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Snoozed ${dose.medicineName} reminder for 15 minutes ⏰')),
@@ -993,16 +1064,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   TextButton(
                     onPressed: () async {
-                      setState(() { dose.status = 'SKIPPED'; });
-                      await ReminderService().logDose(dose, 'SKIPPED');
+                      setState(() {
+                        for (final d in group.allDoses) {
+                          d.status = 'SKIPPED';
+                        }
+                      });
+                      for (final d in group.allDoses) {
+                        await ReminderService().logDose(d, 'SKIPPED');
+                      }
                       _fetchPatientData();
                     },
                     child: const Text('Skip', style: TextStyle(color: Colors.orange)),
                   ),
                   ElevatedButton.icon(
                     onPressed: () async {
-                      setState(() { dose.status = 'TAKEN'; });
-                      await ReminderService().logDose(dose, 'TAKEN');
+                      setState(() {
+                        for (final d in group.allDoses) {
+                          d.status = 'TAKEN';
+                        }
+                      });
+                      for (final d in group.allDoses) {
+                        await ReminderService().logDose(d, 'TAKEN');
+                      }
                       _fetchPatientData();
                     },
                     icon: const Icon(Icons.check, size: 18),

@@ -31,8 +31,8 @@ class StatCard extends StatelessWidget {
         splashColor: color.withOpacity(0.1),
         highlightColor: color.withOpacity(0.05),
         child: Container(
-          width: width ?? (isMobile ? double.infinity : 260),
-          padding: const EdgeInsets.all(24),
+          width: width,
+          padding: EdgeInsets.all(isMobile ? 16 : 24),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -58,7 +58,7 @@ class StatCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(isMobile ? 10 : 12),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [color.withOpacity(0.2), color.withOpacity(0.05)],
@@ -67,7 +67,7 @@ class StatCard extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon, color: color, size: 28),
+                    child: Icon(icon, color: color, size: isMobile ? 22 : 28),
                   ),
                 ],
               ),
