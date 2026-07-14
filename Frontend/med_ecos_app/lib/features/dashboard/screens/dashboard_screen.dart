@@ -785,68 +785,66 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
         const SizedBox(height: 12),
 
-        // 🎯 Adherence Progress Banner
-        Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          color: AppColors.surfaceVariant,
-          child: Padding(
-            padding: EdgeInsets.all(isMobile ? 14.0 : 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.track_changes, color: AppColors.primary, size: 24),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        totalDoses > 0
-                            ? "Adherence Today: $takenDoses of $totalDoses taken (${(adherenceProgress * 100).toInt()}%)"
-                            : "Adherence Today: No scheduled doses",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 13 : 15, color: AppColors.primaryDark),
-                      ),
-                    ),
-                    if (totalDoses > 0 && takenDoses == totalDoses) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade700,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text("🔥 All Done!", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
-                      ),
-                    ] else if (totalDoses > 0) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text("🔥 Keep Streak Alive", style: TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold, fontSize: 11)),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: adherenceProgress,
-                    minHeight: 10,
-                    backgroundColor: Colors.white,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      adherenceProgress == 1.0 ? Colors.green : AppColors.primary,
+        // 🎯 Compact Adherence & Streak Banner
+        Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant.withOpacity(0.85),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.track_changes, color: AppColors.primary, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      totalDoses > 0
+                          ? "Adherence: ${(adherenceProgress * 100).toInt()}% ($takenDoses of $totalDoses taken)"
+                          : "Adherence: No scheduled doses",
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: isMobile ? 12.5 : 14, color: AppColors.primaryDark),
                     ),
                   ),
+                  if (totalDoses > 0 && takenDoses == totalDoses)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade700,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text("🔥 All Done!", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10.5)),
+                    )
+                  else if (totalDoses > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text("🔥 Keep Streak Alive", style: TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold, fontSize: 10.5)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: adherenceProgress,
+                  minHeight: 5,
+                  backgroundColor: Colors.white,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    adherenceProgress == 1.0 ? Colors.green : AppColors.primary,
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
         if (_todayDoses.isEmpty)
           Card(
@@ -919,37 +917,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 1,
       shape: RoundedRectangleBorder(
-        side: BorderSide(color: statusColor.withOpacity(0.35), width: 1.5),
-        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: statusColor.withOpacity(0.25), width: 1.2),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.12),
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(statusIcon, color: statusColor, size: 24),
+                  child: Icon(statusIcon, color: statusColor, size: 20),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         dose.medicineName,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, height: 1.2),
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5, height: 1.2, letterSpacing: 0.2),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 4),
                       Wrap(
                         spacing: 6,
                         runSpacing: 4,
@@ -957,46 +955,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           if (group.count > 1)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                               decoration: BoxDecoration(
                                 color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 "Dosage: ${group.count}",
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10.5),
                               ),
                             ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
                               color: badgeBg,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: Text(
                               badgeLabel,
-                              style: TextStyle(color: badgeText, fontWeight: FontWeight.bold, fontSize: 11),
+                              style: TextStyle(color: badgeText, fontWeight: FontWeight.bold, fontSize: 10.5),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 4),
                       Text(
                         "$timeStr • ${dose.timingLabel} • ${dose.durationLabel}",
-                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5, fontWeight: FontWeight.w500),
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5, fontWeight: FontWeight.w500),
                       ),
                       if (dose.instruction.isNotEmpty && dose.instruction != 'None') ...[
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 2),
                         Text(
                           "Note: ${dose.instruction}",
-                          style: TextStyle(color: Colors.grey.shade700, fontStyle: FontStyle.italic, fontSize: 11.5),
+                          style: TextStyle(color: Colors.grey.shade700, fontStyle: FontStyle.italic, fontSize: 11),
                         ),
                       ],
                     ],
                   ),
                 ),
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, color: Colors.grey, size: 22),
+                  icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
                   tooltip: 'Manage Reminder',
                   padding: EdgeInsets.zero,
                   onSelected: (val) {
@@ -1011,9 +1009,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       value: 'edit',
                       child: Row(
                         children: [
-                          Icon(Icons.edit_outlined, color: AppColors.primary, size: 20),
+                          Icon(Icons.edit_outlined, color: AppColors.primary, size: 18),
                           SizedBox(width: 8),
-                          Text('Edit Reminder'),
+                          Text('Edit Reminder', style: TextStyle(fontSize: 13)),
                         ],
                       ),
                     ),
@@ -1021,9 +1019,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                          Icon(Icons.delete_outline, color: Colors.red, size: 18),
                           SizedBox(width: 8),
-                          Text('Delete Reminder', style: TextStyle(color: Colors.red)),
+                          Text('Delete Reminder', style: TextStyle(color: Colors.red, fontSize: 13)),
                         ],
                       ),
                     ),
@@ -1032,45 +1030,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             if (dose.status == 'PENDING' || dose.status == 'MISSED') ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    setState(() {
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      setState(() {
+                        for (final d in group.allDoses) {
+                          d.status = 'TAKEN';
+                        }
+                      });
                       for (final d in group.allDoses) {
-                        d.status = 'TAKEN';
+                        await ReminderService().logDose(d, 'TAKEN');
                       }
-                    });
-                    for (final d in group.allDoses) {
-                      await ReminderService().logDose(d, 'TAKEN');
-                    }
-                    _fetchPatientData();
-                  },
-                  icon: const Icon(Icons.check, size: 18),
-                  label: const Text('Take Dose', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      _fetchPatientData();
+                    },
+                    icon: const Icon(Icons.check, size: 15),
+                    label: const Text('Take Dose', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade600,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
                   ),
-                ),
+                ],
               ),
             ] else ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       dose.status == 'TAKEN' ? '✓ Taken' : dose.status,
-                      style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12),
+                      style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11),
                     ),
                   ),
                 ],
