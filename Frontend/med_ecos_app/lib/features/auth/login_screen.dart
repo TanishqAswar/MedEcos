@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../dashboard/screens/dashboard_screen.dart';
 import 'signup_screen.dart';
+import '../support/screens/about_us_screen.dart';
 import '../../../core/utils/abha_formatter.dart';
 import '../../core/utils/constants.dart';
 import '../../core/widgets/medecos_loader.dart';
@@ -270,15 +271,27 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.asset('assets/Icon.jpeg', height: 32, width: 32),
+        title: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+            );
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.asset('assets/Icon.jpeg', height: 32, width: 32),
+                ),
+                const SizedBox(width: 12),
+                const Text('MedEcos Login'),
+              ],
             ),
-            const SizedBox(width: 12),
-            const Text('MedEcos Login'),
-          ],
+          ),
         ),
       ),
       body: Center(
@@ -292,13 +305,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Center(
-                    child: ClipRRect(
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+                        );
+                      },
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.asset(
-                        'assets/Icon.jpeg',
-                        height: 90,
-                        width: 90,
-                        fit: BoxFit.contain,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          'assets/Icon.jpeg',
+                          height: 90,
+                          width: 90,
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                   ),

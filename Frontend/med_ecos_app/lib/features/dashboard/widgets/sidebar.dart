@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/login_screen.dart';
 import '../../support/screens/contact_us_screen.dart';
+import '../../support/screens/about_us_screen.dart';
 import '../../../core/services/api_service.dart';
 
 class Sidebar extends StatelessWidget {
@@ -89,15 +90,30 @@ class Sidebar extends StatelessWidget {
               ],
             ),
           ),
-          // Logo Area
-          Image.asset("assets/Icon.jpeg", height: 80, width: 80, fit: BoxFit.contain),
-          const SizedBox(height: 16),
-          Text(
-            "MedEcos",
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: rolePrimary,
-                ),
+          // Logo Area (Clickable -> About Us)
+          InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+              child: Column(
+                children: [
+                  Image.asset("assets/Icon.jpeg", height: 80, width: 80, fit: BoxFit.contain),
+                  const SizedBox(height: 16),
+                  Text(
+                    "MedEcos",
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: rolePrimary,
+                        ),
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 48),
           

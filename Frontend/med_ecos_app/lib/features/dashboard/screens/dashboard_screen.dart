@@ -13,6 +13,7 @@ import '../../../core/widgets/medecos_loader.dart';
 
 // Common Widgets
 import '../widgets/sidebar.dart';
+import '../../support/screens/about_us_screen.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/active_medicines_list.dart';
 
@@ -1654,15 +1655,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: isWide ? null : AppBar(
-        title: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.asset('assets/Icon.jpeg', height: 28, width: 28, fit: BoxFit.contain),
+        title: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+            );
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.asset('assets/Icon.jpeg', height: 28, width: 28, fit: BoxFit.contain),
+                ),
+                const SizedBox(width: 10),
+                const Text('MedEcos', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+              ],
             ),
-            const SizedBox(width: 10),
-            const Text('MedEcos', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-          ],
+          ),
         ),
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: AppColors.primary),
