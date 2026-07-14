@@ -342,7 +342,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: AppColors.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.dashboard_rounded, color: AppColors.primary, size: 22),
+                      child: const Icon(Icons.dashboard, color: AppColors.primary, size: 22),
                     ),
                     const SizedBox(width: 10),
                     Text(
@@ -378,7 +378,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                     const SizedBox(width: 20),
                                     Expanded(
-                                      child: StatCard(title: "Health Vault", value: "Locker", icon: Icons.folder_shared, color: Colors.indigo, onTap: () => _onItemSelected(6)),
+                                      child: StatCard(title: "Health Vault", value: "Locker", icon: Icons.folder, color: Colors.indigo, onTap: () => _onItemSelected(6)),
                                     ),
                                   ],
                                 ),
@@ -426,7 +426,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                               const SizedBox(width: 10),
                               Expanded(
-                                child: StatCard(title: "Health Vault", value: "Locker", icon: Icons.folder_shared, color: Colors.indigo, onTap: () => _onItemSelected(6)),
+                                child: StatCard(title: "Health Vault", value: "Locker", icon: Icons.folder, color: Colors.indigo, onTap: () => _onItemSelected(6)),
                               ),
                             ],
                           ),
@@ -765,7 +765,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.folder_shared, color: Colors.teal),
+                  icon: const Icon(Icons.folder, color: Colors.teal),
                   tooltip: 'Medical Locker (Health Vault)',
                   onPressed: () => Navigator.push(
                     context,
@@ -809,7 +809,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.folder_shared, color: Colors.teal),
+                    icon: const Icon(Icons.folder, color: Colors.teal),
                     tooltip: 'Medical Locker (Health Vault)',
                     onPressed: () => Navigator.push(
                       context,
@@ -1655,25 +1655,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: isWide ? null : AppBar(
-        title: InkWell(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const AboutUsScreen()),
-            );
-          },
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Image.asset('assets/Icon.jpeg', height: 28, width: 28, fit: BoxFit.contain),
-                ),
-                const SizedBox(width: 10),
-                const Text('MedEcos', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-              ],
+        title: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+              );
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset('assets/Icon.jpeg', height: 28, width: 28, fit: BoxFit.contain),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text('MedEcos', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
           ),
         ),

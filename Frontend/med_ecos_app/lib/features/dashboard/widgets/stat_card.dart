@@ -32,7 +32,10 @@ class StatCard extends StatelessWidget {
         highlightColor: color.withOpacity(0.05),
         child: Container(
           width: width,
-          padding: EdgeInsets.all(isMobile ? 16 : 24),
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 12 : 24,
+            vertical: isMobile ? 14 : 24,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -53,12 +56,13 @@ class StatCard extends StatelessWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: EdgeInsets.all(isMobile ? 10 : 12),
+                    padding: EdgeInsets.all(isMobile ? 8 : 12),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [color.withOpacity(0.2), color.withOpacity(0.05)],
@@ -67,28 +71,38 @@ class StatCard extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon, color: color, size: isMobile ? 22 : 28),
+                    child: Icon(icon, color: color, size: isMobile ? 20 : 28),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.5,
-                      fontSize: isMobile ? 24 : 28,
-                    ),
+              const SizedBox(height: 12),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  value,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.5,
+                        fontSize: isMobile ? 22 : 28,
+                      ),
+                  maxLines: 1,
+                ),
               ),
               const SizedBox(height: 4),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w500,
-                      fontSize: isMobile ? 13 : 16,
-                    ),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: isMobile ? 12 : 16,
+                      ),
+                  maxLines: 1,
+                ),
               ),
             ],
           ),

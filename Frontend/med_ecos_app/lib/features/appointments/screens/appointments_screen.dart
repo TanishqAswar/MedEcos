@@ -8,6 +8,7 @@ import '../widgets/book_appointment_dialog.dart';
 import '../../../core/utils/constants.dart';
 import '../../video_call/screens/video_call_screen.dart';
 import '../../../core/widgets/medecos_loader.dart';
+import '../../../core/widgets/medecos_app_bar_title.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -104,7 +105,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     if (_error != null) return Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.red)));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Appointments'), automaticallyImplyLeading: false),
+      appBar: AppBar(title: const MedEcosAppBarTitle(title: 'Appointments'), automaticallyImplyLeading: false),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final res = await showDialog(context: context, builder: (_) => const BookAppointmentDialog());

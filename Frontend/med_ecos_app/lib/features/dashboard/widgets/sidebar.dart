@@ -36,7 +36,7 @@ class Sidebar extends StatelessWidget {
         _NavItem(icon: Icons.calendar_today, label: "Appointments", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
         _NavItem(icon: Icons.history, label: "History", isSelected: selectedIndex == 3, onTap: () => onItemSelected(3), rolePrimary: rolePrimary, roleLight: roleLight),
         _NavItem(icon: Icons.science, label: "Lab Orders", isSelected: selectedIndex == 4, onTap: () => onItemSelected(4), rolePrimary: rolePrimary, roleLight: roleLight),
-        _NavItem(icon: Icons.folder_shared, label: "Health Vault", isSelected: selectedIndex == 6, onTap: () => onItemSelected(6), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.folder, label: "Health Vault", isSelected: selectedIndex == 6, onTap: () => onItemSelected(6), rolePrimary: rolePrimary, roleLight: roleLight),
         const Spacer(),
       ];
     } else if (userRole == 'Doctor') {
@@ -45,7 +45,7 @@ class Sidebar extends StatelessWidget {
         _NavItem(icon: Icons.assignment, label: "Prescriptions", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1), rolePrimary: rolePrimary, roleLight: roleLight),
         _NavItem(icon: Icons.people, label: "Patients", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
         _NavItem(icon: Icons.calendar_month, label: "Appointments", isSelected: selectedIndex == 3, onTap: () => onItemSelected(3), rolePrimary: rolePrimary, roleLight: roleLight),
-        _NavItem(icon: Icons.folder_shared, label: "Health Vault", isSelected: selectedIndex == 5, onTap: () => onItemSelected(5), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.folder, label: "Health Vault", isSelected: selectedIndex == 5, onTap: () => onItemSelected(5), rolePrimary: rolePrimary, roleLight: roleLight),
         const Spacer(),
       ];
     } else if (userRole == 'Pharmacist') {
@@ -55,15 +55,15 @@ class Sidebar extends StatelessWidget {
         _NavItem(icon: Icons.people, label: "Patients", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
         _NavItem(icon: Icons.inventory_2, label: "Inventory", isSelected: selectedIndex == 3, onTap: () => onItemSelected(3), rolePrimary: rolePrimary, roleLight: roleLight),
         _NavItem(icon: Icons.point_of_sale, label: "Billing / POS", isSelected: selectedIndex == 4, onTap: () => onItemSelected(4), rolePrimary: rolePrimary, roleLight: roleLight),
-        _NavItem(icon: Icons.folder_shared, label: "Health Vault", isSelected: selectedIndex == 6, onTap: () => onItemSelected(6), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.folder, label: "Health Vault", isSelected: selectedIndex == 6, onTap: () => onItemSelected(6), rolePrimary: rolePrimary, roleLight: roleLight),
         const Spacer(),
       ];
     } else if (userRole == 'Pathologist' || userRole == 'LabTester') {
       items = [
         _NavItem(icon: Icons.dashboard, label: "Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0), rolePrimary: rolePrimary, roleLight: roleLight),
         _NavItem(icon: Icons.people, label: "Patients", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1), rolePrimary: rolePrimary, roleLight: roleLight),
-        _NavItem(icon: Icons.science_outlined, label: "Lab Orders", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
-        _NavItem(icon: Icons.folder_shared, label: "Health Vault", isSelected: selectedIndex == 4, onTap: () => onItemSelected(4), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.science, label: "Lab Orders", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight),
+        _NavItem(icon: Icons.folder, label: "Health Vault", isSelected: selectedIndex == 4, onTap: () => onItemSelected(4), rolePrimary: rolePrimary, roleLight: roleLight),
         const Spacer(),
       ];
     } else {
@@ -91,27 +91,35 @@ class Sidebar extends StatelessWidget {
             ),
           ),
           // Logo Area (Clickable -> About Us)
-          InkWell(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AboutUsScreen()),
-              );
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-              child: Column(
-                children: [
-                  Image.asset("assets/Icon.jpeg", height: 80, width: 80, fit: BoxFit.contain),
-                  const SizedBox(height: 16),
-                  Text(
-                    "MedEcos",
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: rolePrimary,
-                        ),
-                  ),
-                ],
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                if (onClose != null) {
+                  onClose!();
+                } else if (Scaffold.maybeOf(context)?.isDrawerOpen == true) {
+                  Navigator.of(context).pop();
+                }
+                Navigator.of(context, rootNavigator: true).push(
+                  MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+                );
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                child: Column(
+                  children: [
+                    Image.asset("assets/Icon.jpeg", height: 80, width: 80, fit: BoxFit.contain),
+                    const SizedBox(height: 16),
+                    Text(
+                      "MedEcos",
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: rolePrimary,
+                          ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -182,11 +190,16 @@ class Sidebar extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _NavItem(
-            icon: Icons.help_outline,
+            icon: Icons.help,
             label: "Contact Us & FAQs",
             isSelected: false,
             onTap: () {
-              Navigator.of(context).push(
+              if (onClose != null) {
+                onClose!();
+              } else if (Scaffold.maybeOf(context)?.isDrawerOpen == true) {
+                Navigator.of(context).pop();
+              }
+              Navigator.of(context, rootNavigator: true).push(
                 MaterialPageRoute(builder: (_) => const ContactUsScreen()),
               );
             },
