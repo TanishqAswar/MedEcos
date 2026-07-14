@@ -870,34 +870,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           )
         else ...[
-          for (final slot in orderedSlots) ...[
-            _buildTimeOfDayGroupHeader(slot.title, slot.subtitle, slot.color),
-            if (slot.groupedDoses.isNotEmpty)
-              ...slot.groupedDoses.map((group) => _buildPillCard(group))
-            else
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: slot.color.withOpacity(0.06),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: slot.color.withOpacity(0.18)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.event_available, color: slot.color, size: 20),
-                      const SizedBox(width: 10),
-                      Text(
-                        "No reminders scheduled for ${slot.title}",
-                        style: TextStyle(color: Colors.grey.shade700, fontSize: 13, fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
+          for (final slot in orderedSlots)
+            if (slot.groupedDoses.isNotEmpty) ...[
+              _buildTimeOfDayGroupHeader(slot.title, slot.subtitle, slot.color),
+              ...slot.groupedDoses.map((group) => _buildPillCard(group)),
+            ],
         ],
       ],
     );
@@ -905,12 +882,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildTimeOfDayGroupHeader(String title, String subtitle, Color color) {
     return Padding(
-      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+      padding: const EdgeInsets.only(top: 12.0, bottom: 6.0),
       child: Row(
         children: [
-          Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: color)),
+          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
           const SizedBox(width: 8),
-          Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+          Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
           const SizedBox(width: 8),
           Expanded(child: Divider(color: color.withOpacity(0.3), thickness: 1)),
         ],
@@ -944,48 +921,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       elevation: 2,
       shape: RoundedRectangleBorder(
         side: BorderSide(color: statusColor.withOpacity(0.35), width: 1.5),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(14.0),
         child: Column(
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(statusIcon, color: statusColor, size: 28),
+                  child: Icon(statusIcon, color: statusColor, size: 24),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         dose.medicineName,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, height: 1.25),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, height: 1.2),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 5),
                       Wrap(
-                        spacing: 8,
+                        spacing: 6,
                         runSpacing: 4,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           if (group.count > 1)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                               decoration: BoxDecoration(
                                 color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
                                 "Dosage: ${group.count}",
@@ -993,10 +970,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                             decoration: BoxDecoration(
                               color: badgeBg,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: Text(
                               badgeLabel,
@@ -1005,24 +982,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 5),
                       Text(
                         "$timeStr • ${dose.timingLabel} • ${dose.durationLabel}",
-                        style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5, fontWeight: FontWeight.w500),
                       ),
                       if (dose.instruction.isNotEmpty && dose.instruction != 'None') ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
                         Text(
                           "Note: ${dose.instruction}",
-                          style: TextStyle(color: Colors.grey.shade700, fontStyle: FontStyle.italic, fontSize: 12),
+                          style: TextStyle(color: Colors.grey.shade700, fontStyle: FontStyle.italic, fontSize: 11.5),
                         ),
                       ],
                     ],
                   ),
                 ),
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, color: Colors.grey),
+                  icon: const Icon(Icons.more_vert, color: Colors.grey, size: 22),
                   tooltip: 'Manage Reminder',
+                  padding: EdgeInsets.zero,
                   onSelected: (val) {
                     if (val == 'edit') {
                       _showEditMedicineReminderDialog(context, dose);
@@ -1056,80 +1034,92 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             if (dose.status == 'PENDING' || dose.status == 'MISSED') ...[
-              const SizedBox(height: 14),
-              const Divider(height: 1),
-              const SizedBox(height: 10),
-              Wrap(
-                alignment: WrapAlignment.end,
-                spacing: 8,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
+              const SizedBox(height: 12),
+              Row(
                 children: [
-                  TextButton.icon(
-                    onPressed: () async {
-                      for (final d in group.allDoses) {
-                        await NotificationService().snoozeMedicineReminder(d, minutes: 15);
-                      }
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Snoozed ${dose.medicineName} reminder for 15 minutes ⏰')),
-                        );
-                      }
-                    },
-                    icon: const Icon(Icons.snooze, size: 18, color: Colors.blueGrey),
-                    label: const Text('Snooze 15m', style: TextStyle(color: Colors.blueGrey)),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      setState(() {
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () async {
                         for (final d in group.allDoses) {
-                          d.status = 'SKIPPED';
+                          await NotificationService().snoozeMedicineReminder(d, minutes: 15);
                         }
-                      });
-                      for (final d in group.allDoses) {
-                        await ReminderService().logDose(d, 'SKIPPED');
-                      }
-                      _fetchPatientData();
-                    },
-                    child: const Text('Skip', style: TextStyle(color: Colors.orange)),
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Snoozed ${dose.medicineName} reminder for 15 minutes ⏰')),
+                          );
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        side: BorderSide(color: Colors.blueGrey.withOpacity(0.4)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('⏰ Snooze', style: TextStyle(color: Colors.blueGrey, fontSize: 12.5, fontWeight: FontWeight.w600)),
+                    ),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      setState(() {
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () async {
+                        setState(() {
+                          for (final d in group.allDoses) {
+                            d.status = 'SKIPPED';
+                          }
+                        });
                         for (final d in group.allDoses) {
-                          d.status = 'TAKEN';
+                          await ReminderService().logDose(d, 'SKIPPED');
                         }
-                      });
-                      for (final d in group.allDoses) {
-                        await ReminderService().logDose(d, 'TAKEN');
-                      }
-                      _fetchPatientData();
-                    },
-                    icon: const Icon(Icons.check, size: 18),
-                    label: const Text('Take Dose'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade600,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        _fetchPatientData();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        side: BorderSide(color: Colors.orange.withOpacity(0.5)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Skip', style: TextStyle(color: Colors.orange, fontSize: 12.5, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        setState(() {
+                          for (final d in group.allDoses) {
+                            d.status = 'TAKEN';
+                          }
+                        });
+                        for (final d in group.allDoses) {
+                          await ReminderService().logDose(d, 'TAKEN');
+                        }
+                        _fetchPatientData();
+                      },
+                      icon: const Icon(Icons.check, size: 16),
+                      label: const Text('Take Dose', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
                     ),
                   ),
                 ],
               ),
             ] else ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       dose.status == 'TAKEN' ? '✓ Taken' : dose.status,
-                      style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ),
                 ],
