@@ -140,6 +140,18 @@ class Sidebar extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Tooltip(
+                message: 'Contact Us & FAQs',
+                child: IconButton(
+                  icon: const Icon(Icons.help_outline, color: AppColors.textSecondary, size: 22),
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).push(
+                      MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              Tooltip(
                 message: '$userName ($userRole)',
                 child: InkWell(
                   onTap: () => onItemSelected(profileIndex),
@@ -162,18 +174,6 @@ class Sidebar extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Tooltip(
-                message: 'Contact Us & FAQs',
-                child: IconButton(
-                  icon: const Icon(Icons.help_outline, color: AppColors.textSecondary, size: 22),
-                  onPressed: () {
-                    Navigator.of(context, rootNavigator: true).push(
-                      MaterialPageRoute(builder: (_) => const ContactUsScreen()),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 4),
               Tooltip(
                 message: 'Logout',
                 child: IconButton(
@@ -270,6 +270,20 @@ class Sidebar extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Divider(color: Colors.grey.shade200, height: 24),
                       ),
+                      // Contact Us & FAQs
+                      _NavItem(
+                        icon: Icons.help_outline,
+                        label: "Contact Us & FAQs",
+                        isSelected: false,
+                        onTap: () {
+                          Navigator.of(context, rootNavigator: true).push(
+                            MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+                          );
+                        },
+                        rolePrimary: rolePrimary,
+                        roleLight: roleLight,
+                      ),
+                      const SizedBox(height: 6),
                       // Profile Card
                       InkWell(
                         onTap: () => onItemSelected(profileIndex),
@@ -322,20 +336,8 @@ class Sidebar extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      _NavItem(
-                        icon: Icons.help_outline,
-                        label: "Contact Us & FAQs",
-                        isSelected: false,
-                        onTap: () {
-                          Navigator.of(context, rootNavigator: true).push(
-                            MaterialPageRoute(builder: (_) => const ContactUsScreen()),
-                          );
-                        },
-                        rolePrimary: rolePrimary,
-                        roleLight: roleLight,
-                      ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 6),
+                      // Logout
                       _NavItem(
                         icon: Icons.logout, 
                         label: "Logout", 
@@ -417,6 +419,24 @@ class Sidebar extends StatelessWidget {
                   children: [
                     ...items,
                     const SizedBox(height: 16),
+                    // Contact Us & FAQs
+                    _NavItem(
+                      icon: Icons.help,
+                      label: "Contact Us & FAQs",
+                      isSelected: false,
+                      onTap: () {
+                        if (onClose != null) {
+                          onClose!();
+                        } else if (Scaffold.maybeOf(context)?.isDrawerOpen == true) {
+                          Navigator.of(context).pop();
+                        }
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 6),
+                    // Profile Card
                     InkWell(
                       onTap: () => onItemSelected(profileIndex),
                       borderRadius: BorderRadius.circular(12),
@@ -466,23 +486,8 @@ class Sidebar extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    _NavItem(
-                      icon: Icons.help,
-                      label: "Contact Us & FAQs",
-                      isSelected: false,
-                      onTap: () {
-                        if (onClose != null) {
-                          onClose!();
-                        } else if (Scaffold.maybeOf(context)?.isDrawerOpen == true) {
-                          Navigator.of(context).pop();
-                        }
-                        Navigator.of(context, rootNavigator: true).push(
-                          MaterialPageRoute(builder: (_) => const ContactUsScreen()),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
+                    // Logout
                     _NavItem(
                       icon: Icons.logout, 
                       label: "Logout", 
