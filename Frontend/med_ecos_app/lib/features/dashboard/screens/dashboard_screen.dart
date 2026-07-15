@@ -394,29 +394,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ],
                     ),
-                    Tooltip(
-                      message: "Trigger instant test alert with action buttons on mobile status bar",
-                      child: ActionChip(
-                        avatar: const Icon(Icons.notifications_active, color: AppColors.primary, size: 18),
-                        label: const Text("Test Alert", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
-                        side: const BorderSide(color: Colors.transparent),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        onPressed: () async {
-                          await NotificationService().showTestNotification();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text('🔔 High-priority urgent reminder sent with interactive action buttons! Check status bar.'),
-                                backgroundColor: AppColors.primary,
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -1912,29 +1889,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             fontSize: isMobile ? 20 : 26,
                             color: AppColors.textPrimary,
                           ),
-                    ),
-                    Tooltip(
-                      message: "Trigger instant test alert with action buttons on mobile status bar",
-                      child: ActionChip(
-                        avatar: const Icon(Icons.notifications_active, color: AppColors.primary, size: 18),
-                        label: const Text("Test Alert", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
-                        side: const BorderSide(color: Colors.transparent),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        onPressed: () async {
-                          await NotificationService().showTestNotification();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text('🔔 High-priority urgent reminder sent with interactive action buttons! Check status bar.'),
-                                backgroundColor: AppColors.primary,
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                            );
-                          }
-                        },
-                      ),
                     ),
                   ],
                 ),
