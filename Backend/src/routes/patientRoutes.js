@@ -104,6 +104,52 @@ router.post('/medicines', protect, authorize('Patient'), async (req, res) => {
     }
 });
 
+// Update Custom Reminder Medicine
+router.put('/medicines/:id', protect, authorize('Patient'), async (req, res) => {
+    try {
+        const medId = req.params.id;
+        const { name, oldName, timing, context, instruction, dosage, durationDays } = req.body;
+        
+        req.user.customMedicines = req.user.customMedicines || [];
+        let index = req.user.customMedicines.findIndex(m => m.id === medId || (oldName && m.name.toLowerCase() === oldName.toLowerCase()));
+        if (index !== -1) {
+            req.user.customMedicines[index] = {
+                ...req.user.customMedicines[index],
+                name: (name || req.user.customMedicines[index].name).trim(),
+                timing: timing ?? req.user.customMedicines[index].timing,
+                context: context ?? req.user.customMedicines[index].context,
+                instruction: instruction ?? req.user.customMedicines[index].instruction,
+                dosage: dosage ?? req.user.customMedicines[index].dosage,
+                durationDays: durationDays !== undefined ? Number(durationDays) : req.user.customMedicines[index].durationDays
+            };
+        } else {
+            const newId = medId.startsWith('custom_') ? medId : `custom_${Date.now()}`;
+            req.user.customMedicines.push({
+                id: newId,
+                name: (name || oldName || 'Medicine').trim(),
+                timing: timing || 'Morning',
+                context: context || 'After Food',
+                instruction: instruction || '1 Unit',
+                dosage: dosage || '1 Unit',
+                durationDays: Number(durationDays) || 0,
+                startDate: new Date()
+            });
+            req.user.deletedReminders = req.user.deletedReminders || [];
+            if (oldName && !req.user.deletedReminders.includes(oldName.toLowerCase().trim()) && ((name && name.trim().toLowerCase() !== oldName.toLowerCase().trim()) || !medId.startsWith('custom_'))) {
+                req.user.deletedReminders.push(oldName.toLowerCase().trim());
+            }
+            if (!req.user.deletedReminders.includes(medId)) {
+                req.user.deletedReminders.push(medId);
+            }
+        }
+        await req.user.save();
+        res.json(req.user.customMedicines);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // Delete Reminder Medicine
 router.delete('/medicines/:id', protect, authorize('Patient'), async (req, res) => {
     try {

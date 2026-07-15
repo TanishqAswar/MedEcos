@@ -106,6 +106,28 @@ class ReminderService {
 
     List<MedicineDose> todayDoses = [];
 
+    // First collect active custom medicines so we can skip prescriptions that have been customized/overridden
+    final remoteCustomMeds = profile['customMedicines'] as List<dynamic>? ?? [];
+    final Map<String, Map<String, dynamic>> combinedCustom = {};
+    for (var m in remoteCustomMeds) {
+      if (m is Map) {
+        final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
+        final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
+        if (id.isNotEmpty && !deletedReminders.contains(id.toLowerCase()) && !deletedReminders.contains(nameKey)) {
+          combinedCustom[nameKey] = Map<String, dynamic>.from(m);
+        }
+      }
+    }
+    for (var m in localCustomMeds) {
+      if (m is Map) {
+        final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
+        final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
+        if (id.isNotEmpty && !deletedReminders.contains(id.toLowerCase()) && !deletedReminders.contains(nameKey)) {
+          combinedCustom[nameKey] = Map<String, dynamic>.from(m);
+        }
+      }
+    }
+
     for (var p in prescriptions) {
       for (var med in p.medicines) {
         final name = med['name'] ?? 'Unknown';
@@ -115,6 +137,11 @@ class ReminderService {
         final inst = med['instruction'] ?? '';
 
         if (MedicineUtils.isActiveMedicine(p.date, duration)) {
+          final medIdKey = "${p.id}_$name".toLowerCase();
+          final nameKey = name.toLowerCase().trim();
+          if (deletedReminders.contains(medIdKey) || deletedReminders.contains(nameKey) || combinedCustom.containsKey(nameKey)) {
+            continue;
+          }
           var timingsList = timing.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
           
           if (timingsList.isEmpty) {
@@ -150,24 +177,6 @@ class ReminderService {
             ));
           }
         }
-      }
-    }
-
-    // Merge custom medicines from backend profile and local storage
-    final remoteCustomMeds = profile['customMedicines'] as List<dynamic>? ?? [];
-    final Map<String, Map<String, dynamic>> combinedCustom = {};
-    for (var m in remoteCustomMeds) {
-      if (m is Map) {
-        final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
-        final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
-        if (id.isNotEmpty) combinedCustom[nameKey] = Map<String, dynamic>.from(m);
-      }
-    }
-    for (var m in localCustomMeds) {
-      if (m is Map) {
-        final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
-        final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
-        if (id.isNotEmpty) combinedCustom[nameKey] = Map<String, dynamic>.from(m);
       }
     }
 
@@ -360,29 +369,52 @@ class ReminderService {
     }
 
     int index = list.indexWhere((m) => m['id'] == medicineId || (m['name']?.toString().toLowerCase().trim() == oldName.toLowerCase().trim()));
+    final newId = medicineId.startsWith('custom_') ? medicineId : 'custom_${DateTime.now().millisecondsSinceEpoch}';
+    final updatedData = {
+      'id': index != -1 ? (list[index]['id'] ?? newId) : newId,
+      'name': newName.trim(),
+      'timing': timing,
+      'context': context,
+      'instruction': instruction,
+      'dosage': dosage,
+      'durationDays': durationDays,
+      'startDate': index != -1 ? (list[index]['startDate'] ?? DateTime.now().toIso8601String()) : DateTime.now().toIso8601String(),
+    };
+
     if (index != -1) {
-      list[index] = {
-        'id': list[index]['id'] ?? medicineId,
-        'name': newName.trim(),
-        'timing': timing,
-        'context': context,
-        'instruction': instruction,
-        'dosage': dosage,
-        'durationDays': durationDays,
-        'startDate': list[index]['startDate'] ?? DateTime.now().toIso8601String(),
-      };
-      await prefs.setString('custom_reminder_medicines', jsonEncode(list));
+      list[index] = updatedData;
     } else {
-      await deleteReminderMedicine(medicineId, oldName);
-      await addCustomMedicine(
-        name: newName,
-        timing: timing,
-        context: context,
-        instruction: instruction,
-        dosage: dosage,
-        durationDays: durationDays,
-      );
+      list.add(updatedData);
+      final localDelJson = prefs.getString('deleted_reminder_medicines');
+      List<dynamic> delList = [];
+      if (localDelJson != null) {
+        try { delList = jsonDecode(localDelJson); } catch (_) {}
+      }
+      if (!delList.contains(medicineId)) delList.add(medicineId);
+      if (!delList.contains(oldName.toLowerCase().trim())) delList.add(oldName.toLowerCase().trim());
+      await prefs.setString('deleted_reminder_medicines', jsonEncode(delList));
     }
+    await prefs.setString('custom_reminder_medicines', jsonEncode(list));
+
+    try {
+      final token = prefs.getString('jwt_token') ?? '';
+      await http.put(
+        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/patient/medicines/$medicineId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'name': newName.trim(),
+          'oldName': oldName.trim(),
+          'timing': timing,
+          'context': context,
+          'instruction': instruction,
+          'dosage': dosage,
+          'durationDays': durationDays,
+        }),
+      );
+    } catch (_) {}
   }
 
   Future<void> deleteReminderMedicine(String medicineId, String medicineName) async {

@@ -1075,6 +1075,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         runSpacing: 4,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
+                          if (dose.dosage.isNotEmpty && dose.dosage != '0' && dose.dosage != 'None')
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: AppColors.primary.withOpacity(0.3), width: 0.8),
+                              ),
+                              child: Text(
+                                "💊 Dosage: ${dose.dosage}",
+                                style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 10.5),
+                              ),
+                            ),
                           if (group.count > 1)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
@@ -1083,7 +1096,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                "Dosage: ${group.count}",
+                                "Qty: ${group.count} doses",
                                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10.5),
                               ),
                             ),
