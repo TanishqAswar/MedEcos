@@ -261,95 +261,93 @@ class Sidebar extends StatelessWidget {
               const SizedBox(height: 12),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Column(
+                    children: items,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Divider(color: Colors.grey.shade200, height: 16),
+              ),
+              // Contact Us & FAQs pinned at bottom
+              _NavItem(
+                icon: Icons.help_outline,
+                label: "Contact Us & FAQs",
+                isSelected: false,
+                onTap: () {
+                  Navigator.of(context, rootNavigator: true).push(
+                    MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+                  );
+                },
+                rolePrimary: rolePrimary,
+                roleLight: roleLight,
+              ),
+              const SizedBox(height: 4),
+              // Profile Card pinned at bottom
+              InkWell(
+                onTap: () => onItemSelected(profileIndex),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isProfileSelected ? roleLight : AppColors.background,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isProfileSelected ? rolePrimary.withOpacity(0.5) : Colors.grey.shade200,
+                    ),
+                  ),
+                  child: Row(
                     children: [
-                      ...items,
-                      const SizedBox(height: 16),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Divider(color: Colors.grey.shade200, height: 24),
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: roleLight,
+                        child: Icon(Icons.person, color: rolePrimary, size: 20),
                       ),
-                      // Contact Us & FAQs
-                      _NavItem(
-                        icon: Icons.help_outline,
-                        label: "Contact Us & FAQs",
-                        isSelected: false,
-                        onTap: () {
-                          Navigator.of(context, rootNavigator: true).push(
-                            MaterialPageRoute(builder: (_) => const ContactUsScreen()),
-                          );
-                        },
-                        rolePrimary: rolePrimary,
-                        roleLight: roleLight,
-                      ),
-                      const SizedBox(height: 6),
-                      // Profile Card
-                      InkWell(
-                        onTap: () => onItemSelected(profileIndex),
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: isProfileSelected ? roleLight : AppColors.background,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isProfileSelected ? rolePrimary.withOpacity(0.5) : Colors.grey.shade200,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              userName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold, 
+                                fontSize: 14,
+                                color: isProfileSelected ? rolePrimary : Colors.black87,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundColor: roleLight,
-                                child: Icon(Icons.person, color: rolePrimary, size: 20),
+                            Text(
+                              userRole,
+                              style: TextStyle(
+                                color: isProfileSelected ? AppColors.primary.withOpacity(0.7) : AppColors.textSecondary, 
+                                fontSize: 12
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      userName,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold, 
-                                        fontSize: 14,
-                                        color: isProfileSelected ? rolePrimary : Colors.black87,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      userRole,
-                                      style: TextStyle(
-                                        color: isProfileSelected ? AppColors.primary.withOpacity(0.7) : AppColors.textSecondary, 
-                                        fontSize: 12
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      // Logout
-                      _NavItem(
-                        icon: Icons.logout, 
-                        label: "Logout", 
-                        isSelected: false,
-                        onTap: () => _performLogout(context),
-                        rolePrimary: rolePrimary,
-                        roleLight: roleLight,
                       ),
                     ],
                   ),
                 ),
               ),
+              const SizedBox(height: 4),
+              // Logout pinned at bottom
+              _NavItem(
+                icon: Icons.logout, 
+                label: "Logout", 
+                isSelected: false,
+                onTap: () => _performLogout(context),
+                rolePrimary: rolePrimary,
+                roleLight: roleLight,
+              ),
+              const SizedBox(height: 12),
             ],
           ),
         ),
@@ -414,90 +412,92 @@ class Sidebar extends StatelessWidget {
             const SizedBox(height: 12),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Column(
+                  children: items,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Divider(color: Colors.grey.shade200, height: 16),
+            ),
+            // Contact Us & FAQs pinned at bottom
+            _NavItem(
+              icon: Icons.help,
+              label: "Contact Us & FAQs",
+              isSelected: false,
+              onTap: () {
+                if (onClose != null) {
+                  onClose!();
+                } else if (Scaffold.maybeOf(context)?.isDrawerOpen == true) {
+                  Navigator.of(context).pop();
+                }
+                Navigator.of(context, rootNavigator: true).push(
+                  MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+                );
+              },
+            ),
+            const SizedBox(height: 4),
+            // Profile Card pinned at bottom
+            InkWell(
+              onTap: () => onItemSelected(profileIndex),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isProfileSelected ? roleLight : AppColors.background,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: isProfileSelected ? rolePrimary.withOpacity(0.5) : Colors.grey.shade200),
+                ),
+                child: Row(
                   children: [
-                    ...items,
-                    const SizedBox(height: 16),
-                    // Contact Us & FAQs
-                    _NavItem(
-                      icon: Icons.help,
-                      label: "Contact Us & FAQs",
-                      isSelected: false,
-                      onTap: () {
-                        if (onClose != null) {
-                          onClose!();
-                        } else if (Scaffold.maybeOf(context)?.isDrawerOpen == true) {
-                          Navigator.of(context).pop();
-                        }
-                        Navigator.of(context, rootNavigator: true).push(
-                          MaterialPageRoute(builder: (_) => const ContactUsScreen()),
-                        );
-                      },
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: roleLight,
+                      child: Icon(Icons.person, color: rolePrimary, size: 20),
                     ),
-                    const SizedBox(height: 6),
-                    // Profile Card
-                    InkWell(
-                      onTap: () => onItemSelected(profileIndex),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isProfileSelected ? roleLight : AppColors.background,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: isProfileSelected ? rolePrimary.withOpacity(0.5) : Colors.grey.shade200),
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor: roleLight,
-                              child: Icon(Icons.person, color: rolePrimary, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            userName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold, 
+                              fontSize: 14,
+                              color: isProfileSelected ? rolePrimary : Colors.black87,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    userName,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold, 
-                                      fontSize: 14,
-                                      color: isProfileSelected ? rolePrimary : Colors.black87,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    userRole,
-                                    style: TextStyle(
-                                      color: isProfileSelected ? AppColors.primary.withOpacity(0.7) : AppColors.textSecondary, 
-                                      fontSize: 12
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            userRole,
+                            style: TextStyle(
+                              color: isProfileSelected ? AppColors.primary.withOpacity(0.7) : AppColors.textSecondary, 
+                              fontSize: 12
                             ),
-                          ],
-                        ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    // Logout
-                    _NavItem(
-                      icon: Icons.logout, 
-                      label: "Logout", 
-                      isSelected: false,
-                      onTap: () => _performLogout(context),
                     ),
                   ],
                 ),
               ),
             ),
+            const SizedBox(height: 4),
+            // Logout pinned at bottom
+            _NavItem(
+              icon: Icons.logout, 
+              label: "Logout", 
+              isSelected: false,
+              onTap: () => _performLogout(context),
+            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),
