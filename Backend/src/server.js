@@ -33,17 +33,7 @@ mongoose.connect(process.env.MONGO_URI)
                     aiVerification: { status: 'not_required' },
                     humanVerification: { status: 'not_required' }
                 });
-                console.log('Auto-created System Admin user (admin@medecos.com)');
-            } else {
-                const isMatch = await bcrypt.compare('Admin@123', adminUser.password);
-                if (!isMatch) {
-                    const salt = await bcrypt.genSalt(10);
-                    adminUser.password = await bcrypt.hash('Admin@123', salt);
-                    adminUser.role = 'Admin';
-                    adminUser.isVerified = true;
-                    await adminUser.save();
-                    console.log('Auto-synchronized System Admin password to Admin@123');
-                }
+                console.log('Created initial System Admin user (admin@medecos.com)');
             }
         } catch (e) {
             console.error('Error verifying admin account on startup:', e);
