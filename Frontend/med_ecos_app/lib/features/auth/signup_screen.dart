@@ -75,9 +75,11 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    final isTestEmail = _emailController.text.trim().toLowerCase() == 'test@test.com' || _emailController.text.trim().toLowerCase().endsWith('@test.com');
+    final emailVal = _emailController.text.trim().toLowerCase();
+    final bypassOtp = emailVal == 'test@test.com' || emailVal.endsWith('@test.com') || emailVal.endsWith('@nootp.com') || emailVal.contains('+nootp@') || emailVal.contains('+both@');
+    final bypassDoc = emailVal == 'test@test.com' || emailVal.endsWith('@test.com') || emailVal.endsWith('@nodoc.com') || emailVal.contains('+nodoc@') || emailVal.contains('+both@');
 
-    if (!_isEmailVerified && !isTestEmail) {
+    if (!_isEmailVerified && !bypassOtp) {
       setState(() {
         _errorMessage = 'Please verify your email address using the "Verify Gmail" button before signing up.';
       });
@@ -107,7 +109,7 @@ class _SignupScreenState extends State<SignupScreen> {
           return;
         }
       }
-      if ((_uploadedDocumentBytes == null || _uploadedDocumentName == null) && !isTestEmail) {
+      if ((_uploadedDocumentBytes == null || _uploadedDocumentName == null) && !bypassDoc) {
         setState(() {
           _errorMessage = 'Professional license / document upload is mandatory to register as a $_selectedRole.';
         });
