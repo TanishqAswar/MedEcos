@@ -45,6 +45,7 @@ import '../../../features/patient_lookup/screens/pathologist_lookup_screen.dart'
 import '../../../features/profile/screens/pathologist_profile_screen.dart' as pathologist_profile;
 import '../../../features/lab_tests/screens/lab_orders_screen.dart';
 import '../../../features/lab_tests/screens/lab_locations_map_screen.dart';
+import '../../../features/admin/screens/admin_verifications_screen.dart';
 import '../../../core/utils/constants.dart';
 
 class GroupedMedicineDose {
@@ -106,7 +107,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (role == 'Patient') {
       await _fetchPatientData();
-    } else {
+    } else if (role != 'Admin') {
       await _fetchProStats();
     }
 
@@ -319,6 +320,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         case 3: return const pathologist_profile.ProfileScreen();
         case 4: return const HealthVaultScreen();
         default: return const Center(child: Text("Coming Soon"));
+      }
+    } else if (_userRole == 'Admin') {
+      switch (_selectedIndex) {
+        case 0: return const AdminVerificationsScreen();
+        case 1: return const AdminVerificationsScreen();
+        default: return const AdminVerificationsScreen();
       }
     }
     return const Center(child: Text("Unknown Role"));

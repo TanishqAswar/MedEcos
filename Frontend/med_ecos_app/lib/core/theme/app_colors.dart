@@ -24,6 +24,10 @@ class AppColors {
   static const Color pathoPrimary = Color(0xFFC2185B);
   static const Color pathoLight = Color(0xFFFCE4EC);
 
+  // 🛡️ Admin Role Palette (Executive Deep Slate / Amber)
+  static const Color adminPrimary = Color(0xFFE65100); // Deep Executive Amber/Orange
+  static const Color adminLight = Color(0xFFFFF3E0);
+
   static const Color background = Color(0xFFF5F5F5); // Light Grey
   static const Color surface = Colors.white;
   static const Color surfaceVariant = Color(0xFFE0F2F1); // Very light teal
@@ -49,6 +53,8 @@ class AppColors {
       case 'labtester':
       case 'patho':
         return pathoPrimary;
+      case 'admin':
+        return adminPrimary;
       case 'patient':
       default:
         return patientPrimary;
@@ -69,6 +75,8 @@ class AppColors {
       case 'labtester':
       case 'patho':
         return pathoLight;
+      case 'admin':
+        return adminLight;
       case 'patient':
       default:
         return patientLight;

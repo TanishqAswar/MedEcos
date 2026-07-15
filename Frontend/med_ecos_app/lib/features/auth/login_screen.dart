@@ -153,6 +153,61 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(builder: (_) => const DashboardScreen()),
           );
         }
+      } else if (response.statusCode == 403) {
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Row(
+                children: [
+                  Icon(Icons.pending_actions, color: Colors.amber, size: 28),
+                  SizedBox(width: 10),
+                  Expanded(child: Text('Verification Pending', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18))),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(data['message'] ?? 'Your account verification is currently pending review by an Admin.', style: TextStyle(color: Colors.grey.shade800)),
+                  if (data['verificationStatus'] != null) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('AI Check: ${data['verificationStatus']['aiStatus']?.toString().toUpperCase() ?? 'COMPLETED'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          const SizedBox(height: 4),
+                          Text('Notes: ${data['verificationStatus']['aiNotes'] ?? 'Document analyzed.'}', style: const TextStyle(fontSize: 12)),
+                          const Divider(height: 16),
+                          Text('Human Admin Review: ${data['verificationStatus']['humanStatus']?.toString().toUpperCase() ?? 'PENDING'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey)),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  const Text(
+                    'Note: Human Admin verification holds the highest value. You will receive full access once an Admin approves your credentials.',
+                    style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey),
+                  ),
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                  child: const Text('Understood', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
+          );
+        }
       } else {
         setState(() {
           _errorMessage = data['message'] ?? 'Invalid credentials';
@@ -249,6 +304,61 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          );
+        }
+      } else if (response.statusCode == 403) {
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Row(
+                children: [
+                  Icon(Icons.pending_actions, color: Colors.amber, size: 28),
+                  SizedBox(width: 10),
+                  Expanded(child: Text('Verification Pending', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18))),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(data['message'] ?? 'Your account verification is currently pending review by an Admin.', style: TextStyle(color: Colors.grey.shade800)),
+                  if (data['verificationStatus'] != null) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('AI Check: ${data['verificationStatus']['aiStatus']?.toString().toUpperCase() ?? 'COMPLETED'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          const SizedBox(height: 4),
+                          Text('Notes: ${data['verificationStatus']['aiNotes'] ?? 'Document analyzed.'}', style: const TextStyle(fontSize: 12)),
+                          const Divider(height: 16),
+                          Text('Human Admin Review: ${data['verificationStatus']['humanStatus']?.toString().toUpperCase() ?? 'PENDING'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey)),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  const Text(
+                    'Note: Human Admin verification holds the highest value. You will receive full access once an Admin approves your credentials.',
+                    style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey),
+                  ),
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                  child: const Text('Understood', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
           );
         }
       } else {

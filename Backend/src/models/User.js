@@ -26,8 +26,41 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['Doctor', 'Patient', 'Pharmacist', 'Pathologist'],
+        enum: ['Doctor', 'Patient', 'Pharmacist', 'Pathologist', 'Admin'],
         default: 'Patient',
+    },
+    // Verification & Compliance Fields
+    isVerified: {
+        type: Boolean,
+        default: false, // For Doctor, Pharmacist, Pathologist defaults to false; Patient is true
+    },
+    verificationDocuments: [{
+        url: { type: String },
+        originalName: { type: String },
+        uploadedAt: { type: Date, default: Date.now }
+    }],
+    aiVerification: {
+        status: {
+            type: String,
+            enum: ['pending', 'verified', 'rejected', 'not_required'],
+            default: 'not_required'
+        },
+        confidenceScore: { type: Number },
+        documentTypeDetected: { type: String },
+        extractedRegistrationNumber: { type: String },
+        extractedName: { type: String },
+        notes: { type: String },
+        verifiedAt: { type: Date }
+    },
+    humanVerification: {
+        status: {
+            type: String,
+            enum: ['pending', 'verified', 'rejected', 'not_required'],
+            default: 'not_required'
+        },
+        verifiedBy: { type: String },
+        notes: { type: String },
+        verifiedAt: { type: Date }
     },
     abhaId: {
         type: String,

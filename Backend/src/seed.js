@@ -66,6 +66,17 @@ const seedDatabase = async () => {
         // 2. Users (Doctors, Patient, Pharmacist, Pathologist) in Hyderabad (near 17.454389, 78.392028)
         // ---------------------------------------------------------
         
+        // Admin User
+        const adminUser = await User.create({
+            username: 'System Admin',
+            email: 'admin@medecos.com',
+            password: defaultPassword,
+            role: 'Admin',
+            isVerified: true,
+            aiVerification: { status: 'not_required' },
+            humanVerification: { status: 'not_required' }
+        });
+
         // Doctor 1
         const doc1Keys = generateKeys();
         const doctor1 = await User.create({
@@ -73,6 +84,9 @@ const seedDatabase = async () => {
             email: 'dr.rao@gmail.com',
             password: defaultPassword,
             role: 'Doctor',
+            isVerified: true,
+            aiVerification: { status: 'verified', confidenceScore: 98, documentTypeDetected: 'Medical Practice License', notes: 'Pre-verified existing practitioner during seeding.' },
+            humanVerification: { status: 'verified', verifiedBy: 'System Admin', notes: 'Pre-verified existing practitioner.' },
             publicKey: doc1Keys.publicKey,
             privateKey: doc1Keys.privateKey,
             speciality: 'General Physician',
@@ -93,6 +107,9 @@ const seedDatabase = async () => {
             email: 'dr.ananya@gmail.com',
             password: defaultPassword,
             role: 'Doctor',
+            isVerified: true,
+            aiVerification: { status: 'verified', confidenceScore: 96, documentTypeDetected: 'Medical Practice License', notes: 'Pre-verified existing practitioner during seeding.' },
+            humanVerification: { status: 'verified', verifiedBy: 'System Admin', notes: 'Pre-verified existing practitioner.' },
             publicKey: doc2Keys.publicKey,
             privateKey: doc2Keys.privateKey,
             speciality: 'Cardiologist',
@@ -112,6 +129,9 @@ const seedDatabase = async () => {
             email: 'apollo.lab@gmail.com',
             password: defaultPassword,
             role: 'Pathologist',
+            isVerified: true,
+            aiVerification: { status: 'verified', confidenceScore: 99, documentTypeDetected: 'Lab Accreditation Certificate', notes: 'Pre-verified diagnostic facility during seeding.' },
+            humanVerification: { status: 'verified', verifiedBy: 'System Admin', notes: 'Pre-verified lab facility.' },
             address: 'Madhapur Main Road, Hyderabad',
             location: { lat: 17.4560, lng: 78.3910 }, // Near requested coord
             labTestsProvided: ['Complete Blood Count (CBC)', 'Lipid Profile', 'Thyroid Profile (T3, T4, TSH)', 'HbA1c', 'Liver Function Test (LFT)'],
@@ -123,6 +143,9 @@ const seedDatabase = async () => {
             email: 'medplus.madhapur@gmail.com',
             password: defaultPassword,
             role: 'Pharmacist',
+            isVerified: true,
+            aiVerification: { status: 'verified', confidenceScore: 97, documentTypeDetected: 'Pharmacy Council License', notes: 'Pre-verified pharmacy during seeding.' },
+            humanVerification: { status: 'verified', verifiedBy: 'System Admin', notes: 'Pre-verified pharmacy.' },
             address: 'Ayyappa Society, Madhapur, Hyderabad',
             location: { lat: 17.4530, lng: 78.3930 }, // Near requested coord
         });

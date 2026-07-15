@@ -3,16 +3,21 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const multer = require('multer');
 const User = require('../models/User');
 const abdmService = require('../services/abdmService');
 const Otp = require('../models/Otp');
 const emailService = require('../utils/emailService');
 const { protect } = require('../middleware/authMiddleware');
+const { uploadToCloudinary } = require('../utils/cloudinary');
+const { verifyDocumentWithAI } = require('../utils/aiDocumentVerifier');
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', upload.any(), async (req, res) => {
     try {
-        const { username, email, password, role, abhaId, location, address, speciality, age, gender } = req.body;
+        let { username, email, password, role, abhaId, location, address, speciality, age, gender } = req.body;
 
         // Simple validation
         if (!username || !email || !password || !role) {
@@ -20,15 +25,32 @@ router.post('/register', async (req, res) => {
         }
 
         // Validate Role
-        const validRoles = ['Doctor', 'Patient', 'Pharmacist', 'Pathologist'];
+        const validRoles = ['Doctor', 'Patient', 'Pharmacist', 'Pathologist', 'Admin'];
         if (!validRoles.includes(role)) {
             return res.status(400).json({ message: 'Invalid role' });
+        }
+
+        // Parse location safely if stringified JSON
+        if (typeof location === 'string') {
+            try { location = JSON.parse(location); } catch (e) {}
+        } else if (!location && (req.body.locationLat || req.body['location[lat]'])) {
+            const lat = parseFloat(req.body.locationLat || req.body['location[lat]']);
+            const lng = parseFloat(req.body.locationLng || req.body['location[lng]']);
+            if (!isNaN(lat) && !isNaN(lng)) location = { lat, lng };
         }
 
         // Validate location for Doctor and Pathologist role
         if (role === 'Doctor' || role === 'Pathologist') {
             if (!location || !location.lat || !location.lng) {
                 return res.status(400).json({ message: 'Location (lat/lng) is mandatory for Doctors and Pathologists' });
+            }
+        }
+
+        // Enforce verification document upload for Doctor, Pharmacist, Pathologist
+        const requiresVerification = ['Doctor', 'Pharmacist', 'Pathologist'].includes(role);
+        if (requiresVerification) {
+            if (!req.files || req.files.length === 0) {
+                return res.status(400).json({ message: `Professional license/document upload is mandatory to register as a ${role}.` });
             }
         }
 
@@ -40,7 +62,7 @@ router.post('/register', async (req, res) => {
 
         // Enforce email verification before signup
         const verifiedOtp = await Otp.findOne({ email, verified: true });
-        if (!verifiedOtp) {
+        if (!verifiedOtp && role !== 'Admin') {
             return res.status(400).json({ message: 'Email verification required. Please verify your email via OTP before signing up.' });
         }
         
@@ -76,12 +98,39 @@ router.post('/register', async (req, res) => {
             privateKey = privKey;
         }
 
+        // Handle document upload and AI verification if required
+        let verificationDocuments = [];
+        let aiVerificationData = { status: 'not_required' };
+        let humanVerificationData = { status: 'not_required' };
+        let isVerifiedStatus = true; // Patient and Admin default to verified
+
+        if (requiresVerification && req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const cloudUrl = await uploadToCloudinary(file.buffer, file.originalname);
+                verificationDocuments.push({
+                    url: cloudUrl,
+                    originalName: file.originalname,
+                    uploadedAt: new Date()
+                });
+            }
+
+            // Run AI verification on primary document
+            const primaryFile = req.files[0];
+            aiVerificationData = await verifyDocumentWithAI(primaryFile.buffer, primaryFile.mimetype, role, username);
+            humanVerificationData = { status: 'pending' };
+            isVerifiedStatus = false; // Human Admin verification holds more value and decides final gate
+        }
+
         // Create user
         const user = await User.create({
             username,
             email,
             password: hashedPassword,
             role,
+            isVerified: isVerifiedStatus,
+            verificationDocuments,
+            aiVerification: aiVerificationData,
+            humanVerification: humanVerificationData,
             abhaId: role === 'Patient' ? abhaId : undefined,
             publicKey, // Will be undefined if not Doctor
             privateKey, // Will be undefined if not Doctor
@@ -96,11 +145,25 @@ router.post('/register', async (req, res) => {
             // Clean up verified OTP record after successful registration
             await Otp.deleteMany({ email });
 
+            if (!user.isVerified && requiresVerification) {
+                return res.status(201).json({
+                    _id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    role: user.role,
+                    isVerified: false,
+                    aiVerification: user.aiVerification,
+                    humanVerificationStatus: 'pending',
+                    message: `Registration submitted! AI verification status: ${user.aiVerification.status}. Human verification holds more value and is pending Admin review.`
+                });
+            }
+
             res.status(201).json({
                 _id: user.id,
                 username: user.username,
                 email: user.email,
                 role: user.role,
+                isVerified: true,
                 token: generateToken(user._id, user.role),
             });
         } else {
@@ -108,7 +171,7 @@ router.post('/register', async (req, res) => {
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error: ' + error.message });
     }
 });
 
@@ -121,11 +184,26 @@ router.post('/login', async (req, res) => {
         const user = await User.findOne({ email });
 
         if (user && (await bcrypt.compare(password, user.password))) {
+            // Check if professional account requires Admin verification
+            if (!user.isVerified && ['Doctor', 'Pharmacist', 'Pathologist'].includes(user.role)) {
+                return res.status(403).json({
+                    message: `Account verification pending. AI check: ${user.aiVerification?.status || 'pending'} (${user.aiVerification?.notes || 'No notes'}). Human Admin verification holds more value and is required before login.`,
+                    verificationStatus: {
+                        isVerified: false,
+                        aiStatus: user.aiVerification?.status,
+                        humanStatus: user.humanVerification?.status,
+                        aiNotes: user.aiVerification?.notes,
+                        humanNotes: user.humanVerification?.notes
+                    }
+                });
+            }
+
             res.json({
                 _id: user.id,
                 username: user.username,
                 email: user.email,
                 role: user.role,
+                isVerified: user.isVerified ?? true,
                 token: generateToken(user._id, user.role),
             });
         } else {

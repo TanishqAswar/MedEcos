@@ -68,6 +68,11 @@ class Sidebar extends StatelessWidget {
         _NavItem(icon: Icons.science, label: "Lab Orders", isSelected: selectedIndex == 2, onTap: () => onItemSelected(2), rolePrimary: rolePrimary, roleLight: roleLight, isCollapsed: isDesktop && isCollapsed),
         _NavItem(icon: Icons.folder, label: "Health Vault", isSelected: selectedIndex == 4, onTap: () => onItemSelected(4), rolePrimary: rolePrimary, roleLight: roleLight, isCollapsed: isDesktop && isCollapsed),
       ];
+    } else if (userRole == 'Admin') {
+      items = [
+        _NavItem(icon: Icons.dashboard, label: "Admin Dashboard", isSelected: selectedIndex == 0, onTap: () => onItemSelected(0), rolePrimary: rolePrimary, roleLight: roleLight, isCollapsed: isDesktop && isCollapsed),
+        _NavItem(icon: Icons.verified_user, label: "Verifications", isSelected: selectedIndex == 1, onTap: () => onItemSelected(1), rolePrimary: rolePrimary, roleLight: roleLight, isCollapsed: isDesktop && isCollapsed),
+      ];
     } else {
       items = [];
     }
@@ -77,6 +82,7 @@ class Sidebar extends StatelessWidget {
     else if (userRole == 'Doctor') profileIndex = 4;
     else if (userRole == 'Pharmacist') profileIndex = 5;
     else if (userRole == 'Pathologist' || userRole == 'LabTester') profileIndex = 3;
+    else if (userRole == 'Admin') profileIndex = 2;
     final isProfileSelected = selectedIndex == profileIndex;
 
     // ─── 1. Desktop Collapsed Mini-Rail Mode ───
