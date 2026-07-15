@@ -15,7 +15,40 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
+    .then(async () => {
+        console.log('MongoDB Connected');
+        try {
+            const User = require('./models/User');
+            const bcrypt = require('bcryptjs');
+            let adminUser = await User.findOne({ email: 'admin@medecos.com' });
+            if (!adminUser) {
+                const salt = await bcrypt.genSalt(10);
+                const adminPassword = await bcrypt.hash('Admin@123', salt);
+                await User.create({
+                    username: 'System Admin',
+                    email: 'admin@medecos.com',
+                    password: adminPassword,
+                    role: 'Admin',
+                    isVerified: true,
+                    aiVerification: { status: 'not_required' },
+                    humanVerification: { status: 'not_required' }
+                });
+                console.log('Auto-created System Admin user (admin@medecos.com)');
+            } else {
+                const isMatch = await bcrypt.compare('Admin@123', adminUser.password);
+                if (!isMatch) {
+                    const salt = await bcrypt.genSalt(10);
+                    adminUser.password = await bcrypt.hash('Admin@123', salt);
+                    adminUser.role = 'Admin';
+                    adminUser.isVerified = true;
+                    await adminUser.save();
+                    console.log('Auto-synchronized System Admin password to Admin@123');
+                }
+            }
+        } catch (e) {
+            console.error('Error verifying admin account on startup:', e);
+        }
+    })
     .catch(err => console.log(err));
 
 // Serve static files from Frontend/public

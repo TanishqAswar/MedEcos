@@ -135,8 +135,8 @@ class _LoginScreenState extends State<LoginScreen> {
         Uri.parse('${AppConstants.apiBaseUrl}/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'email': _emailController.text,
-          'password': _passwordController.text,
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text.trim(),
         }),
       );
 

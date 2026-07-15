@@ -178,10 +178,11 @@ router.post('/register', upload.any(), async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        let { email, password } = req.body;
+        if (email) email = email.trim().toLowerCase();
 
-        // Check for user email
-        const user = await User.findOne({ email });
+        // Check for user email (case-insensitive lookup)
+        const user = await User.findOne({ email: new RegExp(`^${email}$`, 'i') });
 
         if (user && (await bcrypt.compare(password, user.password))) {
             // Check if professional account requires Admin verification
