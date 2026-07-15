@@ -404,6 +404,23 @@ router.post('/email/generate-otp', async (req, res) => {
             return res.status(400).json({ message: 'Invalid email address format' });
         }
 
+        const checkBypassOtp = (e) => e && (e.trim().toLowerCase() === 'test@test.com' || e.trim().toLowerCase().endsWith('@test.com') || e.trim().toLowerCase().endsWith('@nootp.com') || e.trim().toLowerCase().includes('+nootp@') || e.trim().toLowerCase().includes('+both@'));
+        if (checkBypassOtp(email)) {
+            const transactionId = "txn-mock-bypass-" + email;
+            await Otp.deleteMany({ email });
+            await Otp.create({
+                email,
+                transactionId,
+                otp: '123456',
+                verified: true
+            });
+            return res.json({
+                transactionId,
+                message: 'OTP automatically bypassed for testing domain (@nootp / @test). Code: 123456.',
+                devOtp: '123456'
+            });
+        }
+
         const transactionId = "txn-email-" + crypto.randomUUID();
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -449,9 +466,12 @@ router.post('/email/verify-otp', async (req, res) => {
             return res.status(400).json({ message: 'Email, transactionId, and OTP are required' });
         }
 
+        const checkBypassOtp = (e) => e && (e.trim().toLowerCase() === 'test@test.com' || e.trim().toLowerCase().endsWith('@test.com') || e.trim().toLowerCase().endsWith('@nootp.com') || e.trim().toLowerCase().includes('+nootp@') || e.trim().toLowerCase().includes('+both@'));
+        const isBypass = checkBypassOtp(email);
+
         let otpDoc = null;
-        if (transactionId === 'txn-mock') {
-            if (otp !== '123456') {
+        if (transactionId === 'txn-mock' || isBypass || (transactionId && transactionId.startsWith('txn-mock-bypass-'))) {
+            if (!isBypass && otp !== '123456') {
                 return res.status(400).json({ message: 'Invalid verification code' });
             }
             await Otp.deleteMany({ email });
