@@ -8,6 +8,7 @@ import '../support/screens/about_us_screen.dart';
 import '../../../core/utils/abha_formatter.dart';
 import '../../core/utils/constants.dart';
 import '../../core/widgets/medecos_loader.dart';
+import '../../core/theme/app_colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
