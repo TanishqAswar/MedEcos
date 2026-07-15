@@ -50,7 +50,7 @@ class ActiveMedicinesList extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Active Medicines", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Flexible(child: Text("Active Medicines", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
             if (onRearrange != null)
               TextButton.icon(
                 onPressed: onRearrange,

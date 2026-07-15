@@ -797,68 +797,72 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                ElevatedButton.icon(
                   onPressed: () => _showAddMedicineReminderDialog(context),
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text("Add Medicine"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.document_scanner, color: AppColors.primary),
+                    tooltip: 'Scan Prescription',
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MedicineListScreen()),
+                    ).then((_) => _fetchPatientData()),
+                  ),
                 ),
-                child: IconButton(
-                  icon: const Icon(Icons.document_scanner, color: AppColors.primary),
-                  tooltip: 'Scan Prescription',
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const MedicineListScreen()),
-                  ).then((_) => _fetchPatientData()),
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.folder, color: Colors.teal),
+                    tooltip: 'Medical Locker (Health Vault)',
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HealthVaultScreen()),
+                    ).then((_) => _fetchPatientData()),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.teal.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.swap_vert, color: AppColors.primary),
+                    tooltip: 'Hold and Drag to Rearrange Order',
+                    onPressed: () => showRearrangeMedicinesBottomSheet(context, medicines: _medicines, onUpdate: _fetchPatientData),
+                  ),
                 ),
-                child: IconButton(
-                  icon: const Icon(Icons.folder, color: Colors.teal),
-                  tooltip: 'Medical Locker (Health Vault)',
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const HealthVaultScreen()),
-                  ).then((_) => _fetchPatientData()),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.swap_vert, color: AppColors.primary),
-                  tooltip: 'Hold and Drag to Rearrange Order',
-                  onPressed: () => showRearrangeMedicinesBottomSheet(context, medicines: _medicines, onUpdate: _fetchPatientData),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ] else ...[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
             children: [
               const Text(
                 "Today's Medicine Reminders",
@@ -868,45 +872,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: AppColors.textPrimary,
                 ),
               ),
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () => _showAddMedicineReminderDialog(context),
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text("Add Medicine"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () => _showAddMedicineReminderDialog(context),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text("Add Medicine"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    icon: const Icon(Icons.document_scanner, color: AppColors.primary),
-                    tooltip: 'Scan Prescription',
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const MedicineListScreen()),
-                    ).then((_) => _fetchPatientData()),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.folder, color: Colors.teal),
-                    tooltip: 'Medical Locker (Health Vault)',
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const HealthVaultScreen()),
-                    ).then((_) => _fetchPatientData()),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.swap_vert, color: AppColors.primary),
-                    tooltip: 'Hold and Drag to Rearrange Order',
-                    onPressed: () => showRearrangeMedicinesBottomSheet(context, medicines: _medicines, onUpdate: _fetchPatientData),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.refresh, color: AppColors.primary),
-                    onPressed: _fetchPatientData,
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    IconButton(
+                      icon: const Icon(Icons.document_scanner, color: AppColors.primary),
+                      tooltip: 'Scan Prescription',
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MedicineListScreen()),
+                      ).then((_) => _fetchPatientData()),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.folder, color: Colors.teal),
+                      tooltip: 'Medical Locker (Health Vault)',
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const HealthVaultScreen()),
+                      ).then((_) => _fetchPatientData()),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.swap_vert, color: AppColors.primary),
+                      tooltip: 'Hold and Drag to Rearrange Order',
+                      onPressed: () => showRearrangeMedicinesBottomSheet(context, medicines: _medicines, onUpdate: _fetchPatientData),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh, color: AppColors.primary),
+                      onPressed: _fetchPatientData,
+                    ),
+                  ],
+                ),
               )
             ],
           ),
