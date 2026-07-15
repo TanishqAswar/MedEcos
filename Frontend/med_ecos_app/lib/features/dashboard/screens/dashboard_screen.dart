@@ -924,32 +924,66 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 12),
 
         if (_todayDoses.isEmpty)
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: EdgeInsets.all(isMobile ? 16.0 : 24.0),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle_outline, color: Colors.green, size: 28),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      "No medicine reminders for today! You are all caught up.",
-                      style: TextStyle(fontSize: isMobile ? 14 : 16, color: Colors.grey),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: EdgeInsets.all(isMobile ? 16.0 : 24.0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle_outline, color: Colors.green, size: 28),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        "No medicine reminders for today! You are all caught up.",
+                        style: TextStyle(fontSize: isMobile ? 14 : 16, color: Colors.grey),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          )
-        else ...[
-          for (final slot in orderedSlots)
-            if (slot.groupedDoses.isNotEmpty) ...[
-              _buildTimeOfDayGroupHeader(slot.title, slot.subtitle, slot.color),
-              ...slot.groupedDoses.map((group) => _buildPillCard(group)),
-            ],
+          ),
+        for (final slot in orderedSlots) ...[
+          _buildTimeOfDayGroupHeader(slot.title, slot.subtitle, slot.color),
+          if (slot.groupedDoses.isNotEmpty)
+            ...slot.groupedDoses.map((group) => _buildPillCard(group))
+          else
+            _buildEmptySlotCard(slot.title.split(' ').last),
         ],
       ],
+    );
+  }
+
+  Widget _buildEmptySlotCard(String slotName) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant.withOpacity(0.4),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.access_time_outlined, size: 20, color: AppColors.textSecondary.withOpacity(0.7)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                "No medicines scheduled for $slotName",
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary.withOpacity(0.8),
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
