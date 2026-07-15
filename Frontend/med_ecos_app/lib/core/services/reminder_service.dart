@@ -120,8 +120,9 @@ class ReminderService {
       if (m is Map) {
         final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
         final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
+        final mapKey = (id.isNotEmpty && id.startsWith('custom_')) ? id : nameKey;
         if (id.isNotEmpty && !deletedReminders.contains(id.toLowerCase()) && !deletedReminders.contains(nameKey)) {
-          combinedCustom[nameKey] = Map<String, dynamic>.from(m);
+          combinedCustom[mapKey] = Map<String, dynamic>.from(m);
         }
       }
     }
@@ -129,8 +130,9 @@ class ReminderService {
       if (m is Map) {
         final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
         final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
+        final mapKey = (id.isNotEmpty && id.startsWith('custom_')) ? id : nameKey;
         if (id.isNotEmpty && !deletedReminders.contains(id.toLowerCase()) && !deletedReminders.contains(nameKey)) {
-          combinedCustom[nameKey] = Map<String, dynamic>.from(m);
+          combinedCustom[mapKey] = Map<String, dynamic>.from(m);
         }
       }
     }
@@ -404,8 +406,9 @@ class ReminderService {
       if (m is Map) {
         final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
         final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
+        final mapKey = (id.isNotEmpty && id.startsWith('custom_')) ? id : nameKey;
         if (id.isNotEmpty && !deletedReminders.contains(id.toLowerCase()) && !deletedReminders.contains(nameKey)) {
-          combinedCustom[nameKey] = Map<String, dynamic>.from(m);
+          combinedCustom[mapKey] = Map<String, dynamic>.from(m);
         }
       }
     }
@@ -413,8 +416,9 @@ class ReminderService {
       if (m is Map) {
         final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
         final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
+        final mapKey = (id.isNotEmpty && id.startsWith('custom_')) ? id : nameKey;
         if (id.isNotEmpty && !deletedReminders.contains(id.toLowerCase()) && !deletedReminders.contains(nameKey)) {
-          combinedCustom[nameKey] = Map<String, dynamic>.from(m);
+          combinedCustom[mapKey] = Map<String, dynamic>.from(m);
         }
       }
     }
@@ -559,6 +563,15 @@ class ReminderService {
 
     if (index != -1) {
       list[index] = updatedData;
+      if (oldName.isNotEmpty && newName.trim().toLowerCase() != oldName.trim().toLowerCase()) {
+        final localDelJson = prefs.getString('deleted_reminder_medicines');
+        List<dynamic> delList = [];
+        if (localDelJson != null) {
+          try { delList = jsonDecode(localDelJson); } catch (_) {}
+        }
+        if (!delList.contains(oldName.toLowerCase().trim())) delList.add(oldName.toLowerCase().trim());
+        await prefs.setString('deleted_reminder_medicines', jsonEncode(delList));
+      }
     } else {
       list.add(updatedData);
       final localDelJson = prefs.getString('deleted_reminder_medicines');

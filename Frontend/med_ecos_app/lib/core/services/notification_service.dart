@@ -8,13 +8,13 @@ import 'package:timezone/timezone.dart' as tz;
 import 'reminder_service.dart';
 
 @pragma('vm:entry-point')
-void notificationTapBackground(NotificationResponse notificationResponse) {
+void notificationTapBackground(NotificationResponse notificationResponse) async {
   debugPrint('Notification background tap payload: ${notificationResponse.payload}');
-  if (notificationResponse.actionId == 'action_taken') {
-    debugPrint('Dose marked as TAKEN via background action button');
-  } else if (notificationResponse.actionId == 'action_snooze') {
-    debugPrint('Dose snoozed via background action button');
-  }
+  await NotificationService.executeAction(
+    notificationResponse.actionId,
+    notificationResponse.payload,
+    notificationResponse.id,
+  );
 }
 
 class NotificationService {
@@ -72,8 +72,13 @@ class NotificationService {
 
     await _notificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
+      onDidReceiveNotificationResponse: (NotificationResponse response) async {
         debugPrint('Notification foreground tap: ${response.payload} actionId: ${response.actionId}');
+        await NotificationService.executeAction(
+          response.actionId,
+          response.payload,
+          response.id,
+        );
       },
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
@@ -427,4 +432,57 @@ class NotificationService {
       payload: 'snoozed_${dose.medicineName}_${dose.timingLabel}',
     );
   }
+
+  /// Execute action when interactive notification button is tapped
+  static Future<void> executeAction(String? actionId, String? payload, int? notificationId) async {
+    if (actionId == null || payload == null || payload.isEmpty) return;
+    try {
+      final parts = payload.split('_');
+      // payload format: dose_MedicineName_TimingLabel or followup_MedicineName_TimingLabel or snoozed_MedicineName_TimingLabel
+      if (parts.length >= 3 && (parts[0] == 'dose' || parts[0] == 'followup' || parts[0] == 'snoozed')) {
+        final timingLabel = parts.last;
+        final medicineName = parts.sublist(1, parts.length - 1).join('_');
+
+        final reminderService = ReminderService();
+        final doses = await reminderService.getTodaysReminders();
+
+        MedicineDose? targetDose;
+        for (final d in doses) {
+          if (d.medicineName.toLowerCase().trim() == medicineName.toLowerCase().trim() &&
+              (timingLabel.isEmpty || d.timingLabel.toLowerCase().trim() == timingLabel.toLowerCase().trim())) {
+            targetDose = d;
+            break;
+          }
+        }
+        if (targetDose == null && doses.isNotEmpty) {
+          for (final d in doses) {
+            if (d.medicineName.toLowerCase().trim() == medicineName.toLowerCase().trim()) {
+              targetDose = d;
+              break;
+            }
+          }
+        }
+
+        final plugin = FlutterLocalNotificationsPlugin();
+        if (notificationId != null) {
+          try { await plugin.cancel(notificationId); } catch (_) {}
+        }
+
+        if (actionId == 'action_taken' && targetDose != null) {
+          targetDose.status = 'TAKEN';
+          await reminderService.logDose(targetDose, 'TAKEN');
+          if (parts[0] == 'dose' && notificationId != null) {
+            try { await plugin.cancel(notificationId + 5000); } catch (_) {}
+          }
+          debugPrint('Successfully marked $medicineName ($timingLabel) as TAKEN via notification action button!');
+        } else if (actionId == 'action_snooze' && targetDose != null) {
+          await NotificationService().snoozeMedicineReminder(targetDose, minutes: 15);
+          debugPrint('Successfully snoozed $medicineName ($timingLabel) for 15 minutes via notification action button!');
+        }
+      }
+    } catch (e) {
+      debugPrint('Error executing notification action: $e');
+    }
+  }
 }
+

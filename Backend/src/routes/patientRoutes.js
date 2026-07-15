@@ -114,6 +114,7 @@ router.put('/medicines/:id', protect, authorize('Patient'), async (req, res) => 
         const { name, oldName, timing, context, instruction, dosage, durationDays, frequencyType, selectedDays, conditionTag } = req.body;
         
         req.user.customMedicines = req.user.customMedicines || [];
+        req.user.deletedReminders = req.user.deletedReminders || [];
         let index = req.user.customMedicines.findIndex(m => m.id === medId || (oldName && m.name.toLowerCase() === oldName.toLowerCase()));
         if (index !== -1) {
             req.user.customMedicines[index] = {
@@ -128,6 +129,11 @@ router.put('/medicines/:id', protect, authorize('Patient'), async (req, res) => 
                 selectedDays: selectedDays !== undefined ? (Array.isArray(selectedDays) ? selectedDays : []) : req.user.customMedicines[index].selectedDays ?? [],
                 conditionTag: conditionTag ?? req.user.customMedicines[index].conditionTag ?? ''
             };
+            if (oldName && name && name.trim().toLowerCase() !== oldName.trim().toLowerCase()) {
+                if (!req.user.deletedReminders.includes(oldName.trim().toLowerCase())) {
+                    req.user.deletedReminders.push(oldName.trim().toLowerCase());
+                }
+            }
         } else {
             const newId = medId.startsWith('custom_') ? medId : `custom_${Date.now()}`;
             req.user.customMedicines.push({
@@ -143,8 +149,7 @@ router.put('/medicines/:id', protect, authorize('Patient'), async (req, res) => 
                 selectedDays: Array.isArray(selectedDays) ? selectedDays : [],
                 conditionTag: conditionTag || ''
             });
-            req.user.deletedReminders = req.user.deletedReminders || [];
-            if (oldName && !req.user.deletedReminders.includes(oldName.toLowerCase().trim()) && ((name && name.trim().toLowerCase() !== oldName.toLowerCase().trim()) || !medId.startsWith('custom_'))) {
+            if (oldName && !req.user.deletedReminders.includes(oldName.toLowerCase().trim())) {
                 req.user.deletedReminders.push(oldName.toLowerCase().trim());
             }
             if (!req.user.deletedReminders.includes(medId)) {
