@@ -342,23 +342,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.dashboard, color: AppColors.primary, size: 22),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      "Patient Dashboard",
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: isMobile ? 20 : 26,
-                            color: AppColors.textPrimary,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
                           ),
+                          child: const Icon(Icons.dashboard, color: AppColors.primary, size: 22),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          "Patient Dashboard",
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: isMobile ? 20 : 26,
+                                color: AppColors.textPrimary,
+                              ),
+                        ),
+                      ],
+                    ),
+                    Tooltip(
+                      message: "Trigger instant test alert with action buttons on mobile status bar",
+                      child: ActionChip(
+                        avatar: const Icon(Icons.notifications_active, color: AppColors.primary, size: 18),
+                        label: const Text("Test Alert", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        backgroundColor: AppColors.primary.withOpacity(0.1),
+                        side: const BorderSide(color: Colors.transparent),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        onPressed: () async {
+                          await NotificationService().showTestNotification();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('🔔 High-priority urgent reminder sent with interactive action buttons! Check status bar.'),
+                                backgroundColor: AppColors.primary,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -1490,6 +1518,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Professional Dashboard",
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: isMobile ? 20 : 26,
+                            color: AppColors.textPrimary,
+                          ),
+                    ),
+                    Tooltip(
+                      message: "Trigger instant test alert with action buttons on mobile status bar",
+                      child: ActionChip(
+                        avatar: const Icon(Icons.notifications_active, color: AppColors.primary, size: 18),
+                        label: const Text("Test Alert", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        backgroundColor: AppColors.primary.withOpacity(0.1),
+                        side: const BorderSide(color: Colors.transparent),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        onPressed: () async {
+                          await NotificationService().showTestNotification();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('🔔 High-priority urgent reminder sent with interactive action buttons! Check status bar.'),
+                                backgroundColor: AppColors.primary,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 // Hero Banner
                 Container(
                   width: double.infinity,
