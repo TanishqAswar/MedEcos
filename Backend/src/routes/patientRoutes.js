@@ -47,18 +47,24 @@ router.get('/profile', protect, authorize('Patient'), async (req, res) => {
     res.json(req.user);
 });
 
-// Update Profile (Routine Settings & Custom Reminder Medicines)
+// Update Profile (Routine Settings, Custom Reminder Medicines, & Profile Details)
 router.put('/profile', protect, authorize('Patient'), async (req, res) => {
     try {
-        const { routine, customMedicines, deletedReminders } = req.body;
+        const { routine, customMedicines, deletedReminders, abhaId, username, mobileNumber, age, gender, bloodGroup } = req.body;
         if (routine) req.user.routine = routine;
         if (customMedicines !== undefined) req.user.customMedicines = customMedicines;
         if (deletedReminders !== undefined) req.user.deletedReminders = deletedReminders;
+        if (abhaId !== undefined) req.user.abhaId = abhaId;
+        if (username) req.user.username = username;
+        if (mobileNumber) req.user.mobileNumber = mobileNumber;
+        if (age !== undefined) req.user.age = age;
+        if (gender) req.user.gender = gender;
+        if (bloodGroup) req.user.bloodGroup = bloodGroup;
         await req.user.save();
         res.json(req.user);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: error.message || 'Server error' });
     }
 });
 

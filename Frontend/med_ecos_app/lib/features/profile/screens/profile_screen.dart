@@ -22,6 +22,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _profile;
   bool _loading = true;
+  final TextEditingController _abhaController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _latController = TextEditingController();
   final TextEditingController _lngController = TextEditingController();
@@ -50,6 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (mounted) {
           setState(() {
             _profile = jsonDecode(res.body);
+            _abhaController.text = _profile?['abhaId'] ?? '';
             _addressController.text = _profile?['address'] ?? '';
             if (_profile?['location'] != null) {
               _latController.text = _profile!['location']['lat']?.toString() ?? '';
@@ -81,6 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Uri.parse('${AppConstants.apiBaseUrl}/api/auth/profile'),
         headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
         body: jsonEncode({
+          'abhaId': _abhaController.text.trim(),
           'address': _addressController.text,
           'location': {
             'lat': double.tryParse(_latController.text) ?? 0.0,
@@ -95,10 +98,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }),
       );
       if (res.statusCode == 200) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated')));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile & ABHA ID updated successfully!'), backgroundColor: AppColors.success));
+      } else {
+        final err = jsonDecode(res.body)['message'] ?? 'Failed to update';
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $err'), backgroundColor: AppColors.error));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error));
     }
   }
 
@@ -123,7 +129,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     
     final p = _profile ?? {};
     final name = p['username'] ?? 'Patient User';
-    final abhaId = p['abhaId'] ?? 'user@abdm';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Patient Profile')),
@@ -139,9 +144,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
             Text(name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('ABHA Address: $abhaId', style: const TextStyle(fontSize: 16, color: AppColors.textSecondary)),
-            const SizedBox(height: 8),
-            Text('Age: ${p['age'] ?? 'N/A'} • Gender: ${p['gender'] ?? 'N/A'}', style: const TextStyle(fontSize: 16)),
+            Text('Age: ${p['age'] ?? 'N/A'} • Gender: ${p['gender'] ?? 'N/A'}', style: const TextStyle(fontSize: 16, color: AppColors.textSecondary)),
+            const SizedBox(height: 24),
+            const Align(alignment: Alignment.centerLeft, child: Text('ABDM / ABHA Linkage', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _abhaController,
+              decoration: InputDecoration(
+                labelText: 'Ayushman Bharat Health Account (ABHA ID)',
+                hintText: 'e.g. 1234-5678-9012-3456 or user@abdm',
+                prefixIcon: const Icon(Icons.badge_outlined, color: AppColors.primary),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                helperText: 'Link or update your ABHA ID to sync prescriptions across India',
+              ),
+            ),
+            const SizedBox(height: 24),
             const SizedBox(height: 32),
             const Align(alignment: Alignment.centerLeft, child: Text('Daily Routine Timings', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
             const SizedBox(height: 16),

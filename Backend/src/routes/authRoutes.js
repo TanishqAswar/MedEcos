@@ -562,6 +562,15 @@ router.put('/profile', protect, async (req, res) => {
         if (req.body.routine !== undefined) user.routine = req.body.routine;
         if (req.body.customMedicines !== undefined) user.customMedicines = req.body.customMedicines;
         if (req.body.deletedReminders !== undefined) user.deletedReminders = req.body.deletedReminders;
+        if (req.body.abhaId !== undefined && req.body.abhaId.trim() !== '') {
+            const abhaExists = await User.findOne({ abhaId: req.body.abhaId.trim(), _id: { $ne: user._id } });
+            if (abhaExists) {
+                return res.status(400).json({ message: 'This ABHA ID is already linked to another account' });
+            }
+            user.abhaId = req.body.abhaId.trim();
+        } else if (req.body.abhaId === '') {
+            user.abhaId = undefined;
+        }
 
         // Doctor specific fields
         if (user.role === 'Doctor') {
