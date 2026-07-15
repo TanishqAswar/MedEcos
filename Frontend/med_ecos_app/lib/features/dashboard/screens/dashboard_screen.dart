@@ -715,11 +715,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final int takenDoses = _todayDoses.where((d) => d.status == 'TAKEN').length;
     final double adherenceProgress = totalDoses > 0 ? takenDoses / totalDoses : 0.0;
 
+    final List<MedicineDose> prnDoses = _todayDoses.where((d) => d.frequencyType == 'AS_NEEDED').toList();
+    final List<MedicineDose> dailyOrWeekly = _todayDoses.where((d) => d.frequencyType != 'AS_NEEDED').toList();
+
     // Group doses by Time of Day
-    final List<MedicineDose> morningDoses = _todayDoses.where((d) => d.expectedTime.hour < 12).toList();
-    final List<MedicineDose> afternoonDoses = _todayDoses.where((d) => d.expectedTime.hour >= 12 && d.expectedTime.hour < 17).toList();
-    final List<MedicineDose> eveningDoses = _todayDoses.where((d) => d.expectedTime.hour >= 17 && d.expectedTime.hour < 20).toList();
-    final List<MedicineDose> nightDoses = _todayDoses.where((d) => d.expectedTime.hour >= 20).toList();
+    final List<MedicineDose> morningDoses = dailyOrWeekly.where((d) => d.expectedTime.hour < 12).toList();
+    final List<MedicineDose> afternoonDoses = dailyOrWeekly.where((d) => d.expectedTime.hour >= 12 && d.expectedTime.hour < 17).toList();
+    final List<MedicineDose> eveningDoses = dailyOrWeekly.where((d) => d.expectedTime.hour >= 17 && d.expectedTime.hour < 20).toList();
+    final List<MedicineDose> nightDoses = dailyOrWeekly.where((d) => d.expectedTime.hour >= 20).toList();
 
     List<GroupedMedicineDose> groupDoses(List<MedicineDose> doses) {
       final Map<String, List<MedicineDose>> groups = {};
@@ -734,6 +737,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final afternoonSlot = TimeSlotGroup("☀️ Afternoon", "12:00 PM - 5:00 PM", Colors.blue.shade700, groupDoses(afternoonDoses));
     final eveningSlot = TimeSlotGroup("🌆 Evening", "5:00 PM - 8:00 PM", Colors.orange.shade800, groupDoses(eveningDoses));
     final nightSlot = TimeSlotGroup("🌙 Night", "8:00 PM onwards", Colors.indigo.shade700, groupDoses(nightDoses));
+    final prnSlot = prnDoses.isNotEmpty
+        ? TimeSlotGroup("⚡ As-Needed (PRN) / Triggers", "Take only during triggers (No missed penalty)", Colors.purple.shade700, groupDoses(prnDoses))
+        : null;
 
     final int nowHour = DateTime.now().hour;
     List<TimeSlotGroup> orderedSlots;
@@ -745,6 +751,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       orderedSlots = [eveningSlot, nightSlot, morningSlot, afternoonSlot];
     } else {
       orderedSlots = [nightSlot, morningSlot, afternoonSlot, eveningSlot];
+    }
+    if (prnSlot != null) {
+      orderedSlots.insert(0, prnSlot);
     }
 
     final bool isMobile = MediaQuery.of(context).size.width < 600;
@@ -1088,6 +1097,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 10.5),
                               ),
                             ),
+                          if (dose.conditionTag.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.purple.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.purple.withOpacity(0.3), width: 0.8),
+                              ),
+                              child: Text(
+                                "⚡ ${dose.conditionTag}",
+                                style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold, fontSize: 10.5),
+                              ),
+                            ),
+                          if (dose.frequencyType == 'WEEKLY' && dose.selectedDays.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.teal.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.teal.withOpacity(0.3), width: 0.8),
+                              ),
+                              child: Text(
+                                "📅 ${dose.selectedDays.join(', ')}",
+                                style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold, fontSize: 10.5),
+                              ),
+                            ),
                           if (group.count > 1)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
@@ -1253,8 +1288,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final dosageCtrl = TextEditingController(text: '1 Tablet');
     final instructionCtrl = TextEditingController();
     final durationCtrl = TextEditingController();
+    final conditionCtrl = TextEditingController();
     Set<String> selectedTimings = {'Morning'};
     String selectedContext = 'After Food';
+    String scheduleType = 'DAILY'; // 'DAILY', 'WEEKLY', 'AS_NEEDED'
+    Set<String> selectedWeekdays = {'Mon', 'Wed', 'Fri'};
+    String selectedConditionPreset = 'During Stress / Anxiety';
 
     showModalBottomSheet(
       context: context,
@@ -1295,7 +1334,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       controller: nameCtrl,
                       decoration: const InputDecoration(
                         labelText: 'Medicine Name *',
-                        hintText: 'e.g. Paracetamol 500mg',
+                        hintText: 'e.g. Paracetamol 500mg, Ketoconazole Shampoo',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.medication),
                       ),
@@ -1304,12 +1343,101 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     TextField(
                       controller: dosageCtrl,
                       decoration: const InputDecoration(
-                        labelText: 'Dosage',
-                        hintText: 'e.g. 1 Tablet, 10 ml',
+                        labelText: 'Dosage / Quantity',
+                        hintText: 'e.g. 1 Tablet, 10 ml, Apply on Scalp',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.scale),
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    const Text('Schedule Type', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: [
+                        {'key': 'DAILY', 'label': '📅 Daily'},
+                        {'key': 'WEEKLY', 'label': '🗓️ Specific Days (Weekly)'},
+                        {'key': 'AS_NEEDED', 'label': '⚡ As-Needed (Trigger)'},
+                      ].map((item) {
+                        final isSel = scheduleType == item['key'];
+                        return ChoiceChip(
+                          label: Text(item['label']!),
+                          selected: isSel,
+                          selectedColor: AppColors.primary.withOpacity(0.2),
+                          onSelected: (selected) {
+                            if (selected) setModalState(() => scheduleType = item['key']!);
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    if (scheduleType == 'WEEKLY') ...[
+                      const SizedBox(height: 14),
+                      const Text('Select Weekdays', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.teal)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) {
+                          final isSel = selectedWeekdays.contains(day);
+                          return FilterChip(
+                            label: Text(day),
+                            selected: isSel,
+                            selectedColor: Colors.teal.withOpacity(0.25),
+                            checkmarkColor: Colors.teal,
+                            onSelected: (selected) {
+                              setModalState(() {
+                                if (selected) {
+                                  selectedWeekdays.add(day);
+                                } else if (selectedWeekdays.length > 1) {
+                                  selectedWeekdays.remove(day);
+                                }
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                    if (scheduleType == 'AS_NEEDED') ...[
+                      const SizedBox(height: 14),
+                      const Text('Symptom / Trigger Condition', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.purple)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          'During Stress / Anxiety',
+                          'During Headache / Migraine',
+                          'During Bleeding / Period Pain',
+                          'High Fever > 101°F'
+                        ].map((preset) {
+                          final isSel = selectedConditionPreset == preset;
+                          return ChoiceChip(
+                            label: Text(preset, style: const TextStyle(fontSize: 12)),
+                            selected: isSel,
+                            selectedColor: Colors.purple.withOpacity(0.25),
+                            onSelected: (selected) {
+                              if (selected) {
+                                setModalState(() {
+                                  selectedConditionPreset = preset;
+                                  conditionCtrl.text = preset;
+                                });
+                              }
+                            },
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: conditionCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Custom Trigger / Note (Optional)',
+                          hintText: 'e.g. Take only when severe headache occurs',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.flash_on, color: Colors.purple),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     TextField(
                       controller: durationCtrl,
@@ -1393,6 +1521,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             instruction: instructionCtrl.text.trim(),
                             dosage: dosageCtrl.text.trim(),
                             durationDays: int.tryParse(durationCtrl.text.trim()) ?? 0,
+                            frequencyType: scheduleType,
+                            selectedDays: scheduleType == 'WEEKLY' ? selectedWeekdays.toList() : [],
+                            conditionTag: scheduleType == 'AS_NEEDED' ? (conditionCtrl.text.trim().isNotEmpty ? conditionCtrl.text.trim() : selectedConditionPreset) : '',
                           );
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -1426,11 +1557,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final instructionCtrl = TextEditingController(
       text: (dose.instruction == 'None' || dose.instruction.isEmpty) ? '' : dose.instruction,
     );
+    final conditionCtrl = TextEditingController(text: dose.conditionTag);
     Set<String> selectedTimings = dose.timingLabel.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toSet();
     if (selectedTimings.isEmpty) selectedTimings.add('Morning');
     String selectedContext = ['After Food', 'Before Food', 'With Food'].contains(dose.context)
         ? dose.context
         : 'After Food';
+    String scheduleType = dose.frequencyType.isNotEmpty ? dose.frequencyType : 'DAILY';
+    Set<String> selectedWeekdays = dose.selectedDays.isNotEmpty ? dose.selectedDays.toSet() : {'Mon', 'Wed', 'Fri'};
+    String selectedConditionPreset = dose.conditionTag.isNotEmpty ? dose.conditionTag : 'During Stress / Anxiety';
 
     showModalBottomSheet(
       context: context,
@@ -1479,11 +1614,99 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     TextField(
                       controller: dosageCtrl,
                       decoration: const InputDecoration(
-                        labelText: 'Dosage',
+                        labelText: 'Dosage / Quantity',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.scale),
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    const Text('Schedule Type', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: [
+                        {'key': 'DAILY', 'label': '📅 Daily'},
+                        {'key': 'WEEKLY', 'label': '🗓️ Specific Days (Weekly)'},
+                        {'key': 'AS_NEEDED', 'label': '⚡ As-Needed (Trigger)'},
+                      ].map((item) {
+                        final isSel = scheduleType == item['key'];
+                        return ChoiceChip(
+                          label: Text(item['label']!),
+                          selected: isSel,
+                          selectedColor: AppColors.primary.withOpacity(0.2),
+                          onSelected: (selected) {
+                            if (selected) setModalState(() => scheduleType = item['key']!);
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    if (scheduleType == 'WEEKLY') ...[
+                      const SizedBox(height: 14),
+                      const Text('Select Weekdays', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.teal)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) {
+                          final isSel = selectedWeekdays.contains(day);
+                          return FilterChip(
+                            label: Text(day),
+                            selected: isSel,
+                            selectedColor: Colors.teal.withOpacity(0.25),
+                            checkmarkColor: Colors.teal,
+                            onSelected: (selected) {
+                              setModalState(() {
+                                if (selected) {
+                                  selectedWeekdays.add(day);
+                                } else if (selectedWeekdays.length > 1) {
+                                  selectedWeekdays.remove(day);
+                                }
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                    if (scheduleType == 'AS_NEEDED') ...[
+                      const SizedBox(height: 14),
+                      const Text('Symptom / Trigger Condition', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.purple)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          'During Stress / Anxiety',
+                          'During Headache / Migraine',
+                          'During Bleeding / Period Pain',
+                          'High Fever > 101°F'
+                        ].map((preset) {
+                          final isSel = selectedConditionPreset == preset;
+                          return ChoiceChip(
+                            label: Text(preset, style: const TextStyle(fontSize: 12)),
+                            selected: isSel,
+                            selectedColor: Colors.purple.withOpacity(0.25),
+                            onSelected: (selected) {
+                              if (selected) {
+                                setModalState(() {
+                                  selectedConditionPreset = preset;
+                                  conditionCtrl.text = preset;
+                                });
+                              }
+                            },
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: conditionCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Custom Trigger / Note (Optional)',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.flash_on, color: Colors.purple),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     const Text('Timing', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                     const SizedBox(height: 8),
@@ -1555,6 +1778,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             context: selectedContext,
                             instruction: instructionCtrl.text.trim(),
                             dosage: dosageCtrl.text.trim(),
+                            frequencyType: scheduleType,
+                            selectedDays: scheduleType == 'WEEKLY' ? selectedWeekdays.toList() : [],
+                            conditionTag: scheduleType == 'AS_NEEDED' ? (conditionCtrl.text.trim().isNotEmpty ? conditionCtrl.text.trim() : selectedConditionPreset) : '',
                           );
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(

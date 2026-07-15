@@ -15,6 +15,9 @@ class MedicineDose {
   final String instruction;
   final String durationLabel; // e.g. "5 Days course" or "Day 2 of 5"
   final String dosage;
+  final String frequencyType; // "DAILY", "WEEKLY", "AS_NEEDED"
+  final List<String> selectedDays; // e.g. ["Mon", "Wed"]
+  final String conditionTag; // e.g. "During Stress"
   String status; // "PENDING", "TAKEN", "SKIPPED"
 
   MedicineDose({
@@ -26,6 +29,9 @@ class MedicineDose {
     required this.instruction,
     this.durationLabel = 'Ongoing course',
     this.dosage = '1 Unit',
+    this.frequencyType = 'DAILY',
+    this.selectedDays = const [],
+    this.conditionTag = '',
     this.status = 'PENDING',
   });
 }
@@ -212,6 +218,22 @@ class ReminderService {
         durationLabel = "$durationDays Days course";
       }
 
+      final frequencyType = c['frequencyType']?.toString() ?? 'DAILY';
+      final selectedDaysRaw = c['selectedDays'];
+      List<String> selectedDays = [];
+      if (selectedDaysRaw is List) {
+        selectedDays = selectedDaysRaw.map((e) => e.toString()).toList();
+      }
+      final conditionTag = c['conditionTag']?.toString() ?? '';
+
+      if (frequencyType == 'WEEKLY' && selectedDays.isNotEmpty) {
+        const weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        final todayName = weekdayNames[todayDay.weekday - 1];
+        if (!selectedDays.contains(todayName)) {
+          continue;
+        }
+      }
+
       var timingsList = timing.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
       if (timingsList.isEmpty) timingsList.add('Morning');
 
@@ -232,6 +254,9 @@ class ReminderService {
           instruction: inst,
           durationLabel: durationLabel,
           dosage: c['dosage']?.toString() ?? '1 Unit',
+          frequencyType: frequencyType,
+          selectedDays: selectedDays,
+          conditionTag: conditionTag,
         ));
       }
     }
@@ -309,6 +334,9 @@ class ReminderService {
     String dosage = '1 Unit',
     int durationDays = 0,
     String? startDate,
+    String frequencyType = 'DAILY',
+    List<String> selectedDays = const [],
+    String conditionTag = '',
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final localJson = prefs.getString('custom_reminder_medicines');
@@ -325,6 +353,9 @@ class ReminderService {
       'dosage': dosage,
       'durationDays': durationDays,
       'startDate': startDate ?? DateTime.now().toIso8601String(),
+      'frequencyType': frequencyType,
+      'selectedDays': selectedDays,
+      'conditionTag': conditionTag,
     };
     list.add(newMed);
     await prefs.setString('custom_reminder_medicines', jsonEncode(list));
@@ -360,6 +391,9 @@ class ReminderService {
     required String instruction,
     String dosage = '1 Unit',
     int durationDays = 0,
+    String frequencyType = 'DAILY',
+    List<String> selectedDays = const [],
+    String conditionTag = '',
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final localJson = prefs.getString('custom_reminder_medicines');
@@ -379,6 +413,9 @@ class ReminderService {
       'dosage': dosage,
       'durationDays': durationDays,
       'startDate': index != -1 ? (list[index]['startDate'] ?? DateTime.now().toIso8601String()) : DateTime.now().toIso8601String(),
+      'frequencyType': frequencyType,
+      'selectedDays': selectedDays,
+      'conditionTag': conditionTag,
     };
 
     if (index != -1) {
@@ -412,6 +449,9 @@ class ReminderService {
           'instruction': instruction,
           'dosage': dosage,
           'durationDays': durationDays,
+          'frequencyType': frequencyType,
+          'selectedDays': selectedDays,
+          'conditionTag': conditionTag,
         }),
       );
     } catch (_) {}

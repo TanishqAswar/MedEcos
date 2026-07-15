@@ -71,7 +71,7 @@ router.put('/profile', protect, authorize('Patient'), async (req, res) => {
 // Add Custom Reminder Medicine
 router.post('/medicines', protect, authorize('Patient'), async (req, res) => {
     try {
-        const { name, timing, context, instruction, dosage, durationDays, startDate } = req.body;
+        const { name, timing, context, instruction, dosage, durationDays, startDate, frequencyType, selectedDays, conditionTag } = req.body;
         if (!name) return res.status(400).json({ message: 'Medicine name is required' });
         
         const medId = `custom_${Date.now()}`;
@@ -83,7 +83,10 @@ router.post('/medicines', protect, authorize('Patient'), async (req, res) => {
             instruction: instruction || '1 Unit',
             dosage: dosage || '1 Unit',
             durationDays: Number(durationDays) || 0,
-            startDate: startDate ? new Date(startDate) : new Date()
+            startDate: startDate ? new Date(startDate) : new Date(),
+            frequencyType: frequencyType || 'DAILY',
+            selectedDays: Array.isArray(selectedDays) ? selectedDays : [],
+            conditionTag: conditionTag || ''
         };
         
         req.user.customMedicines = req.user.customMedicines || [];
@@ -108,7 +111,7 @@ router.post('/medicines', protect, authorize('Patient'), async (req, res) => {
 router.put('/medicines/:id', protect, authorize('Patient'), async (req, res) => {
     try {
         const medId = req.params.id;
-        const { name, oldName, timing, context, instruction, dosage, durationDays } = req.body;
+        const { name, oldName, timing, context, instruction, dosage, durationDays, frequencyType, selectedDays, conditionTag } = req.body;
         
         req.user.customMedicines = req.user.customMedicines || [];
         let index = req.user.customMedicines.findIndex(m => m.id === medId || (oldName && m.name.toLowerCase() === oldName.toLowerCase()));
@@ -120,7 +123,10 @@ router.put('/medicines/:id', protect, authorize('Patient'), async (req, res) => 
                 context: context ?? req.user.customMedicines[index].context,
                 instruction: instruction ?? req.user.customMedicines[index].instruction,
                 dosage: dosage ?? req.user.customMedicines[index].dosage,
-                durationDays: durationDays !== undefined ? Number(durationDays) : req.user.customMedicines[index].durationDays
+                durationDays: durationDays !== undefined ? Number(durationDays) : req.user.customMedicines[index].durationDays,
+                frequencyType: frequencyType ?? req.user.customMedicines[index].frequencyType ?? 'DAILY',
+                selectedDays: selectedDays !== undefined ? (Array.isArray(selectedDays) ? selectedDays : []) : req.user.customMedicines[index].selectedDays ?? [],
+                conditionTag: conditionTag ?? req.user.customMedicines[index].conditionTag ?? ''
             };
         } else {
             const newId = medId.startsWith('custom_') ? medId : `custom_${Date.now()}`;
@@ -132,7 +138,10 @@ router.put('/medicines/:id', protect, authorize('Patient'), async (req, res) => 
                 instruction: instruction || '1 Unit',
                 dosage: dosage || '1 Unit',
                 durationDays: Number(durationDays) || 0,
-                startDate: new Date()
+                startDate: new Date(),
+                frequencyType: frequencyType || 'DAILY',
+                selectedDays: Array.isArray(selectedDays) ? selectedDays : [],
+                conditionTag: conditionTag || ''
             });
             req.user.deletedReminders = req.user.deletedReminders || [];
             if (oldName && !req.user.deletedReminders.includes(oldName.toLowerCase().trim()) && ((name && name.trim().toLowerCase() !== oldName.toLowerCase().trim()) || !medId.startsWith('custom_'))) {
