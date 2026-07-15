@@ -364,10 +364,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 8,
                   children: [
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           padding: const EdgeInsets.all(8),
@@ -378,13 +382,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           child: const Icon(Icons.dashboard, color: AppColors.primary, size: 22),
                         ),
                         const SizedBox(width: 10),
-                        Text(
-                          "Patient Dashboard",
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: isMobile ? 20 : 26,
-                                color: AppColors.textPrimary,
-                              ),
+                        Flexible(
+                          child: Text(
+                            "Patient Dashboard",
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: isMobile ? 20 : 26,
+                                  color: AppColors.textPrimary,
+                                ),
+                          ),
                         ),
                       ],
                     ),
