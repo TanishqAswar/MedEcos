@@ -1012,10 +1012,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 final prefs = await SharedPreferences.getInstance();
                 final customOrder = prefs.getStringList('medicine_custom_order') ?? [];
-                final draggedName = item.firstDose.medicineName.toLowerCase().trim();
+                final draggedName = item.primary.medicineName.toLowerCase().trim();
                 customOrder.remove(draggedName);
                 if (newIndex < slot.groupedDoses.length) {
-                  final targetName = slot.groupedDoses[newIndex].firstDose.medicineName.toLowerCase().trim();
+                  final targetName = slot.groupedDoses[newIndex].primary.medicineName.toLowerCase().trim();
                   final targetIdx = customOrder.indexOf(targetName);
                   if (targetIdx != -1) {
                     customOrder.insert(targetIdx, draggedName);
@@ -1032,7 +1032,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               itemBuilder: (ctx, idx) {
                 final group = slot.groupedDoses[idx];
                 return KeyedSubtree(
-                  key: ValueKey("${group.firstDose.medicineId}_${group.firstDose.expectedTime}_$idx"),
+                  key: ValueKey("${group.primary.medicineId}_${group.primary.expectedTime}_$idx"),
                   child: _buildPillCard(group),
                 );
               },

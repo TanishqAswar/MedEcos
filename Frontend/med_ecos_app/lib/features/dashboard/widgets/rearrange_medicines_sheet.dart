@@ -301,10 +301,16 @@ class _RearrangeMedicinesSheetState extends State<_RearrangeMedicinesSheet> {
   Widget _buildSortChip(String label, String value) {
     final isSelected = _sortMode == value;
     return ChoiceChip(
-      label: Text(label, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, fontSize: 13)),
+      label: Text(
+        label,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          fontSize: 13,
+          color: isSelected ? AppColors.primaryDark : AppColors.textPrimary,
+        ),
+      ),
       selected: isSelected,
       selectedColor: AppColors.primary.withOpacity(0.15),
-      labelColor: isSelected ? AppColors.primaryDark : AppColors.textPrimary,
       checkmarkColor: AppColors.primary,
       onSelected: (_) => _onModeChanged(value),
       shape: RoundedRectangleBorder(
