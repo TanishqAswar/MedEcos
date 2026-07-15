@@ -6,6 +6,7 @@ import 'core/updater/app_updater.dart';
 import 'features/dashboard/screens/dashboard_screen.dart';
 import 'features/auth/login_screen.dart';
 
+import 'core/services/notification_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
@@ -15,6 +16,12 @@ void main() async {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     // Silently ignore if .env is missing (e.g., in production where --dart-define is used)
+  }
+
+  try {
+    await NotificationService().init();
+  } catch (e) {
+    debugPrint('NotificationService init warning: $e');
   }
 
   final prefs = await SharedPreferences.getInstance();
