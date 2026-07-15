@@ -5,6 +5,7 @@ import '../utils/constants.dart';
 import 'api_service.dart';
 import 'package:intl/intl.dart';
 import '../utils/medicine_utils.dart';
+import '../models/medicine_model.dart';
 
 class MedicineDose {
   final String medicineId; // Could be prescription ID + medicine Name
@@ -324,6 +325,97 @@ class ReminderService {
 
   Future<void> logDose(MedicineDose dose, String status) async {
     await ApiService().logMedicineHistory(dose.medicineId, dose.medicineName, dose.expectedTime, status);
+  }
+
+  Future<List<Medicine>> getActiveCustomMedicineObjects() async {
+    final prefs = await SharedPreferences.getInstance();
+    final localJson = prefs.getString('custom_reminder_medicines');
+    List<dynamic> localCustomMeds = [];
+    if (localJson != null) {
+      try { localCustomMeds = jsonDecode(localJson); } catch (_) {}
+    }
+
+    final localDelJson = prefs.getString('deleted_reminder_medicines');
+    List<String> deletedReminders = [];
+    if (localDelJson != null) {
+      try {
+        final delList = jsonDecode(localDelJson) as List<dynamic>;
+        deletedReminders = delList.map((e) => e.toString().toLowerCase().trim()).toList();
+      } catch (_) {}
+    }
+
+    final profile = await _getProfile();
+    final remoteDel = profile['deletedReminders'] as List<dynamic>? ?? [];
+    for (var d in remoteDel) {
+      final key = d.toString().toLowerCase().trim();
+      if (!deletedReminders.contains(key)) deletedReminders.add(key);
+    }
+
+    final remoteCustomMeds = profile['customMedicines'] as List<dynamic>? ?? [];
+    final Map<String, Map<String, dynamic>> combinedCustom = {};
+    for (var m in remoteCustomMeds) {
+      if (m is Map) {
+        final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
+        final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
+        if (id.isNotEmpty && !deletedReminders.contains(id.toLowerCase()) && !deletedReminders.contains(nameKey)) {
+          combinedCustom[nameKey] = Map<String, dynamic>.from(m);
+        }
+      }
+    }
+    for (var m in localCustomMeds) {
+      if (m is Map) {
+        final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
+        final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
+        if (id.isNotEmpty && !deletedReminders.contains(id.toLowerCase()) && !deletedReminders.contains(nameKey)) {
+          combinedCustom[nameKey] = Map<String, dynamic>.from(m);
+        }
+      }
+    }
+
+    List<Medicine> result = [];
+    final now = DateTime.now();
+    final todayDay = DateTime(now.year, now.month, now.day);
+
+    for (var c in combinedCustom.values) {
+      final name = c['name']?.toString() ?? 'Unknown';
+      final id = c['id']?.toString() ?? "custom_$name";
+      final timingStr = c['timing']?.toString() ?? 'Morning';
+      final ctx = c['context']?.toString() ?? 'After Food';
+      final durationDays = int.tryParse(c['durationDays']?.toString() ?? '0') ?? 0;
+      final startStr = c['startDate']?.toString() ?? '';
+      final dosage = c['dosage']?.toString() ?? '';
+
+      DateTime startDate = DateTime.now();
+      if (startStr.isNotEmpty) {
+        try { startDate = DateTime.parse(startStr).toLocal(); } catch (_) {}
+      }
+      DateTime? endDate;
+      String durText = 'Ongoing course';
+      if (durationDays > 0) {
+        endDate = startDate.add(Duration(days: durationDays));
+        durText = '$durationDays Days course';
+        final normalizedExp = DateTime(endDate.year, endDate.month, endDate.day);
+        if (todayDay.compareTo(normalizedExp) > 0) {
+          continue; // Expired course
+        }
+      }
+
+      final dosageDisplay = dosage.isNotEmpty && dosage != '0' && dosage != 'None' ? dosage : '$timingStr • $ctx • $durText';
+
+      result.add(Medicine(
+        id: id,
+        name: name,
+        dosage: dosageDisplay,
+        frequency: 1,
+        timings: [],
+        startDate: startDate,
+        endDate: endDate,
+        doctorName: 'My Reminders',
+        prescriptionDate: DateFormat('MMM dd, yyyy').format(startDate),
+        timingCategory: timingStr,
+      ));
+    }
+    return result;
   }
 
   Future<void> addCustomMedicine({

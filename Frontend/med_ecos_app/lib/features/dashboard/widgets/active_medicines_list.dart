@@ -36,7 +36,8 @@ class ActiveMedicinesList extends StatelessWidget {
     // Group by Doctor Name
     final Map<String, List<Medicine>> grouped = {};
     for (var med in medicines) {
-      final key = med.doctorName.isNotEmpty ? AppConstants.formatDoctorName(med.doctorName) : 'Dr. Prescribed';
+      final isCustom = med.doctorName.toLowerCase().contains('my reminders') || med.doctorName.toLowerCase().contains('personal') || med.doctorName.toLowerCase().contains('self');
+      final key = isCustom ? 'My Reminders (Self Added)' : (med.doctorName.isNotEmpty ? AppConstants.formatDoctorName(med.doctorName) : 'Dr. Prescribed');
       grouped.putIfAbsent(key, () => []).add(med);
     }
 
@@ -84,11 +85,11 @@ class ActiveMedicinesList extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.medical_services, size: 14, color: Colors.white),
+                            Icon(doctorName.contains('My Reminders') ? Icons.alarm : Icons.medical_services, size: 14, color: Colors.white),
                             const SizedBox(width: 6),
                             Flexible(
                               child: Text(
-                                'Prescribed by: $doctorName',
+                                doctorName.contains('My Reminders') ? 'Added by: You (Reminders)' : 'Prescribed by: $doctorName',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,

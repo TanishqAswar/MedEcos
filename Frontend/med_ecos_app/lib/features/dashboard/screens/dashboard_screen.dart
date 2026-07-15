@@ -207,6 +207,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
       }
 
+      final customMedObjects = await ReminderService().getActiveCustomMedicineObjects();
+      for (var customMed in customMedObjects) {
+        final nameKey = customMed.name.toLowerCase().trim();
+        if (!mergedMedicines.containsKey(nameKey)) {
+          mergedMedicines[nameKey] = customMed;
+        }
+      }
+
       for (var med in mergedMedicines.values) {
         if (med.endDate == null) {
           activeMeds.add(med);
