@@ -43,7 +43,7 @@ class _AboutUsScreenState extends State<AboutUsScreen>
         slivers: [
           // ── Hero Banner with Logo & Tagline ──
           SliverAppBar(
-            expandedHeight: isWide ? 360 : 380,
+            expandedHeight: isWide ? 340 : 380,
             pinned: true,
             backgroundColor: AppColors.primaryDark,
             leading: IconButton(
@@ -98,97 +98,224 @@ class _AboutUsScreenState extends State<AboutUsScreen>
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 24.0,
-                            vertical: 50.0,
+                            vertical: 40.0,
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.18),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
+                          child: isWide
+                              ? ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 1060),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        flex: 6,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 14,
+                                                vertical: 6,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withOpacity(0.18),
+                                                borderRadius: BorderRadius.circular(20),
+                                                border: Border.all(
+                                                  color: Colors.white.withOpacity(0.3),
+                                                ),
+                                              ),
+                                              child: const Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.verified_user_rounded,
+                                                    color: Colors.white,
+                                                    size: 16,
+                                                  ),
+                                                  SizedBox(width: 8),
+                                                  Text(
+                                                    'THE MEDECOS STORY & VISION',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.bold,
+                                                      letterSpacing: 1.2,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 18),
+                                            const Text(
+                                              'MedEcos',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 44,
+                                                fontWeight: FontWeight.w900,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Text(
+                                              'Connecting Patients, Doctors, Pharmacists & Diagnostic Labs in One Intelligent Healthcare Continuum.',
+                                              style: TextStyle(
+                                                color: Colors.white.withOpacity(0.92),
+                                                fontSize: 17,
+                                                height: 1.45,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 18),
+                                            Wrap(
+                                              spacing: 12,
+                                              runSpacing: 8,
+                                              children: [
+                                                _buildHeroChip(Icons.lock, '100% Data Sovereignty'),
+                                                _buildHeroChip(Icons.groups, 'Interprofessional Collaboration'),
+                                                _buildHeroChip(Icons.smart_toy, 'Vaidya AI Companion'),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 48),
+                                      Expanded(
+                                        flex: 4,
+                                        child: Center(
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              Container(
+                                                width: 170,
+                                                height: 170,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: Colors.white.withOpacity(0.1),
+                                                ),
+                                              ),
+                                              Container(
+                                                width: 140,
+                                                height: 140,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black.withOpacity(0.3),
+                                                      blurRadius: 24,
+                                                      offset: const Offset(0, 10),
+                                                    ),
+                                                  ],
+                                                  border: Border.all(
+                                                    color: Colors.white,
+                                                    width: 4,
+                                                  ),
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(70),
+                                                  child: Image.asset(
+                                                    'assets/Icon.jpeg',
+                                                    width: 140,
+                                                    height: 140,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.verified_user_rounded,
-                                      color: Colors.white,
-                                      size: 16,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.18),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: Colors.white.withOpacity(0.3),
+                                        ),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.verified_user_rounded,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            'THE MEDECOS STORY & VISION',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 1.2,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'THE MEDECOS STORY & VISION',
+                                    const SizedBox(height: 20),
+                                    // Logo with glowing border
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.25),
+                                            blurRadius: 20,
+                                            offset: const Offset(0, 8),
+                                          ),
+                                        ],
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 3,
+                                        ),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(50),
+                                        child: Image.asset(
+                                          'assets/Icon.jpeg',
+                                          width: 88,
+                                          height: 88,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'MedEcos',
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1.2,
+                                        fontSize: 34,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 640),
+                                      child: Text(
+                                        'Connecting Patients, Doctors, Pharmacists & Diagnostic Labs in One Intelligent Healthcare Continuum.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.92),
+                                          fontSize: 14,
+                                          height: 1.4,
+                                          fontWeight: FontWeight.w400,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
-                              const SizedBox(height: 20),
-                              // Logo with glowing border
-                              Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.25),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 3,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(50),
-                                  child: Image.asset(
-                                    'assets/Icon.jpeg',
-                                    width: 88,
-                                    height: 88,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'MedEcos',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 34,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 640),
-                                child: Text(
-                                  'Connecting Patients, Doctors, Pharmacists & Diagnostic Labs in One Intelligent Healthcare Continuum.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.92),
-                                    fontSize: isWide ? 16 : 14,
-                                    height: 1.4,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
                       ),
                     ),
@@ -258,6 +385,25 @@ class _AboutUsScreenState extends State<AboutUsScreen>
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 14),
+          const SizedBox(width: 6),
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -662,17 +808,55 @@ class _AboutUsScreenState extends State<AboutUsScreen>
                     'Transparent commitments governing data protection, ethical medical collaboration, and patient privacy.',
               ),
               const SizedBox(height: 28),
-              ...policies.map((p) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: _ExpandablePolicyCard(
-                    title: p['title'] as String,
-                    content: p['content'] as String,
-                    icon: p['icon'] as IconData,
-                    color: p['color'] as Color,
-                  ),
-                );
-              }),
+              if (isWide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < policies.length; i += 2) ...[
+                            _ExpandablePolicyCard(
+                              title: policies[i]['title'] as String,
+                              content: policies[i]['content'] as String,
+                              icon: policies[i]['icon'] as IconData,
+                              color: policies[i]['color'] as Color,
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          for (int i = 1; i < policies.length; i += 2) ...[
+                            _ExpandablePolicyCard(
+                              title: policies[i]['title'] as String,
+                              content: policies[i]['content'] as String,
+                              icon: policies[i]['icon'] as IconData,
+                              color: policies[i]['color'] as Color,
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              else
+                ...policies.map((p) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: _ExpandablePolicyCard(
+                      title: p['title'] as String,
+                      content: p['content'] as String,
+                      icon: p['icon'] as IconData,
+                      color: p['color'] as Color,
+                    ),
+                  );
+                }),
               const SizedBox(height: 40),
             ],
           ),
