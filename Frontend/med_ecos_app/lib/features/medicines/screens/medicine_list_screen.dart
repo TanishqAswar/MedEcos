@@ -165,7 +165,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
     final dosageCtrl = TextEditingController(text: '1 Tablet');
     final instructionCtrl = TextEditingController();
     final durationCtrl = TextEditingController();
-    String selectedTiming = 'Morning';
+    Set<String> selectedTimings = {'Morning'};
     String selectedContext = 'After Food';
 
     showModalBottomSheet(
@@ -239,13 +239,21 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                     Wrap(
                       spacing: 8,
                       children: ['Morning', 'Afternoon', 'Evening', 'Night'].map((t) {
-                        final isSel = selectedTiming == t;
-                        return ChoiceChip(
+                        final isSel = selectedTimings.contains(t);
+                        return FilterChip(
                           label: Text(t),
                           selected: isSel,
                           selectedColor: AppColors.primary.withOpacity(0.2),
                           onSelected: (selected) {
-                            if (selected) setModalState(() => selectedTiming = t);
+                            setModalState(() {
+                              if (selected) {
+                                selectedTimings.add(t);
+                              } else {
+                                if (selectedTimings.length > 1) {
+                                  selectedTimings.remove(t);
+                                }
+                              }
+                            });
                           },
                         );
                       }).toList(),
@@ -292,7 +300,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                           Navigator.pop(ctx);
                           await ReminderService().addCustomMedicine(
                             name: name,
-                            timing: selectedTiming,
+                            timing: selectedTimings.join(', '),
                             context: selectedContext,
                             instruction: instructionCtrl.text.trim(),
                             dosage: dosageCtrl.text.trim(),

@@ -790,7 +790,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const MedicineListScreen()),
-                  ),
+                  ).then((_) => _fetchPatientData()),
                 ),
               ),
               const SizedBox(width: 8),
@@ -805,7 +805,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const HealthVaultScreen()),
-                  ),
+                  ).then((_) => _fetchPatientData()),
                 ),
               ),
             ],
@@ -841,7 +841,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const MedicineListScreen()),
-                    ),
+                    ).then((_) => _fetchPatientData()),
                   ),
                   IconButton(
                     icon: const Icon(Icons.folder, color: Colors.teal),
@@ -849,7 +849,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const HealthVaultScreen()),
-                    ),
+                    ).then((_) => _fetchPatientData()),
                   ),
                   IconButton(
                     icon: const Icon(Icons.refresh, color: AppColors.primary),
@@ -1195,7 +1195,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final dosageCtrl = TextEditingController(text: '1 Tablet');
     final instructionCtrl = TextEditingController();
     final durationCtrl = TextEditingController();
-    String selectedTiming = 'Morning';
+    Set<String> selectedTimings = {'Morning'};
     String selectedContext = 'After Food';
 
     showModalBottomSheet(
@@ -1237,7 +1237,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       controller: nameCtrl,
                       decoration: const InputDecoration(
                         labelText: 'Medicine Name *',
-                        hintText: 'e.g. Paracetamol 500mg, Vitamin D3',
+                        hintText: 'e.g. Paracetamol 500mg',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.medication),
                       ),
@@ -1269,13 +1269,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Wrap(
                       spacing: 8,
                       children: ['Morning', 'Afternoon', 'Evening', 'Night'].map((t) {
-                        final isSel = selectedTiming == t;
-                        return ChoiceChip(
+                        final isSel = selectedTimings.contains(t);
+                        return FilterChip(
                           label: Text(t),
                           selected: isSel,
                           selectedColor: AppColors.primary.withOpacity(0.2),
                           onSelected: (selected) {
-                            if (selected) setModalState(() => selectedTiming = t);
+                            setModalState(() {
+                              if (selected) {
+                                selectedTimings.add(t);
+                              } else {
+                                if (selectedTimings.length > 1) {
+                                  selectedTimings.remove(t);
+                                }
+                              }
+                            });
                           },
                         );
                       }).toList(),
@@ -1322,7 +1330,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Navigator.pop(ctx);
                           await ReminderService().addCustomMedicine(
                             name: name,
-                            timing: selectedTiming,
+                            timing: selectedTimings.join(', '),
                             context: selectedContext,
                             instruction: instructionCtrl.text.trim(),
                             dosage: dosageCtrl.text.trim(),
@@ -1360,9 +1368,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final instructionCtrl = TextEditingController(
       text: (dose.instruction == 'None' || dose.instruction.isEmpty) ? '' : dose.instruction,
     );
-    String selectedTiming = ['Morning', 'Afternoon', 'Evening', 'Night'].contains(dose.timingLabel)
-        ? dose.timingLabel
-        : 'Morning';
+    Set<String> selectedTimings = dose.timingLabel.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toSet();
+    if (selectedTimings.isEmpty) selectedTimings.add('Morning');
     String selectedContext = ['After Food', 'Before Food', 'With Food'].contains(dose.context)
         ? dose.context
         : 'After Food';
@@ -1425,12 +1432,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Wrap(
                       spacing: 8,
                       children: ['Morning', 'Afternoon', 'Evening', 'Night'].map((t) {
-                        final isSel = selectedTiming == t;
-                        return ChoiceChip(
+                        final isSel = selectedTimings.contains(t);
+                        return FilterChip(
                           label: Text(t),
                           selected: isSel,
+                          selectedColor: AppColors.primary.withOpacity(0.2),
                           onSelected: (selected) {
-                            if (selected) setModalState(() => selectedTiming = t);
+                            setModalState(() {
+                              if (selected) {
+                                selectedTimings.add(t);
+                              } else {
+                                if (selectedTimings.length > 1) {
+                                  selectedTimings.remove(t);
+                                }
+                              }
+                            });
                           },
                         );
                       }).toList(),
@@ -1477,7 +1493,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             medicineId: dose.medicineId,
                             oldName: dose.medicineName,
                             newName: name,
-                            timing: selectedTiming,
+                            timing: selectedTimings.join(', '),
                             context: selectedContext,
                             instruction: instructionCtrl.text.trim(),
                             dosage: dosageCtrl.text.trim(),

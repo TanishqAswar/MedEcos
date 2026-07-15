@@ -225,8 +225,9 @@ class NotificationService {
     await init();
 
     final now = DateTime.now();
-    if (scheduledTime.isBefore(now)) {
-      return; // Do not schedule alarms in the past
+    DateTime effectiveTime = scheduledTime;
+    if (effectiveTime.isBefore(now)) {
+      effectiveTime = effectiveTime.add(const Duration(days: 1)); // Schedule for next day if today's time already passed
     }
 
     final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
@@ -272,11 +273,12 @@ class NotificationService {
         id,
         title,
         body,
-        tz.TZDateTime.from(scheduledTime, tz.local),
+        tz.TZDateTime.from(effectiveTime, tz.local),
         details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
         payload: payload,
       );
     } catch (e) {
@@ -286,11 +288,12 @@ class NotificationService {
           id,
           title,
           body,
-          tz.TZDateTime.from(scheduledTime, tz.local),
+          tz.TZDateTime.from(effectiveTime, tz.local),
           details,
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: DateTimeComponents.time,
           payload: payload,
         );
       } catch (err) {
@@ -329,39 +332,43 @@ class NotificationService {
             icon: '@mipmap/ic_launcher',
             color: Color(0xFF009688),
           ),
-          iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true),
+          iOS: DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
+        payload: 'appointment_${baseId}_before',
       );
     }
 
     if (appointmentTime.isAfter(now)) {
       await _notificationsPlugin.zonedSchedule(
         baseId + 1,
-        '🏥 Appointment Starting Now: Dr. $doctorName',
-        'It is time for your scheduled consultation with Dr. $doctorName.',
+        '🏥 Doctor Appointment Now: Dr. $doctorName',
+        clinicAddress != null
+            ? 'Your consultation at $clinicAddress starts now.'
+            : 'Your consultation with Dr. $doctorName starts now.',
         tz.TZDateTime.from(appointmentTime, tz.local),
         const NotificationDetails(
           android: AndroidNotificationDetails(
             'med_ecos_appointments_channel',
             'Doctor Appointments',
-            importance: Importance.max,
+            importance: Importance.high,
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
             color: Color(0xFF009688),
           ),
-          iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true),
+          iOS: DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
+        payload: 'appointment_${baseId}_now',
       );
     }
   }
 
-  /// Synchronize and schedule alarms + follow-up escalation alerts for pending doses of the day
+  /// Synchronize all today's medicine reminders with native device alarm system
   Future<void> syncTodayReminders(List<MedicineDose> doses) async {
     if (kIsWeb) return;
     await init();
@@ -370,7 +377,7 @@ class NotificationService {
 
     int notifId = 1000;
     for (final dose in doses) {
-      if (dose.status == 'PENDING') {
+      if (dose.status == 'PENDING' || dose.status == 'MISSED') {
         notifId++;
         final title = '⏰ Medicine Reminder: ${dose.medicineName}';
         final body = 'Time to take ${dose.medicineName} (${dose.timingLabel} • ${dose.context}). ${dose.instruction}';

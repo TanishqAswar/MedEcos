@@ -159,13 +159,15 @@ class ReminderService {
     for (var m in remoteCustomMeds) {
       if (m is Map) {
         final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
-        if (id.isNotEmpty) combinedCustom[id] = Map<String, dynamic>.from(m);
+        final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
+        if (id.isNotEmpty) combinedCustom[nameKey] = Map<String, dynamic>.from(m);
       }
     }
     for (var m in localCustomMeds) {
       if (m is Map) {
         final id = m['id']?.toString() ?? m['name']?.toString() ?? '';
-        if (id.isNotEmpty) combinedCustom[id] = Map<String, dynamic>.from(m);
+        final nameKey = m['name']?.toString().toLowerCase().trim() ?? id;
+        if (id.isNotEmpty) combinedCustom[nameKey] = Map<String, dynamic>.from(m);
       }
     }
 
@@ -186,7 +188,10 @@ class ReminderService {
         try {
           final startDt = DateTime.parse(startStr).toLocal();
           final startDay = DateTime(startDt.year, startDt.month, startDt.day);
-          final diffDays = todayDay.difference(startDay).inDays;
+          var diffDays = todayDay.difference(startDay).inDays;
+          if (diffDays < 0 && todayDay.difference(startDay).inHours.abs() <= 48) {
+            diffDays = 0; // Just added today or across timezone border
+          }
           if (diffDays < 0 || diffDays >= durationDays) {
             continue; // Course expired or hasn't started yet
           }
@@ -222,10 +227,16 @@ class ReminderService {
       }
     }
 
-    // Filter out deleted / removed reminders
+    final activeCustomNames = combinedCustom.values
+        .map((e) => e['name']?.toString().toLowerCase().trim() ?? '')
+        .where((e) => e.isNotEmpty)
+        .toSet();
+
+    // Filter out deleted / removed reminders unless they are currently active custom medicines
     todayDoses = todayDoses.where((dose) {
       final nameKey = dose.medicineName.toLowerCase().trim();
       final idKey = dose.medicineId.toLowerCase().trim();
+      if (activeCustomNames.contains(nameKey)) return true;
       return !deletedReminders.contains(nameKey) && !deletedReminders.contains(idKey);
     }).toList();
 
