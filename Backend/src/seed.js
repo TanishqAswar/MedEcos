@@ -61,6 +61,7 @@ const seedDatabase = async () => {
 
         const salt = await bcrypt.genSalt(10);
         const defaultPassword = await bcrypt.hash('password123', salt);
+        const adminPassword = await bcrypt.hash('Admin@123', salt);
 
         // ---------------------------------------------------------
         // 2. Users (Doctors, Patient, Pharmacist, Pathologist) in Hyderabad (near 17.454389, 78.392028)
@@ -70,7 +71,7 @@ const seedDatabase = async () => {
         const adminUser = await User.create({
             username: 'System Admin',
             email: 'admin@medecos.com',
-            password: defaultPassword,
+            password: adminPassword,
             role: 'Admin',
             isVerified: true,
             aiVerification: { status: 'not_required' },
