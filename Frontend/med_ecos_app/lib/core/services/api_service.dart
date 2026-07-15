@@ -125,10 +125,12 @@ class ApiService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to load stats: ${response.body}');
+        print('Warning loading stats: ${response.body}');
+        return {};
       }
     } catch (e) {
-      throw Exception('Network error: $e');
+      print('Network error loading stats: $e');
+      return {};
     }
   }
 

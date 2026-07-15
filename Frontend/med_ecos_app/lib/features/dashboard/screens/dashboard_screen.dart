@@ -120,6 +120,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _fetchPatientData() async {
     try {
+      final doses = await ReminderService().getTodaysReminders();
+      if (mounted) {
+        setState(() {
+          _todayDoses = doses;
+        });
+        NotificationService().syncTodayReminders(doses);
+      }
+    } catch (e) {
+      debugPrint('Error fetching reminders: $e');
+    }
+
+    try {
       final List<dynamic> prescriptions = await ApiService().getPrescriptions();
       List<String> parsedLabTests = [];
       Map<String, Medicine> mergedMedicines = {};
@@ -210,18 +222,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
       
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('jwt_token') ?? '';
-      final ordersRes = await http.get(
-        Uri.parse('${AppConstants.apiBaseUrl}/api/v1/patient/lab-test-orders'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
       List<dynamic> labOrders = [];
-      if (ordersRes.statusCode == 200) {
-        labOrders = jsonDecode(ordersRes.body);
-      }
+      try {
+        final ordersRes = await http.get(
+          Uri.parse('${AppConstants.apiBaseUrl}/api/v1/patient/lab-test-orders'),
+          headers: {'Authorization': 'Bearer $token'},
+        );
+        if (ordersRes.statusCode == 200) {
+          labOrders = jsonDecode(ordersRes.body);
+        }
+      } catch (_) {}
 
-      final doses = await ReminderService().getTodaysReminders();
+      try {
+        await ApiService().getDashboardStats();
+      } catch (_) {}
 
-      await ApiService().getDashboardStats();
       if (mounted) {
         setState(() {
           _medicines = mergedMedicines.values.toList();
@@ -229,11 +244,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _activeMedicines = activeMeds.map((m) => m.name.toLowerCase().trim()).toSet().length;
           _totalPrescriptions = prescriptions.length;
           _patientLabOrders = labOrders;
-          _todayDoses = doses;
         });
-
-        // Synchronize and schedule native local alarms for all pending doses of the day
-        NotificationService().syncTodayReminders(doses);
       }
     } catch (e) {
       debugPrint('Error: $e');
