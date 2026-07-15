@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/models/medicine_model.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/constants.dart';
@@ -6,11 +7,13 @@ import '../../../core/utils/constants.dart';
 class ActiveMedicinesList extends StatelessWidget {
   final List<Medicine> medicines;
   final Future<void> Function(Medicine)? onRemove;
+  final VoidCallback? onRearrange;
 
   const ActiveMedicinesList({
     super.key,
     required this.medicines,
     this.onRemove,
+    this.onRearrange,
   });
 
   @override
@@ -44,7 +47,19 @@ class ActiveMedicinesList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Active Medicines", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("Active Medicines", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            if (onRearrange != null)
+              TextButton.icon(
+                onPressed: onRearrange,
+                icon: const Icon(Icons.swap_vert, size: 18, color: AppColors.primary),
+                label: const Text("Rearrange", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
+              ),
+          ],
+        ),
         const SizedBox(height: 16),
         ...grouped.entries.map((entry) {
           final doctorName = entry.key;
@@ -129,90 +144,130 @@ class ActiveMedicinesList extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                ...meds.map((med) {
-                  return Card(
-                    elevation: 1,
-                    margin: const EdgeInsets.only(bottom: 10),
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      leading: CircleAvatar(
-                        backgroundColor: AppColors.primary.withOpacity(0.15),
-                        child: const Icon(Icons.medication, color: AppColors.primary),
+                ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: meds.length,
+                  onReorder: (oldIndex, newIndex) async {
+                    if (oldIndex < newIndex) {
+                      newIndex -= 1;
+                    }
+                    final item = meds.removeAt(oldIndex);
+                    meds.insert(newIndex, item);
+
+                    final prefs = await SharedPreferences.getInstance();
+                    final customOrder = prefs.getStringList('medicine_custom_order') ?? [];
+                    final draggedName = item.name.toLowerCase().trim();
+                    customOrder.remove(draggedName);
+                    if (newIndex < meds.length) {
+                      final targetName = meds[newIndex].name.toLowerCase().trim();
+                      final targetIdx = customOrder.indexOf(targetName);
+                      if (targetIdx != -1) {
+                        customOrder.insert(targetIdx, draggedName);
+                      } else {
+                        customOrder.add(draggedName);
+                      }
+                    } else {
+                      customOrder.add(draggedName);
+                    }
+                    await prefs.setStringList('medicine_custom_order', customOrder);
+                    await prefs.setString('medicine_sort_mode', 'custom');
+                    if (onRearrange != null) {
+                      onRearrange!();
+                    }
+                  },
+                  itemBuilder: (ctx, idx) {
+                    final med = meds[idx];
+                    return Card(
+                      key: ValueKey("${med.id}_$idx"),
+                      elevation: 1,
+                      margin: const EdgeInsets.only(bottom: 10),
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
                       ),
-                      title: Text(med.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15.5)),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Row(
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        leading: CircleAvatar(
+                          backgroundColor: AppColors.primary.withOpacity(0.15),
+                          child: const Icon(Icons.medication, color: AppColors.primary),
+                        ),
+                        title: Text(med.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15.5)),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  med.effectiveTiming,
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  med.dosage.isNotEmpty ? med.dosage : '${med.frequency}x daily',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.shade50,
-                                borderRadius: BorderRadius.circular(6),
+                            if (onRemove != null)
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
+                                tooltip: 'Remove from active',
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Remove Medicine'),
+                                      content: Text('Remove "${med.name}" from your active medicines?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(ctx, false),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () => Navigator.pop(ctx, true),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          child: const Text('Remove'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed == true) {
+                                    onRemove!(med);
+                                  }
+                                },
                               ),
-                              child: Text(
-                                med.effectiveTiming,
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                med.dosage.isNotEmpty ? med.dosage : '${med.frequency}x daily',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  color: Colors.grey.shade700,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
+                            const Icon(Icons.drag_handle, color: Colors.grey),
                           ],
                         ),
                       ),
-                      trailing: onRemove != null
-                          ? IconButton(
-                              icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
-                              tooltip: 'Remove from active',
-                              onPressed: () async {
-                                final confirmed = await showDialog<bool>(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: const Text('Remove Medicine'),
-                                    content: Text('Remove "${med.name}" from your active medicines?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(ctx, false),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () => Navigator.pop(ctx, true),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.red,
-                                          foregroundColor: Colors.white,
-                                        ),
-                                        child: const Text('Remove'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                                if (confirmed == true) {
-                                  onRemove!(med);
-                                }
-                              },
-                            )
-                          : null,
-                    ),
-                  );
-                }).toList(),
+                    );
+                  },
+                ),
               ],
             ),
           );

@@ -16,6 +16,7 @@ import '../widgets/sidebar.dart';
 import '../../support/screens/about_us_screen.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/active_medicines_list.dart';
+import '../widgets/rearrange_medicines_sheet.dart';
 
 // Patient Screens
 import '../../../features/medicines/screens/medicine_list_screen.dart';
@@ -245,9 +246,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         await ApiService().getDashboardStats();
       } catch (_) {}
 
+      final sortedMedicines = mergedMedicines.values.toList();
+      await ReminderService().sortMedicineObjects(sortedMedicines);
+
       if (mounted) {
         setState(() {
-          _medicines = mergedMedicines.values.toList();
+          _medicines = sortedMedicines;
           _labTests = parsedLabTests;
           _activeMedicines = activeMeds.map((m) => m.name.toLowerCase().trim()).toSet().length;
           _totalPrescriptions = prescriptions.length;
@@ -458,6 +462,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               med.endDate == null || med.endDate!.isAfter(DateTime.now().subtract(const Duration(days: 1)))
                             ).toList(),
                             onRemove: _removeMedicine,
+                            onRearrange: () => showRearrangeMedicinesBottomSheet(context, medicines: _medicines, onUpdate: _fetchPatientData),
                           ),
                           const SizedBox(height: 32),
                           _buildPreviousMedicinesAndLabTests(),
@@ -490,6 +495,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               med.endDate == null || med.endDate!.isAfter(DateTime.now().subtract(const Duration(days: 1)))
                             ).toList(),
                             onRemove: _removeMedicine,
+                            onRearrange: () => showRearrangeMedicinesBottomSheet(context, medicines: _medicines, onUpdate: _fetchPatientData),
                           ),
                           const SizedBox(height: 24),
                           _buildFindDoctorsCard(),
@@ -836,6 +842,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ).then((_) => _fetchPatientData()),
                 ),
               ),
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.swap_vert, color: AppColors.primary),
+                  tooltip: 'Hold and Drag to Rearrange Order',
+                  onPressed: () => showRearrangeMedicinesBottomSheet(context, medicines: _medicines, onUpdate: _fetchPatientData),
+                ),
+              ),
             ],
           ),
         ] else ...[
@@ -878,6 +896,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       context,
                       MaterialPageRoute(builder: (_) => const HealthVaultScreen()),
                     ).then((_) => _fetchPatientData()),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.swap_vert, color: AppColors.primary),
+                    tooltip: 'Hold and Drag to Rearrange Order',
+                    onPressed: () => showRearrangeMedicinesBottomSheet(context, medicines: _medicines, onUpdate: _fetchPatientData),
                   ),
                   IconButton(
                     icon: const Icon(Icons.refresh, color: AppColors.primary),
@@ -976,7 +999,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
         for (final slot in orderedSlots) ...[
           _buildTimeOfDayGroupHeader(slot.title, slot.subtitle, slot.color),
           if (slot.groupedDoses.isNotEmpty)
-            ...slot.groupedDoses.map((group) => _buildPillCard(group))
+            ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: slot.groupedDoses.length,
+              onReorder: (oldIndex, newIndex) async {
+                if (oldIndex < newIndex) {
+                  newIndex -= 1;
+                }
+                final item = slot.groupedDoses.removeAt(oldIndex);
+                slot.groupedDoses.insert(newIndex, item);
+
+                final prefs = await SharedPreferences.getInstance();
+                final customOrder = prefs.getStringList('medicine_custom_order') ?? [];
+                final draggedName = item.firstDose.medicineName.toLowerCase().trim();
+                customOrder.remove(draggedName);
+                if (newIndex < slot.groupedDoses.length) {
+                  final targetName = slot.groupedDoses[newIndex].firstDose.medicineName.toLowerCase().trim();
+                  final targetIdx = customOrder.indexOf(targetName);
+                  if (targetIdx != -1) {
+                    customOrder.insert(targetIdx, draggedName);
+                  } else {
+                    customOrder.add(draggedName);
+                  }
+                } else {
+                  customOrder.add(draggedName);
+                }
+                await prefs.setStringList('medicine_custom_order', customOrder);
+                await prefs.setString('medicine_sort_mode', 'custom');
+                _fetchPatientData();
+              },
+              itemBuilder: (ctx, idx) {
+                final group = slot.groupedDoses[idx];
+                return KeyedSubtree(
+                  key: ValueKey("${group.firstDose.medicineId}_${group.firstDose.expectedTime}_$idx"),
+                  child: _buildPillCard(group),
+                );
+              },
+            )
           else
             _buildEmptySlotCard(slot.title.split(' ').last),
         ],
@@ -1171,6 +1231,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
                 ),
+                Icon(Icons.drag_indicator, color: Colors.grey.shade400, size: 20),
+                const SizedBox(width: 4),
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
                   tooltip: 'Manage Reminder',

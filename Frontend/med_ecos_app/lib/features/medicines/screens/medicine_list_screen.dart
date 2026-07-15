@@ -14,6 +14,7 @@ import '../../../core/services/reminder_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/constants.dart';
 import '../../../core/widgets/medecos_loader.dart';
+import '../../dashboard/widgets/rearrange_medicines_sheet.dart';
 
 class MedicineListScreen extends StatefulWidget {
   const MedicineListScreen({super.key});
@@ -147,8 +148,11 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
         }
       }
 
+      final sortedMedicines = uniqueMedicines.values.toList();
+      await ReminderService().sortMedicineObjects(sortedMedicines);
+
       setState(() {
-        _medicines = uniqueMedicines.values.toList();
+        _medicines = sortedMedicines;
         _loading = false;
         _error = null;
       });
@@ -779,6 +783,11 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
         title: const Text('Medicines & Reminders'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.swap_vert),
+            tooltip: 'Hold and Drag to Rearrange Order',
+            onPressed: () => showRearrangeMedicinesBottomSheet(context, medicines: _medicines, onUpdate: _loadMedicines),
+          ),
+          IconButton(
             icon: const Icon(Icons.document_scanner),
             tooltip: 'Scan Prescription',
             onPressed: _scanAndUploadPrescription,
@@ -1075,102 +1084,134 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
               ),
               const SizedBox(height: 12),
               // List of medicines inside this Doctor's Light Blue Container
-              ...meds.map((med) {
-                final isTaken = _takenMedicines.contains(med.id);
-                return Card(
-                  elevation: 1,
-                  margin: const EdgeInsets.only(bottom: 10),
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    side: BorderSide(
-                      color: isTaken ? Colors.green.shade300 : Colors.grey.shade200,
-                      width: 1.2,
+              ReorderableListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: meds.length,
+                onReorder: (oldIndex, newIndex) async {
+                  if (oldIndex < newIndex) newIndex -= 1;
+                  final item = meds.removeAt(oldIndex);
+                  meds.insert(newIndex, item);
+
+                  final prefs = await SharedPreferences.getInstance();
+                  final customOrder = prefs.getStringList('medicine_custom_order') ?? [];
+                  final draggedName = item.name.toLowerCase().trim();
+                  customOrder.remove(draggedName);
+                  if (newIndex < meds.length) {
+                    final targetName = meds[newIndex].name.toLowerCase().trim();
+                    final targetIdx = customOrder.indexOf(targetName);
+                    if (targetIdx != -1) {
+                      customOrder.insert(targetIdx, draggedName);
+                    } else {
+                      customOrder.add(draggedName);
+                    }
+                  } else {
+                    customOrder.add(draggedName);
+                  }
+                  await prefs.setStringList('medicine_custom_order', customOrder);
+                  await prefs.setString('medicine_sort_mode', 'custom');
+                  _loadMedicines();
+                },
+                itemBuilder: (ctx, idx) {
+                  final med = meds[idx];
+                  final isTaken = _takenMedicines.contains(med.id);
+                  return Card(
+                    key: ValueKey("${med.id}_$idx"),
+                    elevation: 1,
+                    margin: const EdgeInsets.only(bottom: 10),
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      side: BorderSide(
+                        color: isTaken ? Colors.green.shade300 : Colors.grey.shade200,
+                        width: 1.2,
+                      ),
                     ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                      leading: InkWell(
-                        onTap: () => _toggleMedicineTaken(med.id),
-                        borderRadius: BorderRadius.circular(25),
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: isTaken
-                                ? Colors.green.withOpacity(0.15)
-                                : AppColors.primary.withOpacity(0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            isTaken ? Icons.check_circle : Icons.medication,
-                            color: isTaken ? Colors.green : AppColors.primary,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                        leading: InkWell(
+                          onTap: () => _toggleMedicineTaken(med.id),
+                          borderRadius: BorderRadius.circular(25),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: isTaken
+                                  ? Colors.green.withOpacity(0.15)
+                                  : AppColors.primary.withOpacity(0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isTaken ? Icons.check_circle : Icons.medication,
+                              color: isTaken ? Colors.green : AppColors.primary,
+                            ),
                           ),
                         ),
-                      ),
-                      title: Text(
-                        med.name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15.5,
-                          decoration: isTaken ? TextDecoration.lineThrough : null,
-                          color: isTaken ? Colors.grey.shade600 : Colors.black87,
+                        title: Text(
+                          med.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15.5,
+                            decoration: isTaken ? TextDecoration.lineThrough : null,
+                            color: isTaken ? Colors.grey.shade600 : Colors.black87,
+                          ),
                         ),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Row(
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  med.effectiveTiming,
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  med.dosage.isNotEmpty ? med.dosage : '${med.frequency}x daily',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.shade50,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                med.effectiveTiming,
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primary,
-                                ),
-                              ),
+                            Checkbox(
+                              value: isTaken,
+                              activeColor: Colors.green,
+                              onChanged: (val) => _toggleMedicineTaken(med.id),
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                med.dosage.isNotEmpty ? med.dosage : '${med.frequency}x daily',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  color: Colors.grey.shade700,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 21),
+                              tooltip: 'Remove reminder',
+                              onPressed: () => _deleteMedicine(med),
                             ),
+                            const Icon(Icons.drag_handle, color: Colors.grey),
                           ],
                         ),
                       ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Checkbox(
-                            value: isTaken,
-                            activeColor: Colors.green,
-                            onChanged: (val) => _toggleMedicineTaken(med.id),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 21),
-                            tooltip: 'Remove reminder',
-                            onPressed: () => _deleteMedicine(med),
-                          ),
-                        ],
-                      ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                },
+              ),
             ],
           ),
         ),

@@ -303,16 +303,63 @@ class ReminderService {
       }
     }
 
-    todayDoses.sort((a, b) {
-       final statusWeightA = _getStatusWeight(a.status);
-       final statusWeightB = _getStatusWeight(b.status);
-       if (statusWeightA != statusWeightB) {
-         return statusWeightA.compareTo(statusWeightB);
-       }
-       return a.expectedTime.compareTo(b.expectedTime);
-    });
-
+    await sortMedicineDoses(todayDoses);
     return todayDoses;
+  }
+
+  Future<void> sortMedicineDoses(List<MedicineDose> doses) async {
+    final prefs = await SharedPreferences.getInstance();
+    final mode = prefs.getString('medicine_sort_mode') ?? 'status';
+    final customOrder = prefs.getStringList('medicine_custom_order') ?? [];
+
+    doses.sort((a, b) {
+      if ((mode == 'custom' || customOrder.isNotEmpty) && mode != 'name' && mode != 'time' && mode != 'status') {
+        final indexA = customOrder.indexOf(a.medicineName.toLowerCase().trim());
+        final indexB = customOrder.indexOf(b.medicineName.toLowerCase().trim());
+        if (indexA != -1 && indexB != -1) return indexA.compareTo(indexB);
+        if (indexA != -1) return -1;
+        if (indexB != -1) return 1;
+      } else if (mode == 'name') {
+        return a.medicineName.compareTo(b.medicineName);
+      } else if (mode == 'time') {
+        return a.expectedTime.compareTo(b.expectedTime);
+      }
+      // Default / fallback status weighting then time or custom index
+      final statusWeightA = _getStatusWeight(a.status);
+      final statusWeightB = _getStatusWeight(b.status);
+      if (statusWeightA != statusWeightB) {
+        return statusWeightA.compareTo(statusWeightB);
+      }
+      if (customOrder.isNotEmpty) {
+        final indexA = customOrder.indexOf(a.medicineName.toLowerCase().trim());
+        final indexB = customOrder.indexOf(b.medicineName.toLowerCase().trim());
+        if (indexA != -1 && indexB != -1) return indexA.compareTo(indexB);
+        if (indexA != -1) return -1;
+        if (indexB != -1) return 1;
+      }
+      return a.expectedTime.compareTo(b.expectedTime);
+    });
+  }
+
+  Future<void> sortMedicineObjects(List<Medicine> meds) async {
+    final prefs = await SharedPreferences.getInstance();
+    final mode = prefs.getString('medicine_sort_mode') ?? 'custom';
+    final customOrder = prefs.getStringList('medicine_custom_order') ?? [];
+
+    meds.sort((a, b) {
+      if ((mode == 'custom' || customOrder.isNotEmpty) && mode != 'name' && mode != 'time') {
+        final indexA = customOrder.indexOf(a.name.toLowerCase().trim());
+        final indexB = customOrder.indexOf(b.name.toLowerCase().trim());
+        if (indexA != -1 && indexB != -1) return indexA.compareTo(indexB);
+        if (indexA != -1) return -1;
+        if (indexB != -1) return 1;
+      } else if (mode == 'name') {
+        return a.name.compareTo(b.name);
+      } else if (mode == 'time') {
+        return a.startDate.compareTo(b.startDate);
+      }
+      return a.name.compareTo(b.name);
+    });
   }
 
   int _getStatusWeight(String status) {
